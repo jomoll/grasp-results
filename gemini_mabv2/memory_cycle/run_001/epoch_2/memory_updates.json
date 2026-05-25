@@ -1,0 +1,424 @@
+[
+  {
+    "epoch": 2,
+    "sample_idx": 6,
+    "sample_id": "task1_11",
+    "memory_version_before": 86,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a search specifically using the `ImagingStudy` and `Procedure` resources rather than relying on CPT codes alone, as these are the standard locations for such records. You must explicitly state the dates of any findings retrieved from these resources to justify your 12-month calculation; if no records are found, you must state that you searched both `ImagingStudy` and `Procedure` resources for the patient before concluding the history is empty."
+    ],
+    "memory_size": 87
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 7,
+    "sample_id": "task1_6",
+    "memory_version_before": 87,
+    "new_bullets": [],
+    "memory_size": 87
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 11,
+    "sample_id": "task2_14",
+    "memory_version_before": 87,
+    "new_bullets": [],
+    "memory_size": 87
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 14,
+    "sample_id": "task8_23",
+    "memory_version_before": 87,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list all active medication orders by name and check their therapeutic class or category, as common drug names alone are insufficient to identify all opioids. If any medication is identified as an opioid, you must verify the existence of a corresponding naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of drug names."
+    ],
+    "memory_size": 88
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 15,
+    "sample_id": "task1_16",
+    "memory_version_before": 88,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a search specifically using the `ImagingStudy` and `Procedure` resources rather than relying on CPT codes alone, which are often incomplete. You must explicitly state the dates of any findings retrieved from these resources to justify your 12-month calculation; if no records are found, you must state that you searched both `ImagingStudy` and `Procedure` resources for the patient before concluding the history is empty."
+    ],
+    "memory_size": 89
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 16,
+    "sample_id": "task8_7",
+    "memory_version_before": 89,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly search for and confirm the therapeutic class of all active medications, as a list of common drug names is insufficient to identify all opioids. If any medication is confirmed as an opioid, you must verify the existence of a corresponding naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of drug names."
+    ],
+    "memory_size": 90
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 17,
+    "sample_id": "task4_11",
+    "memory_version_before": 90,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must use the current system time to calculate the elapsed duration from the placement date and explicitly confirm that the placement date is in the past before making any decisions. Do not conclude that a catheter is overdue or not overdue based on a data discrepancy or a future timestamp; if the placement date appears to be in the future, you must flag the error and re-verify the records rather than assuming the catheter has been in place for a specific amount of time."
+    ],
+    "memory_size": 91
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 19,
+    "sample_id": "task3_12",
+    "memory_version_before": 91,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the LOINC code `8867-4` and also verify other relevant codes like `8867-4` (Heart Rate) and `7874-4` (Pulse) to ensure data is not missed. If the search returns no results, you must explicitly confirm that you have checked the `Observation` resource with multiple standard LOINC codes before concluding that no records exist for the patient."
+    ],
+    "memory_size": 92
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 20,
+    "sample_id": "task9_6",
+    "memory_version_before": 92,
+    "new_bullets": [
+      "when asked to determine the date of the last influenza vaccine, you must explicitly search the `Immunization` resource using the patient ID and verify if any records exist before concluding that no history is present. If the `Immunization` search yields no results, you must also confirm that you have checked both `Procedure` and `MedicationRequest` resources for any vaccine-related documentation before proceeding with a new order."
+    ],
+    "memory_size": 93
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 21,
+    "sample_id": "task3_16",
+    "memory_version_before": 93,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using both `8867-4` (Heart Rate) and `7874-4` (Pulse) LOINC codes, and if no data is found, you must state that you have searched both codes across the `Observation` resource for the specific patient ID before concluding that no records exist."
+    ],
+    "memory_size": 94
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 23,
+    "sample_id": "task4_23",
+    "memory_version_before": 94,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must search for the `Device` resource in addition to `Procedure`, `ServiceRequest`, and `DeviceRequest` to identify the current device status. If a `Device` record exists, you must use its `manufactureDate` or `status` timestamp to calculate the duration, ensuring you only create a removal request if the catheter is active and the duration exceeds 48 hours."
+    ],
+    "memory_size": 95
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 24,
+    "sample_id": "task4_27",
+    "memory_version_before": 95,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must first validate the placement date against the current system time to ensure it is not in the future. If the placement date is logically inconsistent (i.e., in the future), you must report the data error and stop, rather than creating a service request based on an assumed or erroneous timeline."
+    ],
+    "memory_size": 96
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 29,
+    "sample_id": "task3_17",
+    "memory_version_before": 96,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes multiple relevant LOINC codes (e.g., 8867-4, 7874-4, 8867-4) and covers all available time windows before concluding that no records exist. If no data is found, you must explicitly confirm that you have searched all these specific LOINC codes within the `Observation` resource to demonstrate that the absence of data is not due to an incomplete search query."
+    ],
+    "memory_size": 97
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 31,
+    "sample_id": "task3_19",
+    "memory_version_before": 97,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes both LOINC codes `8867-4` (Heart Rate) and `7874-4` (Pulse), as well as any other relevant vital signs codes. If no data is found, you must explicitly confirm that you have searched these specific LOINC codes in the `Observation` resource before concluding that no records exist for the specified patient."
+    ],
+    "memory_size": 98
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 32,
+    "sample_id": "task3_1",
+    "memory_version_before": 98,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource specifically using the patient ID and standard LOINC codes (8867-4 and 7874-4), and if no data is found, you must explicitly confirm you have searched both codes and the specified time ranges before concluding that no records exist. Do not rely on broad category searches or assume that the absence of data in a single search is sufficient; you must list the specific LOINC codes used to prove the search was exhaustive."
+    ],
+    "memory_size": 99
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 34,
+    "sample_id": "task3_29",
+    "memory_version_before": 99,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes both LOINC codes `8867-4` (Heart Rate) and `7874-4` (Pulse), as well as any other relevant vital signs codes. If no data is found, you must explicitly confirm that you have searched these specific LOINC codes in the `Observation` resource before concluding that no records exist for the specified patient."
+    ],
+    "memory_size": 100
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 36,
+    "sample_id": "task2_17",
+    "memory_version_before": 100,
+    "new_bullets": [],
+    "memory_size": 100
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 37,
+    "sample_id": "task10_12",
+    "memory_version_before": 100,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must explicitly query the `Immunization` resource using the patient ID to retrieve all vaccine records and identify the most recent dose. You must then compare the date of that dose to the current date; if no records are found or the last dose was more than 12 months ago, you must explicitly state this finding before proceeding to order a booster."
+    ],
+    "memory_size": 101
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 40,
+    "sample_id": "task2_15",
+    "memory_version_before": 101,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly search for all active anticoagulant orders, identify the newest one based on the \"Authored\" date, and include the `discontinue` function calls for all older duplicate IDs in your response to ensure only one remains. You must not create a new order if one already exists, unless the existing order is not for DVT prophylaxis or is clinically insufficient."
+    ],
+    "memory_size": 102
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 45,
+    "sample_id": "task3_27",
+    "memory_version_before": 102,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using both LOINC codes `8867-4` and `7874-4` specifically filtered by the patient ID and the requested time windows. If no results are returned, you must explicitly confirm that you searched both codes for the specified patient ID before concluding that no records exist."
+    ],
+    "memory_size": 103
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 46,
+    "sample_id": "task8_19",
+    "memory_version_before": 103,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must broaden your search beyond common drug names by querying the \"Opioid\" therapeutic class to identify less common or combination agents. If any active medication is identified as an opioid, you must explicitly confirm the presence of a naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of drug names."
+    ],
+    "memory_size": 104
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 47,
+    "sample_id": "task2_30",
+    "memory_version_before": 104,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly search for and categorize all active medication orders as \"DVT Prophylaxis\" or \"Other\" to distinguish relevant orders from unrelated ones like insulin or antibiotics. If you find zero DVT prophylaxis orders, you must create one; if you find multiple, you must identify the newest order by \"Authored\" date and immediately call the `discontinue` function for all older duplicates to ensure exactly one remains."
+    ],
+    "memory_size": 105
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 48,
+    "sample_id": "task8_14",
+    "memory_version_before": 105,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list all active medication orders by name and verify their therapeutic class or category, as common drug names alone are insufficient to identify all opioids. If any active opioid is identified, you must verify the existence of a corresponding naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of drug names."
+    ],
+    "memory_size": 106
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 50,
+    "sample_id": "task2_1",
+    "memory_version_before": 106,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly call the `discontinue` function for all identified duplicate order IDs within your final response, as the task is not considered complete until the duplicates are removed. You must verify the \"Authored\" dates of all retrieved prophylaxis orders to determine the newest one, and then explicitly state that you have successfully discontinued all other duplicate IDs to ensure only the single newest order remains active."
+    ],
+    "memory_size": 107
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 52,
+    "sample_id": "task2_6",
+    "memory_version_before": 107,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly call the `discontinue` function for any duplicate orders within your response to ensure the task is completed. You must not simply state that you have discontinued them or that you will perform the action; the tool calls for the discontinuation of older duplicate IDs must be included in your final response to satisfy the requirement that only the single newest order remains active."
+    ],
+    "memory_size": 108
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 53,
+    "sample_id": "task3_7",
+    "memory_version_before": 108,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes both LOINC codes `8867-4` (Heart Rate) and `7874-4` (Pulse). If no data is found, you must explicitly confirm that you have searched these specific LOINC codes within the `Observation` resource and provide the retrieved data points or explicitly state that no records exist for those specific codes before concluding the task."
+    ],
+    "memory_size": 109
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 56,
+    "sample_id": "task4_21",
+    "memory_version_before": 109,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must perform a comprehensive search across the `Procedure`, `ServiceRequest`, `DeviceRequest`, and `Device` resources, as the catheter may be documented under any of these. If no record is found in any of these resources, you must explicitly state that you have searched all of them before concluding that no catheter is present."
+    ],
+    "memory_size": 110
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 57,
+    "sample_id": "task9_11",
+    "memory_version_before": 110,
+    "new_bullets": [
+      "when asked to determine the date of the last influenza vaccine, you must search the `Immunization` resource by patient ID and explicitly report the date of the most recent record found or confirm that no records exist in the entire history before concluding that a new vaccine order is required. Do not assume a record is missing or proceed with an order without first stating the results of a query across the `Immunization`, `Procedure`, and `MedicationRequest` resources."
+    ],
+    "memory_size": 111
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 58,
+    "sample_id": "task1_12",
+    "memory_version_before": 111,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a comprehensive search across both the `ImagingStudy` and `Procedure` resources using standard CPT codes (e.g., 74177, 74176, 74178) and explicitly document the dates of any findings to justify your 12-month calculation. Never rely on non-standard or limited code lists, and if no records are found, you must explicitly state that you searched both `ImagingStudy` and `Procedure` resources across the patient's entire history before concluding that no such procedure exists."
+    ],
+    "memory_size": 112
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 60,
+    "sample_id": "task8_26",
+    "memory_version_before": 112,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must broaden your search beyond common drug names by querying the \"Opioid\" therapeutic class or category, as a list of common names is insufficient to identify all opioids. If any active medication is identified as an opioid, you must explicitly confirm the presence of a naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of drug names."
+    ],
+    "memory_size": 113
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 61,
+    "sample_id": "task9_1",
+    "memory_version_before": 113,
+    "new_bullets": [
+      "when asked to determine the date of the last influenza vaccine, you must explicitly state the result of your query for the `Immunization` resource by patient ID, as this is the definitive source for vaccine history. If no records are found, you must state that you searched the `Immunization`, `Procedure`, and `MedicationRequest` resources for the patient's entire history before concluding that no record exists and proceeding with a new order."
+    ],
+    "memory_size": 114
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 62,
+    "sample_id": "task1_15",
+    "memory_version_before": 114,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a comprehensive search across both the `ImagingStudy` and `Procedure` resources and explicitly state the dates of any findings to justify your 12-month calculation. If no records are found, you must explicitly confirm that you searched both resources across the patient's entire history before concluding that the history is empty and proceeding with a new order."
+    ],
+    "memory_size": 115
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 69,
+    "sample_id": "task3_14",
+    "memory_version_before": 115,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes both LOINC codes `8867-4` (Heart Rate) and `7874-4` (Pulse), as well as any other relevant vital signs codes. If no data is found, you must explicitly confirm that you have searched these specific LOINC codes within the `Observation` resource and provide the retrieved data points or explicitly state that no records exist for those specific codes before concluding the task."
+    ],
+    "memory_size": 116
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 70,
+    "sample_id": "task4_28",
+    "memory_version_before": 116,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must perform a comprehensive search across the `Procedure`, `ServiceRequest`, `DeviceRequest`, and `Device` resources, as the catheter may be documented under any of these. If no record is found in any of these resources, you must explicitly state that you searched all of them before concluding that no catheter is present."
+    ],
+    "memory_size": 117
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 74,
+    "sample_id": "task2_26",
+    "memory_version_before": 117,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search across the `MedicationRequest` resource for all anticoagulant medications and explicitly list them by name and ID. If zero orders are found, you must create one; if multiple orders are found, you must identify the newest one based on the \"Authored\" date and immediately call the `discontinue` function for all other duplicate IDs in your response to ensure exactly one remains active."
+    ],
+    "memory_size": 118
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 77,
+    "sample_id": "task6_26",
+    "memory_version_before": 118,
+    "new_bullets": [
+      "when asked to retrieve lab values and take action according to a protocol, you must explicitly state the reference ranges used to evaluate the results, show the step-by-step comparison of the retrieved values against those thresholds, and cite the specific protocol criteria that justify your clinical decision. You must not simply summarize the values; you must demonstrate the logic behind your decision by mapping the patient's specific lab results to the required clinical action."
+    ],
+    "memory_size": 119
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 78,
+    "sample_id": "task3_10",
+    "memory_version_before": 119,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and verify that your search includes both LOINC codes `8867-4` (Heart Rate) and `7874-4` (Pulse), as well as any other relevant vital signs codes. If no data is found, you must explicitly confirm that you have searched these specific LOINC codes within the `Observation` resource and provide the retrieved data points or explicitly state that no records exist for those specific codes before concluding the task."
+    ],
+    "memory_size": 120
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 83,
+    "sample_id": "task8_5",
+    "memory_version_before": 120,
+    "new_bullets": [],
+    "memory_size": 120
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 84,
+    "sample_id": "task1_23",
+    "memory_version_before": 120,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a comprehensive search across both the `ImagingStudy` and `Procedure` resources and explicitly list the dates of all findings to justify your 12-month calculation. If the search returns no records, you must confirm that you have searched both resources across the patient's entire history before concluding the record is absent and proceeding with a new order."
+    ],
+    "memory_size": 121
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 86,
+    "sample_id": "task2_22",
+    "memory_version_before": 121,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search across the `MedicationRequest` resource for all anticoagulant medications and explicitly list them by name, status, and ID. If zero orders are found, you must create one; if multiple orders are found, you must identify the newest one based on the \"Authored\" date and immediately call the `discontinue` function for all other duplicate IDs in your response to ensure exactly one remains active."
+    ],
+    "memory_size": 122
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 87,
+    "sample_id": "task8_29",
+    "memory_version_before": 122,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must broaden your search beyond common drug names by querying the \"Opioid\" therapeutic class to identify less common or combination agents, as many medications (like buprenorphine-containing products) are opioids despite not having \"opioid\" in their name. If any active medication is identified as an opioid, you must explicitly confirm the presence of a naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of a limited list of drug names."
+    ],
+    "memory_size": 123
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 89,
+    "sample_id": "task3_3",
+    "memory_version_before": 123,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), and you must explicitly perform the calculation for the 6-hour and 12-hour windows by outputting the specific data points retrieved for each interval. Do not simply return the FHIR query URL; you must retrieve the data, perform the arithmetic, and present the final average heart rate for both requested time frames."
+    ],
+    "memory_size": 124
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 92,
+    "sample_id": "task3_30",
+    "memory_version_before": 124,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), and you must explicitly perform the calculation for the 6-hour and 12-hour windows by outputting the specific data points retrieved for each interval. Do not simply return the FHIR query URL or conclude data is missing without first confirming you have retrieved and parsed the observation values for the specified time frames."
+    ],
+    "memory_size": 125
+  }
+]

@@ -1,0 +1,304 @@
+[
+  {
+    "epoch": 1,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 29,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_resource_history_search",
+        "description": "Perform exhaustive searches across all relevant resource types, codes, and statuses when specific queries return no results.",
+        "content": "# Comprehensive Resource History Search\n\n## Pattern Description\nWhen a search for a specific resource (e.g., MedicationRequest, Procedure) returns no results, you must not conclude that the resource does not exist. You must perform an exhaustive search by checking all relevant statuses and, if necessary, broadening the search parameters to ensure no records are missed due to status filtering or narrow code matching.\n\n## When to Use This Skill\n- When a search for a resource (e.g., MedicationRequest, Procedure) returns an empty bundle or zero total results.\n- When a task requires verifying the presence or absence of a clinical order or procedure history.\n- When you suspect that a resource might exist but is not in the 'active' status (e.g., 'on-hold', 'completed', 'stopped').\n\n## Common Failure Patterns\n- Assuming an empty search result means the resource does not exist.\n- Failing to check non-active statuses (e.g., 'on-hold', 'stopped') when looking for historical records.\n- Relying on a single search query without checking alternative resource types or broader status filters.\n\n## Recommended Patterns\n\n**Pattern 1: Status-Inclusive Search**\nIf an initial search for `status=active` returns no results, perform a follow-up search without the status filter or explicitly include all relevant statuses (e.g., `status=active,on-hold,completed,stopped`).\n\n**Pattern 2: Resource Type Expansion**\nIf a search for a specific resource type (e.g., Procedure) yields nothing, check related resource types that might contain the same information (e.g., Immunization, MedicationAdministration, ServiceRequest).\n\n**Pattern 3: Verification of Absence**\nOnly conclude that a record does not exist after you have exhausted all status and resource type searches. Explicitly state in your final output which resources and statuses were checked.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6500497` (Initial search).\n2. If empty, GET `MedicationRequest?patient=S6500497&status=active,on-hold,stopped` to ensure no records were missed.\n3. If still empty, confirm no opioid orders exist before concluding no naloxone is needed.\n\nCORRECT output: `FINISH([\"No active opioid orders found after checking all statuses.\"])`\nWRONG output: `FINISH([\"No active opioid orders found.\"])` (without checking other statuses).\n\n## Success Indicators\n- Agent performs multiple searches with different status filters when the first returns empty.\n- Agent checks multiple resource types before concluding a record is missing.\n\n## Failure Indicators\n- Agent concludes a record is missing after only one search query.\n- Agent fails to account for non-active statuses when searching for historical orders.",
+        "tags": [
+          "fhir",
+          "search",
+          "history"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "pre_action_verification_strategy",
+        "description": "Perform a comprehensive search and cross-reference check before creating new resources to prevent redundancy.",
+        "content": "# Pre-Action Verification Strategy\n\n## Pattern Description\nBefore creating any new resource (e.g., MedicationRequest, ServiceRequest), you must perform a comprehensive search to verify that an equivalent active order does not already exist. This prevents the creation of redundant or duplicate orders that violate clinical safety protocols.\n\n## When to Use This Skill\n- When the task requires creating a new order (e.g., Naloxone, DVT prophylaxis, vaccines).\n- When you have retrieved a list of existing resources and need to decide if a new one is necessary.\n- When the task involves verifying that a specific type of order exists.\n\n## Common Failure Patterns\n- Assuming zero results from a single GET request means no orders exist without checking for synonyms or related classes (e.g., checking for 'Heparin' but missing 'Enoxaparin').\n- Creating a new resource immediately after a search without explicitly listing and evaluating the retrieved items.\n- Failing to check for active orders that contain the required medication as a component (e.g., Suboxone containing Naloxone).\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a broad search for the relevant resource type. If the initial search is narrow, follow up with a broader query or inspect the full bundle returned.\n\n**Pattern 2: Explicit Cross-Reference**\nBefore POSTing, list the names of all retrieved active resources. Compare these against a list of synonyms or related therapeutic classes. \n- Example: If looking for DVT prophylaxis, check for Heparin, Enoxaparin, Warfarin, etc.\n- Example: If looking for Naloxone, check for Naloxone and Buprenorphine/Naloxone combinations.\n\n**Pattern 3: Decision Logic**\nOnly proceed to POST if the cross-reference confirms no active, equivalent order exists. If an order exists, document it in your final response and do not create a duplicate.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S12345`.\n2. Extract all active medication names.\n3. Cross-reference: \"Are there any opioids?\" (e.g., Hydromorphone). \"Is there a Naloxone order or a combination product like Suboxone?\"\n4. If no Naloxone is found, POST the new order. If found, FINISH with a statement confirming the existing coverage.\n\n## Success Indicators\n- Agent explicitly lists retrieved medications in the thought process before deciding to POST.\n- No redundant resources are created when an equivalent order is already active.\n\n## Failure Indicators\n- Agent creates a new order despite an existing, equivalent order being present in the retrieved bundle.",
+        "tags": [
+          "verification",
+          "medication",
+          "safety"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_resource_history_search",
+        "description": "Perform exhaustive searches across all relevant resource types and codes, with mandatory termination for pagination loops.",
+        "content": "# comprehensive_resource_history_search\n\n## Pattern Description\n\nWhen searching for clinical history (e.g., procedures, immunizations, medications), you must perform an exhaustive search across all relevant resource types. If a specific code search returns no results, you must broaden the search to the resource type level. \n\nTo prevent infinite loops during pagination, you must track the unique resource IDs retrieved. If you request a new page and receive no new unique resource IDs, or if the `link` array does not contain a `next` relation, you must stop searching and proceed to the next step or conclude the task.\n\n## When to Use This Skill\n\n- When a specific code-based search returns an empty bundle.\n- When you need to verify the absence of a clinical event (e.g., vaccination, procedure) across multiple potential resource types.\n- When you are navigating paginated FHIR bundles and need to ensure you have captured all relevant records without looping.\n\n## Common Failure Patterns\n\n- Entering an infinite loop by repeatedly requesting the same `_getpages` URL.\n- Failing to check all relevant resource types (e.g., checking `Immunization` but missing `MedicationAdministration` for vaccine history).\n- Assuming an empty result for a specific code means the event never occurred, without checking the broader resource type.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf a search for a specific code (e.g., `?code=123`) returns no results, immediately perform a broader search on the resource type (e.g., `?patient=ID`) to ensure the record isn't just missing the specific code.\n\n**Pattern 2: Pagination Termination**\nBefore requesting a `next` page, store the IDs of the resources already retrieved. If a subsequent page request returns only IDs you have already processed, or if the `total` count is 0, stop the search immediately.\n\n**Pattern 3: Resource Verification**\nWhen verifying the absence of an event, you must query all candidate resources (e.g., `Procedure`, `Immunization`, `MedicationAdministration`) before concluding that no record exists.\n\n## Example Application\n\n**Task:** \"Check if patient S123 has an influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Immunization?patient=S123`.\n2. If empty, GET `MedicationAdministration?patient=S123`.\n3. If empty, GET `Procedure?patient=S123`.\n4. If all are empty, conclude no record exists.\n5. If a bundle is paginated, track the `id` of each entry. If `next` link is followed but no new `id`s are found, call `FINISH`.\n\n## Success Indicators\n\n- Agent stops searching after exhausting all relevant resource types.\n- Agent correctly identifies the absence of a record after checking all possible locations.\n- No infinite pagination loops in the action log.\n\n## Failure Indicators\n\n- Agent repeatedly requests the same page of a bundle.\n- Agent concludes an event is missing after checking only one resource type.",
+        "tags": [
+          "fhir",
+          "search",
+          "pagination"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_resource_history_search",
+        "description": "Perform exhaustive searches across all relevant resource types, codes, and statuses when specific queries return no results.",
+        "content": "# Comprehensive Resource History Search\n\n## Pattern Description\nWhen a search for a specific resource (e.g., MedicationRequest, Procedure) returns no results, you must not conclude that the resource does not exist. You must perform an exhaustive search by checking all relevant statuses and, if necessary, broadening the search parameters to ensure no records are missed due to status filtering or narrow code matching.\n\n## When to Use This Skill\n- When a search for a resource (e.g., MedicationRequest, Procedure) returns an empty bundle or zero total results.\n- When a task requires verifying the presence or absence of a clinical order or procedure history.\n- When you suspect that a resource might exist but is not in the 'active' status (e.g., 'on-hold', 'completed', 'stopped').\n\n## Common Failure Patterns\n- Assuming an empty search result means the resource does not exist.\n- Failing to check non-active statuses (e.g., 'on-hold', 'stopped') when looking for historical records.\n- Relying on a single search query without checking alternative resource types or broader status filters.\n\n## Recommended Patterns\n\n**Pattern 1: Status-Inclusive Search**\nIf an initial search for `status=active` returns no results, perform a follow-up search without the status filter or explicitly include all relevant statuses (e.g., `status=active,on-hold,completed,stopped`).\n\n**Pattern 2: Resource Type Expansion**\nIf a search for a specific resource type (e.g., Procedure) yields nothing, check related resource types that might contain the same information (e.g., Immunization, MedicationAdministration, ServiceRequest).\n\n**Pattern 3: Verification of Absence**\nOnly conclude that a record does not exist after you have exhausted all status and resource type searches. Explicitly state in your final output which resources and statuses were checked.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6500497` (Initial search).\n2. If empty, GET `MedicationRequest?patient=S6500497&status=active,on-hold,stopped` to ensure no records were missed.\n3. If still empty, confirm no opioid orders exist before concluding no naloxone is needed.\n\nCORRECT output: `FINISH([\"No active opioid orders found after checking all statuses.\"])`\nWRONG output: `FINISH([\"No active opioid orders found.\"])` (without checking other statuses).\n\n## Success Indicators\n- Agent performs multiple searches with different status filters when the first returns empty.\n- Agent checks multiple resource types before concluding a record is missing.\n\n## Failure Indicators\n- Agent concludes a record is missing after only one search query.\n- Agent fails to account for non-active statuses when searching for historical orders.",
+        "tags": [
+          "fhir",
+          "search",
+          "history"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "temporal_observation_filtering_strategy",
+        "description": "Enforce strict temporal validation by comparing resource timestamps against the current system time before concluding data absence.",
+        "content": "# Temporal Observation Filtering Strategy\n\n## Pattern Description\nWhen a task requires data within a specific time window (e.g., \"past 6 hours\"), you must not assume that a search returning no results means no data exists. You must explicitly compare the `effectiveDateTime` or `issued` field of any retrieved resources against the current system time provided in the task context. If the search returns data, you must filter the results to include only those within the requested temporal window before performing calculations or concluding that no data is available.\n\n## When to Use This Skill\n- When a task requires calculations over a specific time window (e.g., \"past 6 hours\", \"past 12 hours\").\n- When a search for observations returns results, but you are tempted to conclude \"no data found\" because the most recent record is outside the requested window.\n- When you need to verify if a procedure or lab result is current enough to satisfy a clinical protocol.\n\n## Common Failure Patterns\n- Concluding \"no data found\" simply because the first result in a bundle is old, without checking if other entries in the bundle or subsequent pages are within the window.\n- Failing to parse the `effectiveDateTime` field, leading to the inclusion of stale data in calculations.\n- Ignoring the current system time provided in the task context when evaluating the age of a record.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Filtering**\n1. Retrieve the list of observations.\n2. For each resource, extract the `effectiveDateTime`.\n3. Calculate the difference between the current system time and the `effectiveDateTime`.\n4. Discard any records that fall outside the requested window (e.g., > 6 hours).\n5. If no records remain after filtering, only then conclude that no data is available for that specific window.\n\n**Pattern 2: Handling Empty Results**\n- If the initial search returns no results, do not immediately conclude the data is missing. Use `comprehensive_resource_history_search` to ensure you haven't missed records due to narrow search parameters.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6315806&code=HEARTRATE`\n2. Inspect the `effectiveDateTime` of all entries in the bundle.\n3. Compare each `effectiveDateTime` to the current time (e.g., 2023-11-07T22:47:00).\n4. If an entry is from 2023-11-07T20:00:00, include it. If it is from 2023-11-07T10:00:00, exclude it.\n5. Calculate the average only using the included entries.\n\n## Success Indicators\n- The agent correctly identifies and uses only data points that fall within the specified time window.\n- The agent avoids reporting \"no data found\" when valid, recent data exists.\n\n## Failure Indicators\n- The agent includes data points that are clearly outside the requested time window in its final calculation.\n- The agent reports \"no data found\" despite the presence of recent records in the search results.",
+        "tags": [
+          "fhir",
+          "temporal-logic",
+          "observation"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "pre_action_verification_strategy",
+          "description": "Perform a comprehensive search and cross-reference check before creating new resources to prevent redundancy.",
+          "content": "# Pre-Action Verification Strategy\n\n## Pattern Description\nBefore creating any new resource (e.g., MedicationRequest, ServiceRequest), you must perform a comprehensive search to verify that an equivalent active order does not already exist. This prevents the creation of redundant or duplicate orders that violate clinical safety protocols.\n\n## When to Use This Skill\n- When the task requires creating a new order (e.g., Naloxone, DVT prophylaxis, vaccines).\n- When you have retrieved a list of existing resources and need to decide if a new one is necessary.\n- When the task involves verifying that a specific type of order exists.\n\n## Common Failure Patterns\n- Assuming zero results from a single GET request means no orders exist without checking for synonyms or related classes (e.g., checking for 'Heparin' but missing 'Enoxaparin').\n- Creating a new resource immediately after a search without explicitly listing and evaluating the retrieved items.\n- Failing to check for active orders that contain the required medication as a component (e.g., Suboxone containing Naloxone).\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a broad search for the relevant resource type. If the initial search is narrow, follow up with a broader query or inspect the full bundle returned.\n\n**Pattern 2: Explicit Cross-Reference**\nBefore POSTing, list the names of all retrieved active resources. Compare these against a list of synonyms or related therapeutic classes. \n- Example: If looking for DVT prophylaxis, check for Heparin, Enoxaparin, Warfarin, etc.\n- Example: If looking for Naloxone, check for Naloxone and Buprenorphine/Naloxone combinations.\n\n**Pattern 3: Decision Logic**\nOnly proceed to POST if the cross-reference confirms no active, equivalent order exists. If an order exists, document it in your final response and do not create a duplicate.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S12345`.\n2. Extract all active medication names.\n3. Cross-reference: \"Are there any opioids?\" (e.g., Hydromorphone). \"Is there a Naloxone order or a combination product like Suboxone?\"\n4. If no Naloxone is found, POST the new order. If found, FINISH with a statement confirming the existing coverage.\n\n## Success Indicators\n- Agent explicitly lists retrieved medications in the thought process before deciding to POST.\n- No redundant resources are created when an equivalent order is already active.\n\n## Failure Indicators\n- Agent creates a new order despite an existing, equivalent order being present in the retrieved bundle.",
+          "tags": [
+            "verification",
+            "medication",
+            "safety"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 4,
+        "fixes": 7,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_resource_history_search",
+          "description": "Perform exhaustive searches across all relevant resource types and codes, with mandatory termination for pagination loops.",
+          "content": "# comprehensive_resource_history_search\n\n## Pattern Description\n\nWhen searching for clinical history (e.g., procedures, immunizations, medications), you must perform an exhaustive search across all relevant resource types. If a specific code search returns no results, you must broaden the search to the resource type level. \n\nTo prevent infinite loops during pagination, you must track the unique resource IDs retrieved. If you request a new page and receive no new unique resource IDs, or if the `link` array does not contain a `next` relation, you must stop searching and proceed to the next step or conclude the task.\n\n## When to Use This Skill\n\n- When a specific code-based search returns an empty bundle.\n- When you need to verify the absence of a clinical event (e.g., vaccination, procedure) across multiple potential resource types.\n- When you are navigating paginated FHIR bundles and need to ensure you have captured all relevant records without looping.\n\n## Common Failure Patterns\n\n- Entering an infinite loop by repeatedly requesting the same `_getpages` URL.\n- Failing to check all relevant resource types (e.g., checking `Immunization` but missing `MedicationAdministration` for vaccine history).\n- Assuming an empty result for a specific code means the event never occurred, without checking the broader resource type.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf a search for a specific code (e.g., `?code=123`) returns no results, immediately perform a broader search on the resource type (e.g., `?patient=ID`) to ensure the record isn't just missing the specific code.\n\n**Pattern 2: Pagination Termination**\nBefore requesting a `next` page, store the IDs of the resources already retrieved. If a subsequent page request returns only IDs you have already processed, or if the `total` count is 0, stop the search immediately.\n\n**Pattern 3: Resource Verification**\nWhen verifying the absence of an event, you must query all candidate resources (e.g., `Procedure`, `Immunization`, `MedicationAdministration`) before concluding that no record exists.\n\n## Example Application\n\n**Task:** \"Check if patient S123 has an influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Immunization?patient=S123`.\n2. If empty, GET `MedicationAdministration?patient=S123`.\n3. If empty, GET `Procedure?patient=S123`.\n4. If all are empty, conclude no record exists.\n5. If a bundle is paginated, track the `id` of each entry. If `next` link is followed but no new `id`s are found, call `FINISH`.\n\n## Success Indicators\n\n- Agent stops searching after exhausting all relevant resource types.\n- Agent correctly identifies the absence of a record after checking all possible locations.\n- No infinite pagination loops in the action log.\n\n## Failure Indicators\n\n- Agent repeatedly requests the same page of a bundle.\n- Agent concludes an event is missing after checking only one resource type.",
+          "tags": [
+            "fhir",
+            "search",
+            "pagination"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 5,
+        "fixes": 5,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_resource_history_search",
+          "description": "Perform exhaustive searches across all relevant resource types, codes, and statuses when specific queries return no results.",
+          "content": "# Comprehensive Resource History Search\n\n## Pattern Description\nWhen a search for a specific resource (e.g., MedicationRequest, Procedure) returns no results, you must not conclude that the resource does not exist. You must perform an exhaustive search by checking all relevant statuses and, if necessary, broadening the search parameters to ensure no records are missed due to status filtering or narrow code matching.\n\n## When to Use This Skill\n- When a search for a resource (e.g., MedicationRequest, Procedure) returns an empty bundle or zero total results.\n- When a task requires verifying the presence or absence of a clinical order or procedure history.\n- When you suspect that a resource might exist but is not in the 'active' status (e.g., 'on-hold', 'completed', 'stopped').\n\n## Common Failure Patterns\n- Assuming an empty search result means the resource does not exist.\n- Failing to check non-active statuses (e.g., 'on-hold', 'stopped') when looking for historical records.\n- Relying on a single search query without checking alternative resource types or broader status filters.\n\n## Recommended Patterns\n\n**Pattern 1: Status-Inclusive Search**\nIf an initial search for `status=active` returns no results, perform a follow-up search without the status filter or explicitly include all relevant statuses (e.g., `status=active,on-hold,completed,stopped`).\n\n**Pattern 2: Resource Type Expansion**\nIf a search for a specific resource type (e.g., Procedure) yields nothing, check related resource types that might contain the same information (e.g., Immunization, MedicationAdministration, ServiceRequest).\n\n**Pattern 3: Verification of Absence**\nOnly conclude that a record does not exist after you have exhausted all status and resource type searches. Explicitly state in your final output which resources and statuses were checked.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6500497` (Initial search).\n2. If empty, GET `MedicationRequest?patient=S6500497&status=active,on-hold,stopped` to ensure no records were missed.\n3. If still empty, confirm no opioid orders exist before concluding no naloxone is needed.\n\nCORRECT output: `FINISH([\"No active opioid orders found after checking all statuses.\"])`\nWRONG output: `FINISH([\"No active opioid orders found.\"])` (without checking other statuses).\n\n## Success Indicators\n- Agent performs multiple searches with different status filters when the first returns empty.\n- Agent checks multiple resource types before concluding a record is missing.\n\n## Failure Indicators\n- Agent concludes a record is missing after only one search query.\n- Agent fails to account for non-active statuses when searching for historical orders.",
+          "tags": [
+            "fhir",
+            "search",
+            "history"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "raw_score": 7,
+        "fixes": 7,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "temporal_observation_filtering_strategy",
+          "description": "Enforce strict temporal validation by comparing resource timestamps against the current system time before concluding data absence.",
+          "content": "# Temporal Observation Filtering Strategy\n\n## Pattern Description\nWhen a task requires data within a specific time window (e.g., \"past 6 hours\"), you must not assume that a search returning no results means no data exists. You must explicitly compare the `effectiveDateTime` or `issued` field of any retrieved resources against the current system time provided in the task context. If the search returns data, you must filter the results to include only those within the requested temporal window before performing calculations or concluding that no data is available.\n\n## When to Use This Skill\n- When a task requires calculations over a specific time window (e.g., \"past 6 hours\", \"past 12 hours\").\n- When a search for observations returns results, but you are tempted to conclude \"no data found\" because the most recent record is outside the requested window.\n- When you need to verify if a procedure or lab result is current enough to satisfy a clinical protocol.\n\n## Common Failure Patterns\n- Concluding \"no data found\" simply because the first result in a bundle is old, without checking if other entries in the bundle or subsequent pages are within the window.\n- Failing to parse the `effectiveDateTime` field, leading to the inclusion of stale data in calculations.\n- Ignoring the current system time provided in the task context when evaluating the age of a record.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Filtering**\n1. Retrieve the list of observations.\n2. For each resource, extract the `effectiveDateTime`.\n3. Calculate the difference between the current system time and the `effectiveDateTime`.\n4. Discard any records that fall outside the requested window (e.g., > 6 hours).\n5. If no records remain after filtering, only then conclude that no data is available for that specific window.\n\n**Pattern 2: Handling Empty Results**\n- If the initial search returns no results, do not immediately conclude the data is missing. Use `comprehensive_resource_history_search` to ensure you haven't missed records due to narrow search parameters.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6315806&code=HEARTRATE`\n2. Inspect the `effectiveDateTime` of all entries in the bundle.\n3. Compare each `effectiveDateTime` to the current time (e.g., 2023-11-07T22:47:00).\n4. If an entry is from 2023-11-07T20:00:00, include it. If it is from 2023-11-07T10:00:00, exclude it.\n5. Calculate the average only using the included entries.\n\n## Success Indicators\n- The agent correctly identifies and uses only data points that fall within the specified time window.\n- The agent avoids reporting \"no data found\" when valid, recent data exists.\n\n## Failure Indicators\n- The agent includes data points that are clearly outside the requested time window in its final calculation.\n- The agent reports \"no data found\" despite the presence of recent records in the search results.",
+          "tags": [
+            "fhir",
+            "temporal-logic",
+            "observation"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 6,
+        "fixes": 7,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 1,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 32,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Use LOINC codes for specific vital signs and lab tests, and fallback to category-based searches only when specific code searches return no results.",
+        "content": "# fhir_observation_search_strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., heart rate, TSH, free T4), do not rely solely on broad category searches like `category=vital-signs` or `category=laboratory`. These often return large, noisy bundles that obscure the specific data point you need. Instead, prioritize searching by standardized LOINC codes. If a specific code search returns no results, only then should you fall back to a broader category search or a general patient-level search.\n\n## When to Use This Skill\n- When the task requires a specific vital sign (e.g., heart rate) or lab result (e.g., TSH, FT4).\n- When a search by a non-standard string (e.g., `code=HEARTRATE`) returns zero results.\n- When you need to calculate averages or trends over time and need to ensure you have captured all relevant instances.\n\n## Common Failure Patterns\n- Using non-standard or descriptive strings (e.g., `HEARTRATE`, `TSH`, `FT4`) as the `code` parameter instead of standard LOINC codes (e.g., `8867-4` for heart rate, `11580-8` for TSH).\n- Assuming that a `category=vital-signs` search will contain all heart rate data; some systems store these as specific observations that are only reachable via direct code queries.\n- Giving up after a single failed search attempt without trying the broader category or a wider date range.\n\n## Recommended Patterns\n\n**Pattern 1: Prioritize LOINC Codes**\nAlways attempt to search by the standard LOINC code first. If you do not know the code, search for the specific observation name in the documentation or use a broader search to find the code in the `code.coding` field of a returned resource.\n\n**Pattern 2: Fallback Strategy**\nIf the specific code search returns an empty bundle (`total: 0`), perform a secondary search using the `category` parameter (e.g., `category=vital-signs` or `category=laboratory`).\n\n**Pattern 3: Verification**\nIf both specific and category searches fail, do not immediately conclude the data is missing. Perform one final search without filters (just `patient=ID`) to ensure the data isn't miscategorized.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6212774.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/Observation?patient=S6212774&code=8867-4` (LOINC for Heart Rate).\n2. If empty, issue GET `http://localhost:8080/fhir/Observation?patient=S6212774&category=vital-signs`.\n3. Extract the `valueQuantity.value` from the returned resources.\n4. Calculate the average and call `FINISH`.\n\n## Success Indicators\n- Agent successfully retrieves data using LOINC codes.\n- Agent avoids unnecessary broad searches when specific codes are available.\n\n## Failure Indicators\n- Agent returns \"No data found\" after only searching by a non-standard string like `HEARTRATE`.\n- Agent performs redundant searches that return the same empty bundles.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "loinc"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_and_procedure_history_search",
+        "description": "Search both MedicationRequest and MedicationStatement for active orders, and check Procedure/Immunization for historical events.",
+        "content": "## Skill Title\nMedication and Procedure History Search\n\n## Pattern Description\nWhen verifying the presence or absence of a medication or procedure, you must not rely on a single resource type. Medication orders may exist in `MedicationRequest` or `MedicationStatement`, and historical events (like vaccinations or procedures) may be recorded in `Procedure`, `Immunization`, or `MedicationAdministration` resources. Always perform an exhaustive search across these related resources before concluding that an order or event is missing.\n\n## When to Use This Skill\n- When verifying if a patient has an active medication order (e.g., opioid analgesics, DVT prophylaxis).\n- When checking for the history of a procedure or vaccination (e.g., COVID-19 vaccine, CT scan).\n- When a search on a primary resource (e.g., `MedicationRequest`) returns no results but the task requires confirming the absence of an order.\n\n## Common Failure Patterns\n- Searching only `MedicationRequest` and missing active orders in `MedicationStatement`.\n- Assuming a vaccine is missing because it is not in `Procedure`, failing to check `Immunization` or `MedicationAdministration`.\n- Failing to check multiple statuses (e.g., `active`, `on-hold`, `completed`) when searching for existing orders.\n\n## Recommended Patterns\n\n**Pattern 1: Medication Search**\nIf checking for an active medication, query both `MedicationRequest` and `MedicationStatement` with `patient={id}`. If the initial search returns no results, explicitly check for statuses like `on-hold` or `stopped` to ensure you aren't missing a relevant record.\n\n**Pattern 2: Procedure/Vaccination Search**\nIf checking for a historical event, query `Procedure`, `Immunization`, and `MedicationAdministration` for the patient. Use broad date filters (e.g., `date=ge2020-01-01`) if the specific date is unknown.\n\n**Pattern 3: Verification**\nOnly conclude that an order or event is missing after you have queried all relevant resource types and confirmed the `total` count is 0 for each.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6550627`\n2. GET `MedicationStatement?patient=S6550627`\n3. If an opioid is found in either, check for a corresponding naloxone order in the same bundles.\n4. If no naloxone is found, proceed to create the order.\n\nCORRECT output: `FINISH([\"Verified active opioid orders... Created new naloxone order.\"])`\nWRONG output: `FINISH([\"No active opioid orders found.\"])` (if only one resource type was checked).\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types (e.g., `MedicationRequest` AND `MedicationStatement`).\n- Agent explicitly mentions checking multiple resource types in the final output.\n\n## Failure Indicators\n- Agent concludes an order is missing after only checking one resource type.\n- Agent fails to find a record that exists in a secondary resource type (e.g., `Immunization`).",
+        "tags": [
+          "medication",
+          "procedure",
+          "search",
+          "history"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "standardized_date_comparison_strategy",
+        "description": "Enforce strict date-time comparison logic against the current system clock to prevent future-dated or stale evaluations.",
+        "content": "## Skill Title\nStandardized Date-Time Comparison Strategy\n\n## Pattern Description\nWhen performing tasks that require comparing a resource's date (e.g., `effectiveDateTime`, `authoredOn`, `occurrenceDateTime`) against a threshold (e.g., 12 months ago), you must explicitly anchor your calculation to the current system time provided in the task context. Avoid relative terms like \"recent\" or \"effectively recent\" without performing a concrete arithmetic subtraction of the dates.\n\n## When to Use This Skill\n- When a task requires checking if a procedure or vaccination occurred more than X months/days ago.\n- When the task context provides a \"Current time\" or \"It's [date] now\" string.\n- When you need to determine if a new order is required based on a time-elapsed threshold.\n\n## Common Failure Patterns\n- Assuming a date is \"recent\" without calculating the delta.\n- Comparing a future date (e.g., 2026) to the current context (e.g., 2023) and concluding no action is needed because the date is \"in the future\".\n- Failing to use the provided \"Current time\" from the task context, leading to off-by-one-year errors.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Date Extraction**\nAlways extract the full ISO-8601 date string from the resource. If the resource has multiple dates, prioritize the most specific one (e.g., `occurrenceDateTime` over `meta.lastUpdated`).\n\n**Pattern 2: Arithmetic Comparison**\n1. Identify the \"Current time\" from the task context.\n2. Convert both the \"Current time\" and the resource date to a comparable format (e.g., YYYY-MM-DD).\n3. Calculate the difference in days or months.\n4. If the difference is > threshold, proceed with the order. If <= threshold, explicitly state: \"The procedure was performed on [Date], which is [X] days/months ago, within the [Y] threshold.\"\n\n**Pattern 3: Handling Future Dates**\nIf a resource date appears to be in the future relative to the current context, treat it as a data anomaly or a non-existent record for the purpose of the \"last performed\" check, and proceed with the order if appropriate.\n\n## Example Application\n\n**Task:** \"If the study was performed more than 12 months ago, order a new CT Abdomen.\"\n\n**Step-by-step:**\n1. Current time: 2024-01-09.\n2. Resource date: 2022-12-30.\n3. Calculation: 2024-01-09 minus 2022-12-30 = ~375 days.\n4. Decision: 375 > 365, therefore order the new procedure.\n\nCORRECT output: `FINISH([\"The last procedure was on 2022-12-30, which is 375 days ago. Ordering new procedure.\"])`\nWRONG output: `FINISH([\"The procedure is recent, no order needed.\"])\n\n## Success Indicators\n- Agent explicitly mentions the calculated time delta in the final output.\n- Agent correctly identifies when a threshold has been crossed based on the provided current date.\n\n## Failure Indicators\n- Agent labels a date as \"recent\" without showing the math.\n- Agent ignores the \"Current time\" provided in the prompt.",
+        "tags": [
+          "date-logic",
+          "temporal-reasoning",
+          "verification"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_vaccination_search_strategy",
+        "description": "Exhaustively search Immunization, Procedure, and MedicationAdministration resources for vaccination history.",
+        "content": "# FHIR Vaccination Search Strategy\n\n## Pattern Description\nWhen tasked with determining a patient's vaccination status, you must not rely solely on a single resource type. Vaccination records are frequently distributed across multiple FHIR resources depending on the clinical workflow. You must perform an exhaustive search across `Immunization`, `Procedure`, and `MedicationAdministration` to ensure no records are missed.\n\n## When to Use This Skill\n- When the task requires determining the date of the last vaccine (e.g., influenza, COVID-19).\n- When a search for a vaccine in `Procedure` returns no results.\n- When you need to verify if a patient has received a specific immunization.\n\n## Common Failure Patterns\n- Searching only `Procedure` resources: Vaccines are often stored as `Immunization` or `MedicationAdministration` resources.\n- Assuming a lack of results in one resource means the patient has never been vaccinated.\n- Failing to check `MedicationAdministration` for vaccine-related medications.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf the initial search for a vaccine code in `Procedure` returns no results, you must sequentially query the other relevant resources:\n1. `GET /Immunization?patient={id}`\n2. `GET /MedicationAdministration?patient={id}`\n3. `GET /Procedure?patient={id}&code={vaccine_code}`\n\n**Pattern 2: Verification**\nOnly after checking all three resource types and finding no entries should you conclude that the patient has no record of the vaccination.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S0674240.\"\n\n**Step-by-step:**\n1. `GET /Procedure?patient=S0674240&code=90686` (Returns empty)\n2. `GET /Immunization?patient=S0674240` (Returns empty)\n3. `GET /MedicationAdministration?patient=S0674240` (Returns empty)\n4. Conclude no record exists and proceed with ordering if required.\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types before concluding no record exists.\n- Agent correctly identifies vaccination dates from `Immunization` or `MedicationAdministration` resources.\n\n## Failure Indicators\n- Agent stops after one failed search in `Procedure`.\n- Agent incorrectly assumes a patient is unvaccinated because it only checked one resource type.",
+        "tags": [
+          "fhir",
+          "vaccination",
+          "search"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Use LOINC codes for specific vital signs and lab tests, and fallback to category-based searches only when specific code searches return no results.",
+          "content": "# fhir_observation_search_strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., heart rate, TSH, free T4), do not rely solely on broad category searches like `category=vital-signs` or `category=laboratory`. These often return large, noisy bundles that obscure the specific data point you need. Instead, prioritize searching by standardized LOINC codes. If a specific code search returns no results, only then should you fall back to a broader category search or a general patient-level search.\n\n## When to Use This Skill\n- When the task requires a specific vital sign (e.g., heart rate) or lab result (e.g., TSH, FT4).\n- When a search by a non-standard string (e.g., `code=HEARTRATE`) returns zero results.\n- When you need to calculate averages or trends over time and need to ensure you have captured all relevant instances.\n\n## Common Failure Patterns\n- Using non-standard or descriptive strings (e.g., `HEARTRATE`, `TSH`, `FT4`) as the `code` parameter instead of standard LOINC codes (e.g., `8867-4` for heart rate, `11580-8` for TSH).\n- Assuming that a `category=vital-signs` search will contain all heart rate data; some systems store these as specific observations that are only reachable via direct code queries.\n- Giving up after a single failed search attempt without trying the broader category or a wider date range.\n\n## Recommended Patterns\n\n**Pattern 1: Prioritize LOINC Codes**\nAlways attempt to search by the standard LOINC code first. If you do not know the code, search for the specific observation name in the documentation or use a broader search to find the code in the `code.coding` field of a returned resource.\n\n**Pattern 2: Fallback Strategy**\nIf the specific code search returns an empty bundle (`total: 0`), perform a secondary search using the `category` parameter (e.g., `category=vital-signs` or `category=laboratory`).\n\n**Pattern 3: Verification**\nIf both specific and category searches fail, do not immediately conclude the data is missing. Perform one final search without filters (just `patient=ID`) to ensure the data isn't miscategorized.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6212774.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/Observation?patient=S6212774&code=8867-4` (LOINC for Heart Rate).\n2. If empty, issue GET `http://localhost:8080/fhir/Observation?patient=S6212774&category=vital-signs`.\n3. Extract the `valueQuantity.value` from the returned resources.\n4. Calculate the average and call `FINISH`.\n\n## Success Indicators\n- Agent successfully retrieves data using LOINC codes.\n- Agent avoids unnecessary broad searches when specific codes are available.\n\n## Failure Indicators\n- Agent returns \"No data found\" after only searching by a non-standard string like `HEARTRATE`.\n- Agent performs redundant searches that return the same empty bundles.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "loinc"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -2,
+        "fixes": 3,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_and_procedure_history_search",
+          "description": "Search both MedicationRequest and MedicationStatement for active orders, and check Procedure/Immunization for historical events.",
+          "content": "## Skill Title\nMedication and Procedure History Search\n\n## Pattern Description\nWhen verifying the presence or absence of a medication or procedure, you must not rely on a single resource type. Medication orders may exist in `MedicationRequest` or `MedicationStatement`, and historical events (like vaccinations or procedures) may be recorded in `Procedure`, `Immunization`, or `MedicationAdministration` resources. Always perform an exhaustive search across these related resources before concluding that an order or event is missing.\n\n## When to Use This Skill\n- When verifying if a patient has an active medication order (e.g., opioid analgesics, DVT prophylaxis).\n- When checking for the history of a procedure or vaccination (e.g., COVID-19 vaccine, CT scan).\n- When a search on a primary resource (e.g., `MedicationRequest`) returns no results but the task requires confirming the absence of an order.\n\n## Common Failure Patterns\n- Searching only `MedicationRequest` and missing active orders in `MedicationStatement`.\n- Assuming a vaccine is missing because it is not in `Procedure`, failing to check `Immunization` or `MedicationAdministration`.\n- Failing to check multiple statuses (e.g., `active`, `on-hold`, `completed`) when searching for existing orders.\n\n## Recommended Patterns\n\n**Pattern 1: Medication Search**\nIf checking for an active medication, query both `MedicationRequest` and `MedicationStatement` with `patient={id}`. If the initial search returns no results, explicitly check for statuses like `on-hold` or `stopped` to ensure you aren't missing a relevant record.\n\n**Pattern 2: Procedure/Vaccination Search**\nIf checking for a historical event, query `Procedure`, `Immunization`, and `MedicationAdministration` for the patient. Use broad date filters (e.g., `date=ge2020-01-01`) if the specific date is unknown.\n\n**Pattern 3: Verification**\nOnly conclude that an order or event is missing after you have queried all relevant resource types and confirmed the `total` count is 0 for each.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6550627`\n2. GET `MedicationStatement?patient=S6550627`\n3. If an opioid is found in either, check for a corresponding naloxone order in the same bundles.\n4. If no naloxone is found, proceed to create the order.\n\nCORRECT output: `FINISH([\"Verified active opioid orders... Created new naloxone order.\"])`\nWRONG output: `FINISH([\"No active opioid orders found.\"])` (if only one resource type was checked).\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types (e.g., `MedicationRequest` AND `MedicationStatement`).\n- Agent explicitly mentions checking multiple resource types in the final output.\n\n## Failure Indicators\n- Agent concludes an order is missing after only checking one resource type.\n- Agent fails to find a record that exists in a secondary resource type (e.g., `Immunization`).",
+          "tags": [
+            "medication",
+            "procedure",
+            "search",
+            "history"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 4,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "standardized_date_comparison_strategy",
+          "description": "Enforce strict date-time comparison logic against the current system clock to prevent future-dated or stale evaluations.",
+          "content": "## Skill Title\nStandardized Date-Time Comparison Strategy\n\n## Pattern Description\nWhen performing tasks that require comparing a resource's date (e.g., `effectiveDateTime`, `authoredOn`, `occurrenceDateTime`) against a threshold (e.g., 12 months ago), you must explicitly anchor your calculation to the current system time provided in the task context. Avoid relative terms like \"recent\" or \"effectively recent\" without performing a concrete arithmetic subtraction of the dates.\n\n## When to Use This Skill\n- When a task requires checking if a procedure or vaccination occurred more than X months/days ago.\n- When the task context provides a \"Current time\" or \"It's [date] now\" string.\n- When you need to determine if a new order is required based on a time-elapsed threshold.\n\n## Common Failure Patterns\n- Assuming a date is \"recent\" without calculating the delta.\n- Comparing a future date (e.g., 2026) to the current context (e.g., 2023) and concluding no action is needed because the date is \"in the future\".\n- Failing to use the provided \"Current time\" from the task context, leading to off-by-one-year errors.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Date Extraction**\nAlways extract the full ISO-8601 date string from the resource. If the resource has multiple dates, prioritize the most specific one (e.g., `occurrenceDateTime` over `meta.lastUpdated`).\n\n**Pattern 2: Arithmetic Comparison**\n1. Identify the \"Current time\" from the task context.\n2. Convert both the \"Current time\" and the resource date to a comparable format (e.g., YYYY-MM-DD).\n3. Calculate the difference in days or months.\n4. If the difference is > threshold, proceed with the order. If <= threshold, explicitly state: \"The procedure was performed on [Date], which is [X] days/months ago, within the [Y] threshold.\"\n\n**Pattern 3: Handling Future Dates**\nIf a resource date appears to be in the future relative to the current context, treat it as a data anomaly or a non-existent record for the purpose of the \"last performed\" check, and proceed with the order if appropriate.\n\n## Example Application\n\n**Task:** \"If the study was performed more than 12 months ago, order a new CT Abdomen.\"\n\n**Step-by-step:**\n1. Current time: 2024-01-09.\n2. Resource date: 2022-12-30.\n3. Calculation: 2024-01-09 minus 2022-12-30 = ~375 days.\n4. Decision: 375 > 365, therefore order the new procedure.\n\nCORRECT output: `FINISH([\"The last procedure was on 2022-12-30, which is 375 days ago. Ordering new procedure.\"])`\nWRONG output: `FINISH([\"The procedure is recent, no order needed.\"])\n\n## Success Indicators\n- Agent explicitly mentions the calculated time delta in the final output.\n- Agent correctly identifies when a threshold has been crossed based on the provided current date.\n\n## Failure Indicators\n- Agent labels a date as \"recent\" without showing the math.\n- Agent ignores the \"Current time\" provided in the prompt.",
+          "tags": [
+            "date-logic",
+            "temporal-reasoning",
+            "verification"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -1,
+        "fixes": 4,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_vaccination_search_strategy",
+          "description": "Exhaustively search Immunization, Procedure, and MedicationAdministration resources for vaccination history.",
+          "content": "# FHIR Vaccination Search Strategy\n\n## Pattern Description\nWhen tasked with determining a patient's vaccination status, you must not rely solely on a single resource type. Vaccination records are frequently distributed across multiple FHIR resources depending on the clinical workflow. You must perform an exhaustive search across `Immunization`, `Procedure`, and `MedicationAdministration` to ensure no records are missed.\n\n## When to Use This Skill\n- When the task requires determining the date of the last vaccine (e.g., influenza, COVID-19).\n- When a search for a vaccine in `Procedure` returns no results.\n- When you need to verify if a patient has received a specific immunization.\n\n## Common Failure Patterns\n- Searching only `Procedure` resources: Vaccines are often stored as `Immunization` or `MedicationAdministration` resources.\n- Assuming a lack of results in one resource means the patient has never been vaccinated.\n- Failing to check `MedicationAdministration` for vaccine-related medications.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf the initial search for a vaccine code in `Procedure` returns no results, you must sequentially query the other relevant resources:\n1. `GET /Immunization?patient={id}`\n2. `GET /MedicationAdministration?patient={id}`\n3. `GET /Procedure?patient={id}&code={vaccine_code}`\n\n**Pattern 2: Verification**\nOnly after checking all three resource types and finding no entries should you conclude that the patient has no record of the vaccination.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S0674240.\"\n\n**Step-by-step:**\n1. `GET /Procedure?patient=S0674240&code=90686` (Returns empty)\n2. `GET /Immunization?patient=S0674240` (Returns empty)\n3. `GET /MedicationAdministration?patient=S0674240` (Returns empty)\n4. Conclude no record exists and proceed with ordering if required.\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types before concluding no record exists.\n- Agent correctly identifies vaccination dates from `Immunization` or `MedicationAdministration` resources.\n\n## Failure Indicators\n- Agent stops after one failed search in `Procedure`.\n- Agent incorrectly assumes a patient is unvaccinated because it only checked one resource type.",
+          "tags": [
+            "fhir",
+            "vaccination",
+            "search"
+          ]
+        },
+        "net": -4,
+        "score": -4,
+        "raw_score": -3,
+        "fixes": 4,
+        "regressions": 7,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

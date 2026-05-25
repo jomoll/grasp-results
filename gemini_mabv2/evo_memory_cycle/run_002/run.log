@@ -1,0 +1,97 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+[Baseline] Val: 50.0%
+[BestCheckpoint] New best: epoch=baseline, val=50.0% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — sequential Evo memory update per episode
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Rate limited (attempt 1/6), waiting 4.8s...
+Rate limited (attempt 1/6), waiting 5.1s...
+
+[Epoch 0] Dev: 44/96 (45.8%) | Val: 47.5% | Evo updates: 96
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — sequential Evo memory update per episode
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Rate limited (attempt 1/6), waiting 4.6s...
+
+[Epoch 1] Dev: 52/96 (54.2%) | Val: 60.0% | Evo updates: 96
+[BestCheckpoint] New best: epoch=1, val=60.0% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — sequential Evo memory update per episode
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): 'parts'
+Warning (attempt 2): 'parts'
+Warning (attempt 3): 'parts'
+Warning (attempt 4): 'parts'
+Warning (attempt 5): 'parts'
+ERROR: EvoMemoryAwareAgent/medagentbench-v2-skill agent error 'parts'
+Warning (attempt 1): 'parts'
+Warning (attempt 2): 'parts'
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 2] Dev: 52/96 (54.2%) | Val: 68.8% | Evo updates: 96
+[BestCheckpoint] New best: epoch=2, val=68.8% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — sequential Evo memory update per episode
+Warning (attempt 1): 'parts'
+Warning (attempt 2): 'parts'
+Warning (attempt 3): 'parts'
+Warning (attempt 4): 'parts'
+Warning (attempt 5): 'parts'
+ERROR: EvoMemoryAwareAgent/medagentbench-v2-skill agent error 'parts'
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 3] Dev: 55/96 (57.3%) | Val: 46.2% | Evo updates: 95
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — sequential Evo memory update per episode
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+needs booster
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Max retries exceeded with url: /v1/projects/johannes-moll/locations/us-central1/publishers/google/models/gemini-3.1-flash-lite-preview:generateContent (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x12bb9acd0>: Failed to resolve 'aiplatform.googleapis.com' ([Errno 8] nodename nor servname provided, or not known)"))
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 54/96 (56.2%) | Val: 58.8% | Evo updates: 96
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 50.0%  ██████████
+         0: 47.5%  █████████
+         1: 60.0%  ████████████
+         2: 68.8%  █████████████
+         3: 46.2%  █████████
+         4: 58.8%  ███████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[EvoMemoryCycle] Final memory: 25 semantic rule(s), 479 episodic record(s)

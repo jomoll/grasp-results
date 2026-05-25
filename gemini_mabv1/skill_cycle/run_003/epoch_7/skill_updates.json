@@ -1,0 +1,242 @@
+[
+  {
+    "epoch": 7,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 34,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce strict conditional logic to prevent redundant GET requests and unnecessary POST actions when thresholds are not met.",
+        "content": "## Skill Title\nConditional Action Threshold Strategy\n\n## Pattern Description\nPrevent unnecessary API actions (GET or POST) when the clinical data does not meet the criteria for intervention. If a search for a specific code or condition returns data that fails the threshold check, you must immediately terminate the task with a FINISH call. Do not perform secondary searches or follow-up orders if the primary data indicates no action is required.\n\n## When to Use This Skill\n- When a task requires checking a lab value (e.g., Potassium, Magnesium, HbA1C) against a threshold.\n- When a task involves a conditional sequence: \"If X is low/old, then do Y\".\n- When you have already performed a search for a clinical code and the result is sufficient to determine that no further action is needed.\n\n## Common Failure Patterns\n- Performing a second GET request for a synonymous code (e.g., 'K' after '2823-3') when the first search already provided the necessary value.\n- Proceeding to POST a ServiceRequest or MedicationRequest when the clinical data (e.g., lab value or date) does not meet the specified criteria.\n- Failing to stop after a negative result, leading to redundant API calls.\n\n## Recommended Patterns\n\n**Pattern 1: Early Termination**\nIf the retrieved data confirms the condition for action is not met (e.g., lab value is within normal range, or date is within the allowed window), call `FINISH` immediately with a clear explanation. Do not perform any further GET or POST requests.\n\n**Pattern 2: Redundancy Check**\nBefore issuing a GET request, check if you have already retrieved the necessary information from a previous search. If the previous search for a synonymous code (e.g., LOINC vs common name) returned the required data, do not issue a second search.\n\n**Pattern 3: Threshold Verification**\nExplicitly compare the retrieved value against the threshold provided in the task description before constructing any POST body. If the value is not low/high/old, do not construct the POST request.\n\n## Example Application\n\n**Task:** \"Check potassium. If low, order replacement. Also pair with morning lab.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3`.\n2. If the result is 3.8 mmol/L (threshold 3.5), do not search for 'K'.\n3. Call `FINISH([\"Potassium is 3.8 mmol/L, no action required.\"])`.\n\n## Success Indicators\n- No redundant GET requests in the trace.\n- No POST requests issued when the clinical threshold is not met.\n- Task terminates immediately after the first sufficient data retrieval.\n\n## Failure Indicators\n- Multiple GET requests for the same clinical concept.\n- POST requests appearing in the trace when the lab value is normal or the date is recent.",
+        "tags": [
+          "fhir",
+          "conditional-logic",
+          "api-optimization"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce strict conditional logic to prevent redundant GET requests and unnecessary POST actions when thresholds are not met.",
+        "content": "## Skill Title\nConditional Action Threshold Strategy\n\n## Pattern Description\nPrevent unnecessary API actions (GET or POST) when the clinical data does not meet the criteria for intervention. If a search for a specific code or condition returns data that fails the threshold check, you must immediately terminate the task with a FINISH call. Do not perform secondary searches or follow-up orders if the primary data indicates no action is required.\n\n## When to Use This Skill\n- When a task requires checking a lab value (e.g., Potassium, Magnesium, HbA1C) against a threshold.\n- When a task involves a conditional sequence: \"If X is low/old, then do Y\".\n- When you have already performed a search for a clinical code and the result is sufficient to determine that no further action is needed.\n\n## Common Failure Patterns\n- Performing a second GET request for a synonymous code (e.g., 'K' after '2823-3') when the first search already provided the necessary value.\n- Proceeding to POST a ServiceRequest or MedicationRequest when the clinical data (e.g., lab value or date) does not meet the specified criteria.\n- Failing to stop after a negative result, leading to redundant API calls.\n\n## Recommended Patterns\n\n**Pattern 1: Early Termination**\nIf the retrieved data confirms the condition for action is not met (e.g., lab value is within normal range, or date is within the allowed window), call `FINISH` immediately with a clear explanation. Do not perform any further GET or POST requests.\n\n**Pattern 2: Redundancy Check**\nBefore issuing a GET request, check if you have already retrieved the necessary information from a previous search. If the previous search for a synonymous code (e.g., LOINC vs common name) returned the required data, do not issue a second search.\n\n**Pattern 3: Threshold Verification**\nExplicitly compare the retrieved value against the threshold provided in the task description before constructing any POST body. If the value is not low/high/old, do not construct the POST request.\n\n## Example Application\n\n**Task:** \"Check potassium. If low, order replacement. Also pair with morning lab.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3`.\n2. If the result is 3.8 mmol/L (threshold 3.5), do not search for 'K'.\n3. Call `FINISH([\"Potassium is 3.8 mmol/L, no action required.\"])`.\n\n## Success Indicators\n- No redundant GET requests in the trace.\n- No POST requests issued when the clinical threshold is not met.\n- Task terminates immediately after the first sufficient data retrieval.\n\n## Failure Indicators\n- Multiple GET requests for the same clinical concept.\n- POST requests appearing in the trace when the lab value is normal or the date is recent.",
+        "tags": [
+          "fhir",
+          "conditional-logic",
+          "api-optimization"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Update search strategy to include a terminal fallback when multiple code aliases return no results.",
+        "content": "## Skill Title\nFHIR Observation Search and Termination Strategy\n\n## Pattern Description\nWhen searching for clinical observations using multiple code aliases (e.g., local codes and LOINC codes), you must systematically exhaust the search space. If all provided code aliases return an empty bundle (total: 0), you must conclude that the data is unavailable for the patient and terminate the task immediately with a standardized 'not found' response. This prevents redundant, fruitless API calls and ensures consistent behavior when data is missing.\n\n## When to Use This Skill\n- When searching for laboratory observations (e.g., HbA1C, Magnesium) using multiple code aliases.\n- When a GET request for an observation returns a bundle with `total: 0`.\n- When you have exhausted all provided code aliases for a specific clinical concept.\n\n## Common Failure Patterns\n- Attempting to search for the same concept using different codes after the first search has already returned an empty result set.\n- Returning ambiguous or inconsistent 'not found' messages (e.g., \"-1\", \"Not available\", \"not found\") instead of a standardized format.\n- Failing to terminate the task after the final search attempt fails.\n\n## Recommended Patterns\n\n**Pattern 1: Sequential Search**\nAlways use `_sort=-date` to ensure the most recent record is retrieved first. If the first code returns a result, use it. If it returns `total: 0`, proceed to the next code alias.\n\n**Pattern 2: Terminal Fallback**\nIf all code aliases return `total: 0`, you must stop searching. Do not perform further GET requests. Output a clear, machine-readable indicator of missing data.\n\nCORRECT: `FINISH([-1, \"Not available\"])`\nWRONG:   Continuing to search for other codes or returning conversational text like \"I couldn't find the lab value.\"\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value?\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=A1C&_sort=-date` -> returns `total: 0`.\n2. GET `.../Observation?patient=S123&code=4548-4&_sort=-date` -> returns `total: 0`.\n3. Since all codes are exhausted, terminate.\n\nCORRECT output: `FINISH([-1, \"Not available\"])`\n\n## Success Indicators\n- Agent stops searching after the final code alias returns no results.\n- Consistent use of `[-1, \"Not available\"]` for missing data.\n\n## Failure Indicators\n- Agent performs redundant searches after receiving empty bundles for all codes.\n- Agent returns inconsistent or non-structured text when data is missing.",
+        "tags": [
+          "fhir",
+          "search",
+          "termination"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_resource_reference_validation_strategy",
+        "description": "Ensure all resource references in POST/PUT bodies use the 'ResourceType/ID' format.",
+        "content": "## Skill Title\nFHIR Resource Reference Validation Strategy\n\n## Pattern Description\nWhen creating or updating FHIR resources that link to other resources (e.g., `subject`, `patient`, `encounter`), the reference field must strictly follow the canonical `ResourceType/ID` format. Providing only the raw ID (e.g., `S12345`) is often insufficient for the server to resolve the relationship, leading to validation errors or orphaned resources.\n\n## When to Use This Skill\n- When constructing a POST or PUT request body for any FHIR resource.\n- Whenever a field requires a `Reference` type (e.g., `subject.reference`, `patient.reference`, `encounter.reference`).\n- When the agent has retrieved a resource ID from a previous GET request and needs to link it to a new resource.\n\n## Common Failure Patterns\n- Using `\"reference\": \"S12345\"` instead of `\"reference\": \"Patient/S12345\"`.\n- Assuming the server will infer the resource type from the context of the request.\n- Failing to prepend the resource type prefix when the ID was extracted from a `fullUrl` or `id` field.\n\n## Recommended Patterns\n**Pattern 1: Reference Construction**\nAlways construct the reference string by concatenating the resource type, a forward slash, and the resource ID.\n\nCORRECT: `\"reference\": \"Patient/S6352985\"`\nWRONG:   `\"reference\": \"S6352985\"`\n\n**Pattern 2: Verification**\nBefore finalizing a POST body, inspect every field ending in `.reference`. Ensure the value matches the pattern `[ResourceType]/[ID]`.\n\n## Example Application\n**Task:** Record a blood pressure observation for patient S6352985.\n\n**Step-by-step:**\n1. Perform GET to retrieve the patient resource and confirm the ID.\n2. Extract the ID `S6352985`.\n3. When building the `Observation` resource, set the `subject` field:\n   `\"subject\": { \"reference\": \"Patient/S6352985\" }`\n4. Submit the POST request.\n\n## Success Indicators\n- POST requests are accepted by the server without validation warnings.\n- Resources are correctly linked and retrievable via the referenced ID.\n\n## Failure Indicators\n- Server returns 400 Bad Request due to invalid reference format.\n- Resource is created but cannot be found or linked to the patient in subsequent queries.",
+        "tags": [
+          "fhir",
+          "api",
+          "validation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce strict conditional logic to prevent redundant GET requests and unnecessary POST actions when thresholds are not met.",
+        "content": "## Skill Title\nConditional Action Threshold Strategy\n\n## Pattern Description\nPrevent unnecessary API actions (GET or POST) when the clinical data does not meet the criteria for intervention. If a search for a specific code or condition returns data that fails the threshold check, you must immediately terminate the task with a FINISH call. Do not perform secondary searches or follow-up orders if the primary data indicates no action is required.\n\n## When to Use This Skill\n- When a task requires checking a lab value (e.g., Potassium, Magnesium, HbA1C) against a threshold.\n- When a task involves a conditional sequence: \"If X is low/old, then do Y\".\n- When you have already performed a search for a clinical code and the result is sufficient to determine that no further action is needed.\n\n## Common Failure Patterns\n- Performing a second GET request for a synonymous code (e.g., 'K' after '2823-3') when the first search already provided the necessary value.\n- Proceeding to POST a ServiceRequest or MedicationRequest when the clinical data (e.g., lab value or date) does not meet the specified criteria.\n- Failing to stop after a negative result, leading to redundant API calls.\n\n## Recommended Patterns\n\n**Pattern 1: Early Termination**\nIf the retrieved data confirms the condition for action is not met (e.g., lab value is within normal range, or date is within the allowed window), call `FINISH` immediately with a clear explanation. Do not perform any further GET or POST requests.\n\n**Pattern 2: Redundancy Check**\nBefore issuing a GET request, check if you have already retrieved the necessary information from a previous search. If the previous search for a synonymous code (e.g., LOINC vs common name) returned the required data, do not issue a second search.\n\n**Pattern 3: Threshold Verification**\nExplicitly compare the retrieved value against the threshold provided in the task description before constructing any POST body. If the value is not low/high/old, do not construct the POST request.\n\n## Example Application\n\n**Task:** \"Check potassium. If low, order replacement. Also pair with morning lab.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3`.\n2. If the result is 3.8 mmol/L (threshold 3.5), do not search for 'K'.\n3. Call `FINISH([\"Potassium is 3.8 mmol/L, no action required.\"])`.\n\n## Success Indicators\n- No redundant GET requests in the trace.\n- No POST requests issued when the clinical threshold is not met.\n- Task terminates immediately after the first sufficient data retrieval.\n\n## Failure Indicators\n- Multiple GET requests for the same clinical concept.\n- POST requests appearing in the trace when the lab value is normal or the date is recent.",
+        "tags": [
+          "fhir",
+          "conditional-logic",
+          "api-optimization"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_action_threshold_strategy",
+          "description": "Enforce strict conditional logic to prevent redundant GET requests and unnecessary POST actions when thresholds are not met.",
+          "content": "## Skill Title\nConditional Action Threshold Strategy\n\n## Pattern Description\nPrevent unnecessary API actions (GET or POST) when the clinical data does not meet the criteria for intervention. If a search for a specific code or condition returns data that fails the threshold check, you must immediately terminate the task with a FINISH call. Do not perform secondary searches or follow-up orders if the primary data indicates no action is required.\n\n## When to Use This Skill\n- When a task requires checking a lab value (e.g., Potassium, Magnesium, HbA1C) against a threshold.\n- When a task involves a conditional sequence: \"If X is low/old, then do Y\".\n- When you have already performed a search for a clinical code and the result is sufficient to determine that no further action is needed.\n\n## Common Failure Patterns\n- Performing a second GET request for a synonymous code (e.g., 'K' after '2823-3') when the first search already provided the necessary value.\n- Proceeding to POST a ServiceRequest or MedicationRequest when the clinical data (e.g., lab value or date) does not meet the specified criteria.\n- Failing to stop after a negative result, leading to redundant API calls.\n\n## Recommended Patterns\n\n**Pattern 1: Early Termination**\nIf the retrieved data confirms the condition for action is not met (e.g., lab value is within normal range, or date is within the allowed window), call `FINISH` immediately with a clear explanation. Do not perform any further GET or POST requests.\n\n**Pattern 2: Redundancy Check**\nBefore issuing a GET request, check if you have already retrieved the necessary information from a previous search. If the previous search for a synonymous code (e.g., LOINC vs common name) returned the required data, do not issue a second search.\n\n**Pattern 3: Threshold Verification**\nExplicitly compare the retrieved value against the threshold provided in the task description before constructing any POST body. If the value is not low/high/old, do not construct the POST request.\n\n## Example Application\n\n**Task:** \"Check potassium. If low, order replacement. Also pair with morning lab.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3`.\n2. If the result is 3.8 mmol/L (threshold 3.5), do not search for 'K'.\n3. Call `FINISH([\"Potassium is 3.8 mmol/L, no action required.\"])`.\n\n## Success Indicators\n- No redundant GET requests in the trace.\n- No POST requests issued when the clinical threshold is not met.\n- Task terminates immediately after the first sufficient data retrieval.\n\n## Failure Indicators\n- Multiple GET requests for the same clinical concept.\n- POST requests appearing in the trace when the lab value is normal or the date is recent.",
+          "tags": [
+            "fhir",
+            "conditional-logic",
+            "api-optimization"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "raw_score": 5,
+        "fixes": 5,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Update search strategy to include a terminal fallback when multiple code aliases return no results.",
+          "content": "## Skill Title\nFHIR Observation Search and Termination Strategy\n\n## Pattern Description\nWhen searching for clinical observations using multiple code aliases (e.g., local codes and LOINC codes), you must systematically exhaust the search space. If all provided code aliases return an empty bundle (total: 0), you must conclude that the data is unavailable for the patient and terminate the task immediately with a standardized 'not found' response. This prevents redundant, fruitless API calls and ensures consistent behavior when data is missing.\n\n## When to Use This Skill\n- When searching for laboratory observations (e.g., HbA1C, Magnesium) using multiple code aliases.\n- When a GET request for an observation returns a bundle with `total: 0`.\n- When you have exhausted all provided code aliases for a specific clinical concept.\n\n## Common Failure Patterns\n- Attempting to search for the same concept using different codes after the first search has already returned an empty result set.\n- Returning ambiguous or inconsistent 'not found' messages (e.g., \"-1\", \"Not available\", \"not found\") instead of a standardized format.\n- Failing to terminate the task after the final search attempt fails.\n\n## Recommended Patterns\n\n**Pattern 1: Sequential Search**\nAlways use `_sort=-date` to ensure the most recent record is retrieved first. If the first code returns a result, use it. If it returns `total: 0`, proceed to the next code alias.\n\n**Pattern 2: Terminal Fallback**\nIf all code aliases return `total: 0`, you must stop searching. Do not perform further GET requests. Output a clear, machine-readable indicator of missing data.\n\nCORRECT: `FINISH([-1, \"Not available\"])`\nWRONG:   Continuing to search for other codes or returning conversational text like \"I couldn't find the lab value.\"\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value?\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=A1C&_sort=-date` -> returns `total: 0`.\n2. GET `.../Observation?patient=S123&code=4548-4&_sort=-date` -> returns `total: 0`.\n3. Since all codes are exhausted, terminate.\n\nCORRECT output: `FINISH([-1, \"Not available\"])`\n\n## Success Indicators\n- Agent stops searching after the final code alias returns no results.\n- Consistent use of `[-1, \"Not available\"]` for missing data.\n\n## Failure Indicators\n- Agent performs redundant searches after receiving empty bundles for all codes.\n- Agent returns inconsistent or non-structured text when data is missing.",
+          "tags": [
+            "fhir",
+            "search",
+            "termination"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_reference_validation_strategy",
+          "description": "Ensure all resource references in POST/PUT bodies use the 'ResourceType/ID' format.",
+          "content": "## Skill Title\nFHIR Resource Reference Validation Strategy\n\n## Pattern Description\nWhen creating or updating FHIR resources that link to other resources (e.g., `subject`, `patient`, `encounter`), the reference field must strictly follow the canonical `ResourceType/ID` format. Providing only the raw ID (e.g., `S12345`) is often insufficient for the server to resolve the relationship, leading to validation errors or orphaned resources.\n\n## When to Use This Skill\n- When constructing a POST or PUT request body for any FHIR resource.\n- Whenever a field requires a `Reference` type (e.g., `subject.reference`, `patient.reference`, `encounter.reference`).\n- When the agent has retrieved a resource ID from a previous GET request and needs to link it to a new resource.\n\n## Common Failure Patterns\n- Using `\"reference\": \"S12345\"` instead of `\"reference\": \"Patient/S12345\"`.\n- Assuming the server will infer the resource type from the context of the request.\n- Failing to prepend the resource type prefix when the ID was extracted from a `fullUrl` or `id` field.\n\n## Recommended Patterns\n**Pattern 1: Reference Construction**\nAlways construct the reference string by concatenating the resource type, a forward slash, and the resource ID.\n\nCORRECT: `\"reference\": \"Patient/S6352985\"`\nWRONG:   `\"reference\": \"S6352985\"`\n\n**Pattern 2: Verification**\nBefore finalizing a POST body, inspect every field ending in `.reference`. Ensure the value matches the pattern `[ResourceType]/[ID]`.\n\n## Example Application\n**Task:** Record a blood pressure observation for patient S6352985.\n\n**Step-by-step:**\n1. Perform GET to retrieve the patient resource and confirm the ID.\n2. Extract the ID `S6352985`.\n3. When building the `Observation` resource, set the `subject` field:\n   `\"subject\": { \"reference\": \"Patient/S6352985\" }`\n4. Submit the POST request.\n\n## Success Indicators\n- POST requests are accepted by the server without validation warnings.\n- Resources are correctly linked and retrievable via the referenced ID.\n\n## Failure Indicators\n- Server returns 400 Bad Request due to invalid reference format.\n- Resource is created but cannot be found or linked to the patient in subsequent queries.",
+          "tags": [
+            "fhir",
+            "api",
+            "validation"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "raw_score": 5,
+        "fixes": 5,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 7,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 36,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+        "content": "## Skill Title\nStructured Final Output Strategy\n\n## Pattern Description\nWhen providing a final answer to a task, you must always return a machine-readable format (a list or tuple) containing only the requested data points. Do not include conversational filler, explanations, or natural language sentences in the `FINISH` call. If the task asks for multiple values, provide them as a list of values in the order requested.\n\n## When to Use This Skill\n- When the task asks for specific data points (e.g., lab values, dates, MRNs, ages).\n- When the task requires a final answer after performing data retrieval or calculations.\n- When the previous attempt included conversational text instead of just the requested data.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.0%\"])` instead of `FINISH([\"5.0%\"])`.\n- Returning `FINISH([\"Potassium is 3.5 mmol/L\"])` instead of `FINISH([3.5])`.\n- Including units inside the list when the task asks for a numeric value.\n- Providing conversational explanations in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric value and return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG: `FINISH([\"3.5 mmol/L\"])`\n\n**Pattern 2: Multi-value Extraction**\nIf the task asks for multiple fields (e.g., value and date), return them as a list in the order specified by the prompt.\nCORRECT: `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`\nWRONG: `FINISH([\"The value is 5.0 and the date is 2023-11-09\"])`\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 5.0) and the effective date (e.g., 2023-11-09T10:06:00+00:00).\n3. Format as a list: `[5.0, \"2023-11-09T10:06:00+00:00\"]`.\n4. Call `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`.\n\n## Success Indicators\n- The `FINISH` call contains only the raw data requested.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The `FINISH` call contains strings like \"The value is...\" or \"recorded on...\".\n- Units are included in the numeric output when not requested.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Expand search strategy to include standard LOINC codes for common labs to prevent empty results.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, relying on non-standard or local aliases (like 'MG' or 'A1C') often leads to empty search results. You must prioritize using standardized LOINC codes to ensure the agent retrieves the correct clinical data. If a search using a local code returns no results, you must immediately attempt a search using the corresponding standard LOINC code.\n\n## When to Use This Skill\n- When a search for a lab observation using a local code (e.g., 'MG', 'A1C', 'K') returns an empty bundle (`total: 0`).\n- When the task description provides a specific LOINC code (e.g., 2160-0 for Magnesium, 4548-4 for HbA1c, 2823-3 for Potassium).\n\n## Common Failure Patterns\n- Searching only for 'MG' instead of '2160-0'.\n- Searching only for 'A1C' instead of '4548-4'.\n- Searching only for 'K' instead of '2823-3'.\n- Performing sequential searches for individual codes instead of checking the most reliable code first.\n\n## Recommended Patterns\n\n**Pattern 1: Prioritize LOINC**\nAlways check the task context for a provided LOINC code. If provided, use it as the primary search parameter in the `code` field.\n\n**Pattern 2: Fallback Search**\nIf the primary search (using a local alias) returns no results, do not assume the data is missing. Immediately perform a second search using the standard LOINC code.\n\n**Pattern 3: Multi-code Search**\nIf the API supports it, you may include multiple codes in a single search to increase the probability of a match.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Identify the standard LOINC code for serum magnesium (2160-0).\n2. Issue GET: `http://localhost:8080/fhir/Observation?patient=S1023381&code=2160-0&_sort=-date`\n3. If the result is empty, check if a secondary code (like 'MG') is appropriate, but prioritize the LOINC match.\n4. Extract the `valueQuantity.value` from the most recent entry.\n\n## Success Indicators\n- The agent retrieves the observation bundle successfully using the LOINC code.\n- The agent avoids returning -1 or \"Measurement not available\" when data exists under a standard code.\n\n## Failure Indicators\n- The agent continues to return empty results because it only searches for local aliases.",
+        "tags": [
+          "fhir",
+          "search",
+          "loinc"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+        "content": "## Skill Title\nStructured Final Output Strategy\n\n## Pattern Description\nWhen providing a final answer to a task, you must always return a machine-readable format (a list or tuple) containing only the requested data points. Do not include conversational filler, explanations, or natural language sentences in the `FINISH` call. If the task asks for multiple values, provide them as a list of values in the order requested.\n\n## When to Use This Skill\n- When the task asks for specific data points (e.g., lab values, dates, MRNs, ages).\n- When the task requires a final answer after performing data retrieval or calculations.\n- When the previous attempt included conversational text instead of just the requested data.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.0%\"])` instead of `FINISH([\"5.0%\"])`.\n- Returning `FINISH([\"Potassium is 3.5 mmol/L\"])` instead of `FINISH([3.5])`.\n- Including units inside the list when the task asks for a numeric value.\n- Providing conversational explanations in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric value and return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG: `FINISH([\"3.5 mmol/L\"])`\n\n**Pattern 2: Multi-value Extraction**\nIf the task asks for multiple fields (e.g., value and date), return them as a list in the order specified by the prompt.\nCORRECT: `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`\nWRONG: `FINISH([\"The value is 5.0 and the date is 2023-11-09\"])`\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 5.0) and the effective date (e.g., 2023-11-09T10:06:00+00:00).\n3. Format as a list: `[5.0, \"2023-11-09T10:06:00+00:00\"]`.\n4. Call `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`.\n\n## Success Indicators\n- The `FINISH` call contains only the raw data requested.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The `FINISH` call contains strings like \"The value is...\" or \"recorded on...\".\n- Units are included in the numeric output when not requested.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Expand search strategy to include standard LOINC codes for common labs to prevent empty results.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, relying on non-standard or local aliases (like 'MG' or 'A1C') often leads to empty search results. You must prioritize using standardized LOINC codes to ensure the agent retrieves the correct clinical data. If a search using a local code returns no results, you must immediately attempt a search using the corresponding standard LOINC code.\n\n## When to Use This Skill\n- When a search for a lab observation using a local code (e.g., 'MG', 'A1C', 'K') returns an empty bundle (`total: 0`).\n- When the task description provides a specific LOINC code (e.g., 2160-0 for Magnesium, 4548-4 for HbA1c, 2823-3 for Potassium).\n\n## Common Failure Patterns\n- Searching only for 'MG' instead of '2160-0'.\n- Searching only for 'A1C' instead of '4548-4'.\n- Searching only for 'K' instead of '2823-3'.\n- Performing sequential searches for individual codes instead of checking the most reliable code first.\n\n## Recommended Patterns\n\n**Pattern 1: Prioritize LOINC**\nAlways check the task context for a provided LOINC code. If provided, use it as the primary search parameter in the `code` field.\n\n**Pattern 2: Fallback Search**\nIf the primary search (using a local alias) returns no results, do not assume the data is missing. Immediately perform a second search using the standard LOINC code.\n\n**Pattern 3: Multi-code Search**\nIf the API supports it, you may include multiple codes in a single search to increase the probability of a match.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Identify the standard LOINC code for serum magnesium (2160-0).\n2. Issue GET: `http://localhost:8080/fhir/Observation?patient=S1023381&code=2160-0&_sort=-date`\n3. If the result is empty, check if a secondary code (like 'MG') is appropriate, but prioritize the LOINC match.\n4. Extract the `valueQuantity.value` from the most recent entry.\n\n## Success Indicators\n- The agent retrieves the observation bundle successfully using the LOINC code.\n- The agent avoids returning -1 or \"Measurement not available\" when data exists under a standard code.\n\n## Failure Indicators\n- The agent continues to return empty results because it only searches for local aliases.",
+        "tags": [
+          "fhir",
+          "search",
+          "loinc"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+        "content": "## Skill Title\nStructured Final Output Strategy\n\n## Pattern Description\nWhen providing a final answer to a task, you must always return a machine-readable format (a list or tuple) containing only the requested data points. Do not include conversational filler, explanations, or natural language sentences in the `FINISH` call. If the task asks for multiple values, provide them as a list of values in the order requested.\n\n## When to Use This Skill\n- When the task asks for specific data points (e.g., lab values, dates, MRNs, ages).\n- When the task requires a final answer after performing data retrieval or calculations.\n- When the previous attempt included conversational text instead of just the requested data.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.0%\"])` instead of `FINISH([\"5.0%\"])`.\n- Returning `FINISH([\"Potassium is 3.5 mmol/L\"])` instead of `FINISH([3.5])`.\n- Including units inside the list when the task asks for a numeric value.\n- Providing conversational explanations in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric value and return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG: `FINISH([\"3.5 mmol/L\"])`\n\n**Pattern 2: Multi-value Extraction**\nIf the task asks for multiple fields (e.g., value and date), return them as a list in the order specified by the prompt.\nCORRECT: `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`\nWRONG: `FINISH([\"The value is 5.0 and the date is 2023-11-09\"])`\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 5.0) and the effective date (e.g., 2023-11-09T10:06:00+00:00).\n3. Format as a list: `[5.0, \"2023-11-09T10:06:00+00:00\"]`.\n4. Call `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`.\n\n## Success Indicators\n- The `FINISH` call contains only the raw data requested.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The `FINISH` call contains strings like \"The value is...\" or \"recorded on...\".\n- Units are included in the numeric output when not requested.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Expand search strategy to include standard LOINC codes for common labs to prevent empty results.",
+          "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, relying on non-standard or local aliases (like 'MG' or 'A1C') often leads to empty search results. You must prioritize using standardized LOINC codes to ensure the agent retrieves the correct clinical data. If a search using a local code returns no results, you must immediately attempt a search using the corresponding standard LOINC code.\n\n## When to Use This Skill\n- When a search for a lab observation using a local code (e.g., 'MG', 'A1C', 'K') returns an empty bundle (`total: 0`).\n- When the task description provides a specific LOINC code (e.g., 2160-0 for Magnesium, 4548-4 for HbA1c, 2823-3 for Potassium).\n\n## Common Failure Patterns\n- Searching only for 'MG' instead of '2160-0'.\n- Searching only for 'A1C' instead of '4548-4'.\n- Searching only for 'K' instead of '2823-3'.\n- Performing sequential searches for individual codes instead of checking the most reliable code first.\n\n## Recommended Patterns\n\n**Pattern 1: Prioritize LOINC**\nAlways check the task context for a provided LOINC code. If provided, use it as the primary search parameter in the `code` field.\n\n**Pattern 2: Fallback Search**\nIf the primary search (using a local alias) returns no results, do not assume the data is missing. Immediately perform a second search using the standard LOINC code.\n\n**Pattern 3: Multi-code Search**\nIf the API supports it, you may include multiple codes in a single search to increase the probability of a match.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Identify the standard LOINC code for serum magnesium (2160-0).\n2. Issue GET: `http://localhost:8080/fhir/Observation?patient=S1023381&code=2160-0&_sort=-date`\n3. If the result is empty, check if a secondary code (like 'MG') is appropriate, but prioritize the LOINC match.\n4. Extract the `valueQuantity.value` from the most recent entry.\n\n## Success Indicators\n- The agent retrieves the observation bundle successfully using the LOINC code.\n- The agent avoids returning -1 or \"Measurement not available\" when data exists under a standard code.\n\n## Failure Indicators\n- The agent continues to return empty results because it only searches for local aliases.",
+          "tags": [
+            "fhir",
+            "search",
+            "loinc"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -1,
+        "fixes": 1,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "structured_final_output_strategy",
+          "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+          "content": "## Skill Title\nStructured Final Output Strategy\n\n## Pattern Description\nWhen providing a final answer to a task, you must always return a machine-readable format (a list or tuple) containing only the requested data points. Do not include conversational filler, explanations, or natural language sentences in the `FINISH` call. If the task asks for multiple values, provide them as a list of values in the order requested.\n\n## When to Use This Skill\n- When the task asks for specific data points (e.g., lab values, dates, MRNs, ages).\n- When the task requires a final answer after performing data retrieval or calculations.\n- When the previous attempt included conversational text instead of just the requested data.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.0%\"])` instead of `FINISH([\"5.0%\"])`.\n- Returning `FINISH([\"Potassium is 3.5 mmol/L\"])` instead of `FINISH([3.5])`.\n- Including units inside the list when the task asks for a numeric value.\n- Providing conversational explanations in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric value and return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG: `FINISH([\"3.5 mmol/L\"])`\n\n**Pattern 2: Multi-value Extraction**\nIf the task asks for multiple fields (e.g., value and date), return them as a list in the order specified by the prompt.\nCORRECT: `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`\nWRONG: `FINISH([\"The value is 5.0 and the date is 2023-11-09\"])`\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 5.0) and the effective date (e.g., 2023-11-09T10:06:00+00:00).\n3. Format as a list: `[5.0, \"2023-11-09T10:06:00+00:00\"]`.\n4. Call `FINISH([5.0, \"2023-11-09T10:06:00+00:00\"])`.\n\n## Success Indicators\n- The `FINISH` call contains only the raw data requested.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The `FINISH` call contains strings like \"The value is...\" or \"recorded on...\".\n- Units are included in the numeric output when not requested.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "raw_score": 3,
+        "fixes": 3,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

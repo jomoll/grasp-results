@@ -1,0 +1,341 @@
+[
+  {
+    "epoch": 1,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "comprehensive_medication_search_strategy",
+        "description": "Ensures medication searches include both generic and brand names to prevent false negatives.",
+        "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, the FHIR server may only index specific names or codes. Relying on a single search term often leads to false negatives where active orders are missed because they are recorded under a different synonym, brand name, or generic equivalent.\n\n## When to Use This Skill\n- When a task requires verifying the presence or absence of a specific medication (e.g., opioids, anticoagulants, vaccines).\n- When an initial search for a medication returns zero results, but the task context implies the medication might be present under a different name.\n\n## Common Failure Patterns\n- Searching only by a single generic name (e.g., \"hydromorphone\") and missing brand-name equivalents (e.g., \"Dilaudid\").\n- Assuming a zero-result search means the medication is not present, without checking for related classes or synonyms.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden Search Terms**\nIf the initial search for a specific medication returns no results, perform a secondary search using a broader set of synonyms or the drug class if applicable.\n\n**Pattern 2: Verify with Patient-Level Search**\nIf specific code searches fail, perform a broader search for all `MedicationRequest` resources for the patient and filter the results manually in your reasoning process.\n\n**Example Application**\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /MedicationRequest?patient=S6500497`.\n2. If no results are found, do not immediately conclude the patient has no opioids.\n3. Inspect the bundle for any medication that matches the opioid class (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n4. If the bundle is large, use the `_count` parameter to ensure you are not missing records due to pagination.\n\n## Success Indicators\n- Agent identifies active orders that were previously missed by narrow searches.\n- Agent correctly identifies the absence of a medication only after a comprehensive search of the patient's medication history.\n\n## Failure Indicators\n- Agent reports \"no orders found\" after a single, narrow search query.\n- Agent fails to account for brand/generic name variations.",
+        "tags": [
+          "medication",
+          "search",
+          "fhir"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_observation_code_mapping_strategy",
+        "description": "Maps clinical concepts to standard LOINC codes when direct string searches fail.",
+        "content": "# FHIR Observation Code Mapping Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., heart rate, TSH), do not rely on literal string names like \"HEARTRATE\" or \"TSH\" in the `code` search parameter. These often fail because the server expects standardized terminology. Instead, map the clinical concept to its corresponding LOINC code (e.g., Heart Rate = 8867-4, TSH = 11580-8) to ensure successful retrieval.\n\n## When to Use This Skill\n- When a search for an observation by a descriptive name (e.g., `code=HEARTRATE`) returns zero results.\n- When the task requires retrieving specific vital signs or lab values and the initial search returns an empty bundle.\n\n## Common Failure Patterns\n- Using non-standard codes like `HEARTRATE`, `BLOODPRESSURE`, or `THYROIDSTIMULATINGHORMONE`.\n- Assuming the server supports free-text search in the `code` parameter.\n- Failing to check for multiple potential LOINC codes if the primary one is not found.\n\n## Recommended Patterns\n\n**Pattern 1: Standardized Code Search**\nAlways prioritize searching by LOINC code. If you do not know the code, search for the category (e.g., `category=vital-signs`) and inspect the `code.coding.code` fields in the returned resources to identify the correct system-specific code.\n\n**Pattern 2: Fallback to Category Search**\nIf a specific code search returns zero results, perform a broader search using the `category` parameter (e.g., `category=vital-signs` or `category=laboratory`) and iterate through the bundle to find the relevant observation.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S1374652.\"\n\n**Step-by-step:**\n1. Attempt search: `GET /Observation?patient=S1374652&code=8867-4` (LOINC for Heart Rate).\n2. If empty, perform: `GET /Observation?patient=S1374652&category=vital-signs`.\n3. Parse the bundle entries to find the observation where `code.coding.display` matches \"Heart Rate\".\n4. Extract the `valueQuantity.value` from the matching resource.\n\n## Success Indicators\n- The agent successfully retrieves observation resources after switching from a descriptive string to a LOINC code or category-based search.\n\n## Failure Indicators\n- The agent repeatedly uses the same failed descriptive string in subsequent search attempts.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "loinc"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_protocol_threshold_evaluation",
+        "description": "Evaluates clinical lab values against protocol-defined thresholds to determine if follow-up actions are required.",
+        "content": "# Clinical Protocol Threshold Evaluation\n\n## Pattern Description\nWhen a task requires evaluating clinical lab results (e.g., TSH, T4) against specific protocol thresholds, you must perform a structured comparison. Do not rely on implicit knowledge; explicitly extract the lab value, the collection date, and the reference range provided in the task context. Compare the extracted value against the protocol's defined thresholds to determine if an action (e.g., medication, repeat testing) is triggered.\n\n## When to Use This Skill\n- When the task provides a clinical protocol (e.g., \"If TSH > 10, do X; if TSH is 4.5–10, do Y\").\n- When you need to decide whether to order a follow-up test or medication based on lab results.\n- When you must verify if a value is within a \"normal range\" provided in the instructions.\n\n## Common Failure Patterns\n- Assuming a value is \"normal\" without checking the specific range provided in the task.\n- Failing to extract the collection date, leading to stale or incorrect clinical decisions.\n- Forgetting to check for the presence of multiple lab values when the protocol requires \"two separate instances.\"\n\n## Recommended Patterns\n\n**Pattern 1: Data Extraction**\n- Extract the `valueQuantity.value` and `effectiveDateTime` for each relevant `Observation`.\n- If multiple values exist, sort them by `effectiveDateTime` to identify the most recent result.\n\n**Pattern 2: Threshold Comparison**\n- Map the extracted value to the protocol's logic: \n  - `IF value > threshold_high THEN action_A`\n  - `ELSE IF value >= threshold_low AND value <= threshold_high THEN action_B`\n  - `ELSE action_C`\n\n**Pattern 3: Documentation**\n- In your `FINISH` call, explicitly state the value, the date of collection, and the protocol-based reasoning for your decision.\n\n## Example Application\n\n**Task:** \"Retrieve TSH for patient S123. If TSH > 10, order repeat test. If 4.5–10, retest in 3 months.\"\n\n**Step-by-step:**\n1. GET `Observation?patient=S123&code=TSH`.\n2. Extract `valueQuantity.value` (e.g., 5.2) and `effectiveDateTime` (e.g., 2023-11-07).\n3. Compare 5.2 against thresholds: 5.2 is between 4.5 and 10.\n4. Determine action: \"Retest in 3 months\".\n5. FINISH([\"TSH is 5.2 (2023-11-07). Per protocol, retest in 3 months.\"])\n\n## Success Indicators\n- The final output explicitly references the lab value, the date, and the specific protocol rule applied.\n- No unnecessary actions are taken when values are within normal ranges.\n\n## Failure Indicators\n- The agent takes action without citing the lab value or the protocol threshold.\n- The agent ignores the \"two separate instances\" requirement if specified in the protocol.",
+        "tags": [
+          "clinical-logic",
+          "lab-evaluation",
+          "protocol-compliance"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "comprehensive_medication_search_strategy",
+        "description": "Ensures medication searches include both generic and brand names to prevent false negatives.",
+        "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, the FHIR server may only index specific names or codes. Relying on a single search term often leads to false negatives where active orders are missed because they are recorded under a different synonym, brand name, or generic equivalent.\n\n## When to Use This Skill\n- When a task requires verifying the presence or absence of a specific medication (e.g., opioids, anticoagulants, vaccines).\n- When an initial search for a medication returns zero results, but the task context implies the medication might be present under a different name.\n\n## Common Failure Patterns\n- Searching only by a single generic name (e.g., \"hydromorphone\") and missing brand-name equivalents (e.g., \"Dilaudid\").\n- Assuming a zero-result search means the medication is not present, without checking for related classes or synonyms.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden Search Terms**\nIf the initial search for a specific medication returns no results, perform a secondary search using a broader set of synonyms or the drug class if applicable.\n\n**Pattern 2: Verify with Patient-Level Search**\nIf specific code searches fail, perform a broader search for all `MedicationRequest` resources for the patient and filter the results manually in your reasoning process.\n\n**Example Application**\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /MedicationRequest?patient=S6500497`.\n2. If no results are found, do not immediately conclude the patient has no opioids.\n3. Inspect the bundle for any medication that matches the opioid class (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n4. If the bundle is large, use the `_count` parameter to ensure you are not missing records due to pagination.\n\n## Success Indicators\n- Agent identifies active orders that were previously missed by narrow searches.\n- Agent correctly identifies the absence of a medication only after a comprehensive search of the patient's medication history.\n\n## Failure Indicators\n- Agent reports \"no orders found\" after a single, narrow search query.\n- Agent fails to account for brand/generic name variations.",
+        "tags": [
+          "medication",
+          "search",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_resource_verification_strategy",
+        "description": "Ensures retrieved resources are filtered by status and code before performing conditional logic or state changes.",
+        "content": "# FHIR Resource Verification Strategy\n\n## Pattern Description\nWhen a task requires verifying the existence or status of a resource (e.g., MedicationRequest, Procedure) before taking action, you must not rely on the raw search results. FHIR search results often include historical, cancelled, or irrelevant resources. You must explicitly filter the returned bundle entries by `status` and `code` (or relevant identifier) before deciding to create, update, or discontinue a resource.\n\n## When to Use This Skill\n- When a task requires checking for the existence of an \"active\" order or procedure.\n- When you must decide whether to create a new resource based on the absence of a specific active one.\n- When you must identify duplicates to discontinue.\n\n## Common Failure Patterns\n- Assuming all resources in a search bundle are relevant (e.g., counting 'stopped' or 'entered-in-error' orders as active).\n- Failing to check the `status` field of the resource, leading to duplicate orders.\n- Relying on the `total` count in a bundle without inspecting the individual `status` fields of the entries.\n\n## Recommended Patterns\n\n**Pattern 1: Filtering for Active Resources**\n1. Perform the GET request.\n2. Iterate through the `entry` array in the returned Bundle.\n3. For each entry, check `resource.status`.\n4. Only consider the resource if `status == 'active'`.\n5. If the task involves a specific code, verify `resource.code.coding` or `resource.medicationCodeableConcept` matches the target.\n\n**Pattern 2: Decision Logic**\n- If no entries match the criteria (status='active' AND code matches), proceed with the creation task.\n- If one or more entries match, compare their `authoredOn` or `meta.lastUpdated` timestamps to identify the newest one.\n- If multiple active resources exist, discontinue all but the newest.\n\n## Example Application\n\n**Task:** \"Verify patient has exactly one active DVT prophylaxis order (heparin).\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S0581164`.\n2. Filter entries: `entry.filter(e => e.resource.status === 'active' && e.resource.medicationCodeableConcept.text.includes('heparin'))`.\n3. If result length is 0, POST new order.\n4. If result length > 1, identify the newest by `authoredOn` and send a DELETE or PATCH to set status to 'stopped' for the others.\n\n## Success Indicators\n- Agent correctly identifies that an order is 'stopped' or 'completed' and does not treat it as active.\n- Agent avoids creating duplicate orders when an active one already exists.\n\n## Failure Indicators\n- Agent creates a new order despite an active one being present in the search results.\n- Agent fails to identify that a retrieved resource is irrelevant due to its status.",
+        "tags": [
+          "fhir",
+          "verification",
+          "medication",
+          "procedure"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_observation_code_mapping_strategy",
+          "description": "Maps clinical concepts to standard LOINC codes when direct string searches fail.",
+          "content": "# FHIR Observation Code Mapping Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., heart rate, TSH), do not rely on literal string names like \"HEARTRATE\" or \"TSH\" in the `code` search parameter. These often fail because the server expects standardized terminology. Instead, map the clinical concept to its corresponding LOINC code (e.g., Heart Rate = 8867-4, TSH = 11580-8) to ensure successful retrieval.\n\n## When to Use This Skill\n- When a search for an observation by a descriptive name (e.g., `code=HEARTRATE`) returns zero results.\n- When the task requires retrieving specific vital signs or lab values and the initial search returns an empty bundle.\n\n## Common Failure Patterns\n- Using non-standard codes like `HEARTRATE`, `BLOODPRESSURE`, or `THYROIDSTIMULATINGHORMONE`.\n- Assuming the server supports free-text search in the `code` parameter.\n- Failing to check for multiple potential LOINC codes if the primary one is not found.\n\n## Recommended Patterns\n\n**Pattern 1: Standardized Code Search**\nAlways prioritize searching by LOINC code. If you do not know the code, search for the category (e.g., `category=vital-signs`) and inspect the `code.coding.code` fields in the returned resources to identify the correct system-specific code.\n\n**Pattern 2: Fallback to Category Search**\nIf a specific code search returns zero results, perform a broader search using the `category` parameter (e.g., `category=vital-signs` or `category=laboratory`) and iterate through the bundle to find the relevant observation.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S1374652.\"\n\n**Step-by-step:**\n1. Attempt search: `GET /Observation?patient=S1374652&code=8867-4` (LOINC for Heart Rate).\n2. If empty, perform: `GET /Observation?patient=S1374652&category=vital-signs`.\n3. Parse the bundle entries to find the observation where `code.coding.display` matches \"Heart Rate\".\n4. Extract the `valueQuantity.value` from the matching resource.\n\n## Success Indicators\n- The agent successfully retrieves observation resources after switching from a descriptive string to a LOINC code or category-based search.\n\n## Failure Indicators\n- The agent repeatedly uses the same failed descriptive string in subsequent search attempts.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "loinc"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 1,
+        "fixes": 4,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_protocol_threshold_evaluation",
+          "description": "Evaluates clinical lab values against protocol-defined thresholds to determine if follow-up actions are required.",
+          "content": "# Clinical Protocol Threshold Evaluation\n\n## Pattern Description\nWhen a task requires evaluating clinical lab results (e.g., TSH, T4) against specific protocol thresholds, you must perform a structured comparison. Do not rely on implicit knowledge; explicitly extract the lab value, the collection date, and the reference range provided in the task context. Compare the extracted value against the protocol's defined thresholds to determine if an action (e.g., medication, repeat testing) is triggered.\n\n## When to Use This Skill\n- When the task provides a clinical protocol (e.g., \"If TSH > 10, do X; if TSH is 4.5–10, do Y\").\n- When you need to decide whether to order a follow-up test or medication based on lab results.\n- When you must verify if a value is within a \"normal range\" provided in the instructions.\n\n## Common Failure Patterns\n- Assuming a value is \"normal\" without checking the specific range provided in the task.\n- Failing to extract the collection date, leading to stale or incorrect clinical decisions.\n- Forgetting to check for the presence of multiple lab values when the protocol requires \"two separate instances.\"\n\n## Recommended Patterns\n\n**Pattern 1: Data Extraction**\n- Extract the `valueQuantity.value` and `effectiveDateTime` for each relevant `Observation`.\n- If multiple values exist, sort them by `effectiveDateTime` to identify the most recent result.\n\n**Pattern 2: Threshold Comparison**\n- Map the extracted value to the protocol's logic: \n  - `IF value > threshold_high THEN action_A`\n  - `ELSE IF value >= threshold_low AND value <= threshold_high THEN action_B`\n  - `ELSE action_C`\n\n**Pattern 3: Documentation**\n- In your `FINISH` call, explicitly state the value, the date of collection, and the protocol-based reasoning for your decision.\n\n## Example Application\n\n**Task:** \"Retrieve TSH for patient S123. If TSH > 10, order repeat test. If 4.5–10, retest in 3 months.\"\n\n**Step-by-step:**\n1. GET `Observation?patient=S123&code=TSH`.\n2. Extract `valueQuantity.value` (e.g., 5.2) and `effectiveDateTime` (e.g., 2023-11-07).\n3. Compare 5.2 against thresholds: 5.2 is between 4.5 and 10.\n4. Determine action: \"Retest in 3 months\".\n5. FINISH([\"TSH is 5.2 (2023-11-07). Per protocol, retest in 3 months.\"])\n\n## Success Indicators\n- The final output explicitly references the lab value, the date, and the specific protocol rule applied.\n- No unnecessary actions are taken when values are within normal ranges.\n\n## Failure Indicators\n- The agent takes action without citing the lab value or the protocol threshold.\n- The agent ignores the \"two separate instances\" requirement if specified in the protocol.",
+          "tags": [
+            "clinical-logic",
+            "lab-evaluation",
+            "protocol-compliance"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "comprehensive_medication_search_strategy",
+          "description": "Ensures medication searches include both generic and brand names to prevent false negatives.",
+          "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, the FHIR server may only index specific names or codes. Relying on a single search term often leads to false negatives where active orders are missed because they are recorded under a different synonym, brand name, or generic equivalent.\n\n## When to Use This Skill\n- When a task requires verifying the presence or absence of a specific medication (e.g., opioids, anticoagulants, vaccines).\n- When an initial search for a medication returns zero results, but the task context implies the medication might be present under a different name.\n\n## Common Failure Patterns\n- Searching only by a single generic name (e.g., \"hydromorphone\") and missing brand-name equivalents (e.g., \"Dilaudid\").\n- Assuming a zero-result search means the medication is not present, without checking for related classes or synonyms.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden Search Terms**\nIf the initial search for a specific medication returns no results, perform a secondary search using a broader set of synonyms or the drug class if applicable.\n\n**Pattern 2: Verify with Patient-Level Search**\nIf specific code searches fail, perform a broader search for all `MedicationRequest` resources for the patient and filter the results manually in your reasoning process.\n\n**Example Application**\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /MedicationRequest?patient=S6500497`.\n2. If no results are found, do not immediately conclude the patient has no opioids.\n3. Inspect the bundle for any medication that matches the opioid class (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n4. If the bundle is large, use the `_count` parameter to ensure you are not missing records due to pagination.\n\n## Success Indicators\n- Agent identifies active orders that were previously missed by narrow searches.\n- Agent correctly identifies the absence of a medication only after a comprehensive search of the patient's medication history.\n\n## Failure Indicators\n- Agent reports \"no orders found\" after a single, narrow search query.\n- Agent fails to account for brand/generic name variations.",
+          "tags": [
+            "medication",
+            "search",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 3,
+        "fixes": 5,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_verification_strategy",
+          "description": "Ensures retrieved resources are filtered by status and code before performing conditional logic or state changes.",
+          "content": "# FHIR Resource Verification Strategy\n\n## Pattern Description\nWhen a task requires verifying the existence or status of a resource (e.g., MedicationRequest, Procedure) before taking action, you must not rely on the raw search results. FHIR search results often include historical, cancelled, or irrelevant resources. You must explicitly filter the returned bundle entries by `status` and `code` (or relevant identifier) before deciding to create, update, or discontinue a resource.\n\n## When to Use This Skill\n- When a task requires checking for the existence of an \"active\" order or procedure.\n- When you must decide whether to create a new resource based on the absence of a specific active one.\n- When you must identify duplicates to discontinue.\n\n## Common Failure Patterns\n- Assuming all resources in a search bundle are relevant (e.g., counting 'stopped' or 'entered-in-error' orders as active).\n- Failing to check the `status` field of the resource, leading to duplicate orders.\n- Relying on the `total` count in a bundle without inspecting the individual `status` fields of the entries.\n\n## Recommended Patterns\n\n**Pattern 1: Filtering for Active Resources**\n1. Perform the GET request.\n2. Iterate through the `entry` array in the returned Bundle.\n3. For each entry, check `resource.status`.\n4. Only consider the resource if `status == 'active'`.\n5. If the task involves a specific code, verify `resource.code.coding` or `resource.medicationCodeableConcept` matches the target.\n\n**Pattern 2: Decision Logic**\n- If no entries match the criteria (status='active' AND code matches), proceed with the creation task.\n- If one or more entries match, compare their `authoredOn` or `meta.lastUpdated` timestamps to identify the newest one.\n- If multiple active resources exist, discontinue all but the newest.\n\n## Example Application\n\n**Task:** \"Verify patient has exactly one active DVT prophylaxis order (heparin).\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S0581164`.\n2. Filter entries: `entry.filter(e => e.resource.status === 'active' && e.resource.medicationCodeableConcept.text.includes('heparin'))`.\n3. If result length is 0, POST new order.\n4. If result length > 1, identify the newest by `authoredOn` and send a DELETE or PATCH to set status to 'stopped' for the others.\n\n## Success Indicators\n- Agent correctly identifies that an order is 'stopped' or 'completed' and does not treat it as active.\n- Agent avoids creating duplicate orders when an active one already exists.\n\n## Failure Indicators\n- Agent creates a new order despite an active one being present in the search results.\n- Agent fails to identify that a retrieved resource is irrelevant due to its status.",
+          "tags": [
+            "fhir",
+            "verification",
+            "medication",
+            "procedure"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "comprehensive_medication_search_strategy",
+          "description": "Ensures medication searches include both generic and brand names to prevent false negatives, while explicitly excluding non-medication procedures or time-sensitive clinical tasks.",
+          "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, the FHIR server may only index specific names or codes. Relying on a single search term often leads to false negatives where active orders are missed because they are recorded under a different synonym, brand name, or generic equivalent.\n\n## When to Use This Skill\n- When a task requires verifying the presence or absence of a specific medication (e.g., opioids, anticoagulants, vaccines).\n- When an initial search for a medication returns zero results, but the task context implies the medication might be present under a different name.\n\n## Guard Clauses (Do NOT apply this strategy if:)\n- The task involves non-medication resources (e.g., `Procedure`, `ServiceRequest` for non-drug interventions like catheter removal).\n- The task involves calculating time-based thresholds (e.g., 'more than 48 hours') where the primary goal is temporal validation rather than resource discovery.\n\n## Common Failure Patterns\n- Searching only by a single generic name (e.g., \"hydromorphone\") and missing brand-name equivalents (e.g., \"Dilaudid\").\n- Assuming a zero-result search means the medication is not present, without checking for related classes or synonyms.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden Search Terms**\nIf the initial search for a specific medication returns no results, perform a secondary search using a broader set of synonyms or the drug class if applicable.\n\n**Pattern 2: Verify with Patient-Level Search**\nIf specific code searches fail, perform a broader search for all `MedicationRequest` resources for the patient and filter the results manually in your reasoning process.\n\n**Example Application**\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /MedicationRequest?patient=S6500497`.\n2. If no results are found, do not immediately conclude the patient has no opioids.\n3. Inspect the bundle for any medication that matches the opioid class (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n4. If the bundle is large, use the `_count` parameter to ensure you are not missing records due to pagination.\n\n## Success Indicators\n- Agent identifies active orders that were previously missed by narrow searches.\n- Agent correctly identifies the absence of a medication only after a comprehensive search of the patient's medication history.\n\n## Failure Indicators\n- Agent reports \"no orders found\" after a single, narrow search query.\n- Agent fails to account for brand/generic name variations.",
+          "tags": [
+            "medication",
+            "search",
+            "fhir"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "fixes": 5,
+        "regressions": 6,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 2,
+        "contrastive_revision": true
+      }
+    ]
+  },
+  {
+    "epoch": 1,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 32,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "medication_request_search_by_code_strategy",
+        "description": "Ensures medication searches use specific codes (RxNorm/LOINC) instead of relying on generic patient-wide requests.",
+        "content": "# Medication Request Search by Code Strategy\n\n## Pattern Description\nWhen searching for specific medication classes or types (e.g., opioids, vaccines), a generic `GET /MedicationRequest?patient=ID` often returns too many results, leading to pagination errors or missing specific orders. You must prioritize searching by specific codes (RxNorm, CPT, or LOINC) to narrow the scope and ensure accurate identification of active orders.\n\n## When to Use This Skill\n- When the task requires verifying the presence or absence of a specific medication or class (e.g., opioids, vaccines).\n- When a broad `GET /MedicationRequest?patient=ID` returns a large bundle that is difficult to parse or triggers pagination errors.\n- When you need to confirm if a specific order (like naloxone) exists to match an opioid order.\n\n## Common Failure Patterns\n- Relying on a broad `GET` request and failing to find the medication because it was buried in a large list.\n- Assuming a lack of results from a broad search means the medication does not exist, without attempting a targeted search by code.\n- Failing to handle pagination when a broad search returns many results.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways attempt to search by the specific code provided in the task context first.\n- Example: `GET /MedicationRequest?patient=S123&code=12345`\n\n**Pattern 2: Fallback to Broad Search**\nIf the targeted search returns no results, perform a broader search but use `_count=100` to ensure you capture the full history.\n- Example: `GET /MedicationRequest?patient=S123&_count=100`\n\n**Pattern 3: Verification**\nIf you find no results after both targeted and broad searches, only then conclude that the medication is not present.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Identify the relevant codes for opioids (e.g., hydromorphone, fentanyl).\n2. Issue `GET /MedicationRequest?patient=S6530532&code=...` for each opioid.\n3. If no results, issue `GET /MedicationRequest?patient=S6530532&_count=100` to confirm.\n4. If still no results, conclude no naloxone is required.\n\n## Success Indicators\n- Agent performs targeted searches using `code` parameters.\n- Agent successfully identifies medications that were previously missed in broad searches.\n\n## Failure Indicators\n- Agent continues to rely solely on broad `GET` requests without `code` parameters.\n- Agent incorrectly concludes a medication is missing after a single, potentially incomplete, broad search.",
+        "tags": [
+          "medication",
+          "search",
+          "fhir"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "medication_order_pre_check_validation",
+        "description": "Mandates comprehensive search and status verification of existing orders before creating new medication requests.",
+        "content": "## Medication Order Pre-Check Validation\n\nBefore creating any new medication order, you must perform a comprehensive search to identify existing active orders for the same condition or medication class. Do not assume that a lack of immediate results in a single GET request means no orders exist; you must verify the status of all retrieved resources.\n\n## When to Use This Skill\n\n- When the task requires verifying that a patient has exactly one active order for a specific condition (e.g., DVT prophylaxis).\n- Before executing a POST request for a new medication order.\n- When you need to discontinue duplicate orders to maintain a single active order.\n\n## Common Failure Patterns\n\n- Creating a new order without first checking if an active order already exists.\n- Failing to parse the `status` field of retrieved `MedicationRequest` resources, leading to the creation of duplicates.\n- Assuming a single GET request returns all relevant records when pagination might be required.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a GET request for `MedicationRequest` filtered by `patient`. If the bundle contains multiple entries, iterate through them to check the `status` field.\n\n**Pattern 2: Status Verification**\nOnly consider an order \"active\" if the `status` field is exactly `active`. If you find an existing `active` order for the same medication or purpose, do not create a new one unless instructed to replace it.\n\n**Pattern 3: Discontinuation Logic**\nIf the task requires exactly one active order and you find multiple, identify the newest order by comparing `authoredOn` or `meta.lastUpdated` timestamps. Discontinue the older orders (via PUT or DELETE if supported) before or after creating the new one, as per the specific task instructions.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S6227720`.\n2. Inspect the returned Bundle. If `total > 0`, check each `MedicationRequest` for `status: \"active\"`.\n3. If an active order exists, compare its details with the required order. If it matches, do nothing and FINISH.\n4. If no active order exists, proceed to POST the new `MedicationRequest`.\n\n## Success Indicators\n\n- Agent performs a GET request and inspects the bundle before any POST action.\n- Agent correctly identifies existing active orders and avoids creating duplicates.\n\n## Failure Indicators\n\n- Agent creates a new order despite an existing active order being present in the GET response.\n- Agent fails to check the `status` field of retrieved resources.",
+        "tags": [
+          "medication",
+          "fhir",
+          "validation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "observation_code_search_strategy",
+        "description": "Ensures robust retrieval of observations by using broad category searches and local filtering when specific codes fail.",
+        "content": "# Observation Code Search Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., heart rate, lab results), relying on a single, potentially non-standardized code parameter often leads to empty results. This strategy mandates a two-step approach: first, perform a broad search by `category` or `patient` to retrieve a set of observations, then perform client-side filtering to identify the correct resource based on the expected clinical concept.\n\n## When to Use This Skill\n- When a search for an observation by `code` returns zero results.\n- When the task requires specific vital signs or lab values and the initial code-based search fails.\n- When you suspect the server's code mapping for a concept (e.g., 'HEARTRATE') might not match the standard LOINC codes (e.g., 8867-4).\n\n## Common Failure Patterns\n- Guessing proprietary or non-standard codes (e.g., `code=HEARTRATE`) instead of using standard LOINC codes or broad category searches.\n- Giving up after a single failed search with a specific code.\n- Failing to inspect the `category` or `code.coding` fields of returned resources to perform local filtering.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Search Fallback**\nIf a search with `code=[specific_code]` returns no entries, perform a broader search using only the `patient` and `category` (e.g., `category=vital-signs` or `category=laboratory`).\n\n**Pattern 2: Local Filtering**\nOnce the broader bundle is retrieved, iterate through the `entry` list. Inspect the `code.coding` array for each `Observation` resource to find matches for the required clinical concept (e.g., check for LOINC 8867-4 for heart rate).\n\n**Pattern 3: Verification**\nIf the broad search also returns no relevant data, only then conclude that the data is unavailable. Do not assume the absence of a specific code in the initial search implies the absence of the clinical data.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6227720.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6227720&category=vital-signs`.\n2. If the bundle is empty, report no data. If it contains observations, iterate through them.\n3. For each observation, check `resource.code.coding` for LOINC code `8867-4`.\n4. Extract `valueQuantity.value` from matching resources.\n5. Calculate the average and `FINISH`.\n\n## Success Indicators\n- The agent successfully retrieves data after an initial failed specific-code search.\n- The agent correctly identifies relevant observations from a broader bundle.\n\n## Failure Indicators\n- The agent continues to use non-standard codes in subsequent search attempts.\n- The agent fails to inspect the contents of a broad bundle before concluding no data exists.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "fallback"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_request_search_by_code_strategy",
+        "description": "Ensures medication searches use specific codes (RxNorm/LOINC) instead of relying on generic patient-wide requests.",
+        "content": "# Medication Request Search by Code Strategy\n\n## Pattern Description\nWhen searching for specific medication classes or types (e.g., opioids, vaccines), a generic `GET /MedicationRequest?patient=ID` often returns too many results, leading to pagination errors or missing specific orders. You must prioritize searching by specific codes (RxNorm, CPT, or LOINC) to narrow the scope and ensure accurate identification of active orders.\n\n## When to Use This Skill\n- When the task requires verifying the presence or absence of a specific medication or class (e.g., opioids, vaccines).\n- When a broad `GET /MedicationRequest?patient=ID` returns a large bundle that is difficult to parse or triggers pagination errors.\n- When you need to confirm if a specific order (like naloxone) exists to match an opioid order.\n\n## Common Failure Patterns\n- Relying on a broad `GET` request and failing to find the medication because it was buried in a large list.\n- Assuming a lack of results from a broad search means the medication does not exist, without attempting a targeted search by code.\n- Failing to handle pagination when a broad search returns many results.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways attempt to search by the specific code provided in the task context first.\n- Example: `GET /MedicationRequest?patient=S123&code=12345`\n\n**Pattern 2: Fallback to Broad Search**\nIf the targeted search returns no results, perform a broader search but use `_count=100` to ensure you capture the full history.\n- Example: `GET /MedicationRequest?patient=S123&_count=100`\n\n**Pattern 3: Verification**\nIf you find no results after both targeted and broad searches, only then conclude that the medication is not present.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Identify the relevant codes for opioids (e.g., hydromorphone, fentanyl).\n2. Issue `GET /MedicationRequest?patient=S6530532&code=...` for each opioid.\n3. If no results, issue `GET /MedicationRequest?patient=S6530532&_count=100` to confirm.\n4. If still no results, conclude no naloxone is required.\n\n## Success Indicators\n- Agent performs targeted searches using `code` parameters.\n- Agent successfully identifies medications that were previously missed in broad searches.\n\n## Failure Indicators\n- Agent continues to rely solely on broad `GET` requests without `code` parameters.\n- Agent incorrectly concludes a medication is missing after a single, potentially incomplete, broad search.",
+        "tags": [
+          "medication",
+          "search",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_resource_lifecycle_management",
+        "description": "Ensures existing active resources are updated to 'stopped' or 'completed' status before creating new ones.",
+        "content": "# FHIR Resource Lifecycle Management\n\n## Pattern Description\nWhen a task requires maintaining a specific number of active resources (e.g., exactly one active DVT prophylaxis order), you must first audit the existing resources. If you find multiple active resources that conflict with the target state, you must explicitly update the status of the redundant resources to 'stopped' or 'completed' using a PUT request before creating any new resources. Do not simply create new resources while leaving duplicates active.\n\n## When to Use This Skill\n- When the task instruction specifies a limit on the number of active resources (e.g., \"exactly one active order\").\n- When you identify multiple active resources that fulfill the same clinical purpose.\n- When you need to discontinue or replace an existing order to maintain a single source of truth.\n\n## Common Failure Patterns\n- Creating a new resource without checking for or updating existing ones, leading to duplicate active orders.\n- Attempting to 'delete' a resource instead of updating its `status` field to 'stopped'.\n- Failing to retrieve the full resource body via GET before performing a PUT update, resulting in incomplete or invalid resource updates.\n\n## Recommended Patterns\n\n**Pattern 1: Audit and Update**\n1. Perform a GET search to retrieve all resources of the relevant type for the patient.\n2. Filter the results for resources with `status: \"active\"`.\n3. If the count exceeds the limit, identify the newest resource (by `authoredOn` or `meta.lastUpdated`).\n4. For all other active resources, perform a GET to retrieve the full resource, update the `status` field to `\"stopped\"`, and send a PUT request to the resource endpoint.\n\n**Pattern 2: Verification**\n- After updating, verify the status change by checking the response of the PUT request or performing a follow-up GET.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S6315806`.\n2. Identify two active orders: `785625` and `785629`.\n3. GET `.../MedicationRequest/785625` to get the full resource.\n4. Update `status` to `\"stopped\"` and PUT to `.../MedicationRequest/785625`.\n5. Repeat for `785629`.\n\n## Success Indicators\n- The agent performs PUT requests to update the status of existing resources before creating new ones.\n- The final state of the patient's records matches the requested constraint (e.g., only one active order).\n\n## Failure Indicators\n- The agent creates new resources while multiple active ones remain.\n- The agent attempts to POST a status change instead of using PUT on the specific resource ID.",
+        "tags": [
+          "fhir",
+          "lifecycle",
+          "medication",
+          "resource-management"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_pre_check_validation",
+          "description": "Mandates comprehensive search and status verification of existing orders before creating new medication requests.",
+          "content": "## Medication Order Pre-Check Validation\n\nBefore creating any new medication order, you must perform a comprehensive search to identify existing active orders for the same condition or medication class. Do not assume that a lack of immediate results in a single GET request means no orders exist; you must verify the status of all retrieved resources.\n\n## When to Use This Skill\n\n- When the task requires verifying that a patient has exactly one active order for a specific condition (e.g., DVT prophylaxis).\n- Before executing a POST request for a new medication order.\n- When you need to discontinue duplicate orders to maintain a single active order.\n\n## Common Failure Patterns\n\n- Creating a new order without first checking if an active order already exists.\n- Failing to parse the `status` field of retrieved `MedicationRequest` resources, leading to the creation of duplicates.\n- Assuming a single GET request returns all relevant records when pagination might be required.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a GET request for `MedicationRequest` filtered by `patient`. If the bundle contains multiple entries, iterate through them to check the `status` field.\n\n**Pattern 2: Status Verification**\nOnly consider an order \"active\" if the `status` field is exactly `active`. If you find an existing `active` order for the same medication or purpose, do not create a new one unless instructed to replace it.\n\n**Pattern 3: Discontinuation Logic**\nIf the task requires exactly one active order and you find multiple, identify the newest order by comparing `authoredOn` or `meta.lastUpdated` timestamps. Discontinue the older orders (via PUT or DELETE if supported) before or after creating the new one, as per the specific task instructions.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S6227720`.\n2. Inspect the returned Bundle. If `total > 0`, check each `MedicationRequest` for `status: \"active\"`.\n3. If an active order exists, compare its details with the required order. If it matches, do nothing and FINISH.\n4. If no active order exists, proceed to POST the new `MedicationRequest`.\n\n## Success Indicators\n\n- Agent performs a GET request and inspects the bundle before any POST action.\n- Agent correctly identifies existing active orders and avoids creating duplicates.\n\n## Failure Indicators\n\n- Agent creates a new order despite an existing active order being present in the GET response.\n- Agent fails to check the `status` field of retrieved resources.",
+          "tags": [
+            "medication",
+            "fhir",
+            "validation"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_code_search_strategy",
+          "description": "Ensures robust retrieval of observations by using broad category searches and local filtering when specific codes fail.",
+          "content": "# Observation Code Search Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., heart rate, lab results), relying on a single, potentially non-standardized code parameter often leads to empty results. This strategy mandates a two-step approach: first, perform a broad search by `category` or `patient` to retrieve a set of observations, then perform client-side filtering to identify the correct resource based on the expected clinical concept.\n\n## When to Use This Skill\n- When a search for an observation by `code` returns zero results.\n- When the task requires specific vital signs or lab values and the initial code-based search fails.\n- When you suspect the server's code mapping for a concept (e.g., 'HEARTRATE') might not match the standard LOINC codes (e.g., 8867-4).\n\n## Common Failure Patterns\n- Guessing proprietary or non-standard codes (e.g., `code=HEARTRATE`) instead of using standard LOINC codes or broad category searches.\n- Giving up after a single failed search with a specific code.\n- Failing to inspect the `category` or `code.coding` fields of returned resources to perform local filtering.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Search Fallback**\nIf a search with `code=[specific_code]` returns no entries, perform a broader search using only the `patient` and `category` (e.g., `category=vital-signs` or `category=laboratory`).\n\n**Pattern 2: Local Filtering**\nOnce the broader bundle is retrieved, iterate through the `entry` list. Inspect the `code.coding` array for each `Observation` resource to find matches for the required clinical concept (e.g., check for LOINC 8867-4 for heart rate).\n\n**Pattern 3: Verification**\nIf the broad search also returns no relevant data, only then conclude that the data is unavailable. Do not assume the absence of a specific code in the initial search implies the absence of the clinical data.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6227720.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6227720&category=vital-signs`.\n2. If the bundle is empty, report no data. If it contains observations, iterate through them.\n3. For each observation, check `resource.code.coding` for LOINC code `8867-4`.\n4. Extract `valueQuantity.value` from matching resources.\n5. Calculate the average and `FINISH`.\n\n## Success Indicators\n- The agent successfully retrieves data after an initial failed specific-code search.\n- The agent correctly identifies relevant observations from a broader bundle.\n\n## Failure Indicators\n- The agent continues to use non-standard codes in subsequent search attempts.\n- The agent fails to inspect the contents of a broad bundle before concluding no data exists.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "fallback"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_request_search_by_code_strategy",
+          "description": "Ensures medication searches use specific codes (RxNorm/LOINC) instead of relying on generic patient-wide requests.",
+          "content": "# Medication Request Search by Code Strategy\n\n## Pattern Description\nWhen searching for specific medication classes or types (e.g., opioids, vaccines), a generic `GET /MedicationRequest?patient=ID` often returns too many results, leading to pagination errors or missing specific orders. You must prioritize searching by specific codes (RxNorm, CPT, or LOINC) to narrow the scope and ensure accurate identification of active orders.\n\n## When to Use This Skill\n- When the task requires verifying the presence or absence of a specific medication or class (e.g., opioids, vaccines).\n- When a broad `GET /MedicationRequest?patient=ID` returns a large bundle that is difficult to parse or triggers pagination errors.\n- When you need to confirm if a specific order (like naloxone) exists to match an opioid order.\n\n## Common Failure Patterns\n- Relying on a broad `GET` request and failing to find the medication because it was buried in a large list.\n- Assuming a lack of results from a broad search means the medication does not exist, without attempting a targeted search by code.\n- Failing to handle pagination when a broad search returns many results.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways attempt to search by the specific code provided in the task context first.\n- Example: `GET /MedicationRequest?patient=S123&code=12345`\n\n**Pattern 2: Fallback to Broad Search**\nIf the targeted search returns no results, perform a broader search but use `_count=100` to ensure you capture the full history.\n- Example: `GET /MedicationRequest?patient=S123&_count=100`\n\n**Pattern 3: Verification**\nIf you find no results after both targeted and broad searches, only then conclude that the medication is not present.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Identify the relevant codes for opioids (e.g., hydromorphone, fentanyl).\n2. Issue `GET /MedicationRequest?patient=S6530532&code=...` for each opioid.\n3. If no results, issue `GET /MedicationRequest?patient=S6530532&_count=100` to confirm.\n4. If still no results, conclude no naloxone is required.\n\n## Success Indicators\n- Agent performs targeted searches using `code` parameters.\n- Agent successfully identifies medications that were previously missed in broad searches.\n\n## Failure Indicators\n- Agent continues to rely solely on broad `GET` requests without `code` parameters.\n- Agent incorrectly concludes a medication is missing after a single, potentially incomplete, broad search.",
+          "tags": [
+            "medication",
+            "search",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 2,
+        "fixes": 2,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_lifecycle_management",
+          "description": "Ensures existing active resources are updated to 'stopped' or 'completed' status before creating new ones.",
+          "content": "# FHIR Resource Lifecycle Management\n\n## Pattern Description\nWhen a task requires maintaining a specific number of active resources (e.g., exactly one active DVT prophylaxis order), you must first audit the existing resources. If you find multiple active resources that conflict with the target state, you must explicitly update the status of the redundant resources to 'stopped' or 'completed' using a PUT request before creating any new resources. Do not simply create new resources while leaving duplicates active.\n\n## When to Use This Skill\n- When the task instruction specifies a limit on the number of active resources (e.g., \"exactly one active order\").\n- When you identify multiple active resources that fulfill the same clinical purpose.\n- When you need to discontinue or replace an existing order to maintain a single source of truth.\n\n## Common Failure Patterns\n- Creating a new resource without checking for or updating existing ones, leading to duplicate active orders.\n- Attempting to 'delete' a resource instead of updating its `status` field to 'stopped'.\n- Failing to retrieve the full resource body via GET before performing a PUT update, resulting in incomplete or invalid resource updates.\n\n## Recommended Patterns\n\n**Pattern 1: Audit and Update**\n1. Perform a GET search to retrieve all resources of the relevant type for the patient.\n2. Filter the results for resources with `status: \"active\"`.\n3. If the count exceeds the limit, identify the newest resource (by `authoredOn` or `meta.lastUpdated`).\n4. For all other active resources, perform a GET to retrieve the full resource, update the `status` field to `\"stopped\"`, and send a PUT request to the resource endpoint.\n\n**Pattern 2: Verification**\n- After updating, verify the status change by checking the response of the PUT request or performing a follow-up GET.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S6315806`.\n2. Identify two active orders: `785625` and `785629`.\n3. GET `.../MedicationRequest/785625` to get the full resource.\n4. Update `status` to `\"stopped\"` and PUT to `.../MedicationRequest/785625`.\n5. Repeat for `785629`.\n\n## Success Indicators\n- The agent performs PUT requests to update the status of existing resources before creating new ones.\n- The final state of the patient's records matches the requested constraint (e.g., only one active order).\n\n## Failure Indicators\n- The agent creates new resources while multiple active ones remain.\n- The agent attempts to POST a status change instead of using PUT on the specific resource ID.",
+          "tags": [
+            "fhir",
+            "lifecycle",
+            "medication",
+            "resource-management"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

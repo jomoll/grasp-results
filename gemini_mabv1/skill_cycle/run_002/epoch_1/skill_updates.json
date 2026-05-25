@@ -1,0 +1,231 @@
+[
+  {
+    "epoch": 1,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 23,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "lab_result_temporal_logic",
+        "description": "Enforce strict date-based filtering and threshold evaluation for lab results to prevent unnecessary orders.",
+        "content": "## Skill Title\nLab Result Temporal and Threshold Logic\n\n## Pattern Description\nWhen a task requires checking a lab result to decide on a follow-up action (like ordering a new test or replacement), you must strictly evaluate the recency and the value against the provided criteria. A common failure is to miscalculate the time difference or to order a test when the existing result is still valid.\n\nAlways calculate the time difference between the current time and the `effectiveDateTime` of the most recent observation. If the task specifies a window (e.g., 24 hours or 1 year), compare the timestamps precisely before deciding to trigger a `ServiceRequest`.\n\n## When to Use This Skill\n- When a task asks to check a lab result within a specific timeframe (e.g., \"within the last 24 hours\").\n- When a task requires ordering a new test only if the existing result is older than a specific threshold (e.g., \"greater than 1 year old\").\n- When the agent must decide whether to skip an order based on the recency of the last result.\n\n## Common Failure Patterns\n- Misinterpreting \"within 24 hours\" as \"within the same calendar day\".\n- Ordering a test when the last result is exactly at or within the threshold (e.g., ordering because a result is 1 year old when the rule says \"greater than 1 year\").\n- Failing to check the `effectiveDateTime` field and instead relying on the `meta.lastUpdated` field, which may reflect system updates rather than the actual lab collection time.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Extract the `effectiveDateTime` from the most recent `Observation` entry.\n2. Calculate the duration between `current_time` and `effectiveDateTime`.\n3. If the duration exceeds the threshold (e.g., > 24 hours or > 365 days), proceed to the ordering logic. If not, stop and report the existing result.\n\n**Pattern 2: Threshold Comparison**\n1. Compare the numeric value of the lab result against the provided threshold.\n2. Only trigger a `ServiceRequest` if the value is strictly outside the normal range or meets the specific \"low\" or \"high\" criteria defined in the prompt.\n\n**Pattern 3: Verification**\n1. Before calling `FINISH`, explicitly state the calculation: \"The last result was on [Date], which is [X] days/hours ago. Since this is [within/outside] the [Time] window, [Action].\"\n\n## Example Application\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. Identify `effectiveDateTime` (e.g., 2022-08-09).\n3. Current date is 2023-11-13. Difference is > 1 year.\n4. Proceed to POST `ServiceRequest`.\n\nCORRECT: \"The last result is from 2022-08-09, which is > 1 year old. Ordering new test.\"\nWRONG: \"The last result is from 2023-10-13, which is within 1 year, but I will order anyway.\"\n\n## Success Indicators\n- Agent correctly identifies when a result is within the valid window and skips the order.\n- Agent correctly identifies when a result is stale and performs the order.\n\n## Failure Indicators\n- Agent orders a test when the last result is within the valid window.\n- Agent fails to order a test when the last result is clearly expired.",
+        "tags": [
+          "lab-results",
+          "temporal-logic",
+          "service-request"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "sentinel_value_handling",
+        "description": "Instructs the agent to use natural language for missing data instead of returning raw sentinel values.",
+        "content": "## Skill Title\n\nSentinel Value Handling and Natural Language Reporting\n\n## Pattern Description\n\nWhen a data retrieval task (e.g., searching for a lab result or patient record) returns no results, the agent must avoid returning raw sentinel values like \"-1\", \"N/A\", or \"[]\". These values are artifacts of internal logic and are not appropriate for the final user-facing response. Instead, the agent must translate the absence of data into a clear, professional, and informative natural language statement.\n\n## When to Use This Skill\n\n- When a GET request returns a Bundle with `total: 0` or an empty `entry` array.\n- When a required measurement (e.g., HbA1C, magnesium) is not found in the patient's chart.\n- When the task instructions specify a sentinel value (e.g., \"return -1 if not found\") but the final output must be human-readable.\n\n## Common Failure Patterns\n\n- Returning `FINISH([-1])` or `FINISH([\"N/A\"])` directly to the user.\n- Failing to explain *why* the information is missing (e.g., \"No record found\" vs \"No magnesium level has been recorded in the last 24 hours\").\n\n## Recommended Patterns\n\n**Pattern 1: Natural Language Translation**\nIf the search result is empty, construct a sentence that describes the missing data in the context of the request.\n\nCORRECT: `FINISH([\"No HbA1C value was found in the patient's chart.\"])\nWRONG:   `FINISH([\"-1\"])\n\n**Pattern 2: Contextual Explanation**\nIf the task involves a time-bound search (e.g., \"within the last 24 hours\"), explicitly state that the data is missing for that specific timeframe.\n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for this patient.\"])\nWRONG:   `FINISH([\"-1\"])\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S6488980?\"\n\n**Step-by-step:**\n1. Issue GET request for Observation.\n2. Observe `total: 0` in the response bundle.\n3. Recognize that no data exists.\n4. Formulate a clear response: \"No HbA1C value was found in the chart for patient S6488980.\"\n5. Call `FINISH([\"No HbA1C value was found in the chart for patient S6488980.\"])\n\n## Success Indicators\n\n- The agent's final output contains descriptive text instead of numeric or placeholder codes.\n- The user receives a clear explanation of why the requested information could not be provided.\n\n## Failure Indicators\n\n- The agent outputs \"-1\", \"N/A\", or empty brackets in the final response.",
+        "tags": [
+          "formatting",
+          "communication"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict pre-condition validation and explicit necessity checks before creating any ServiceRequest.",
+        "content": "# Conditional ServiceRequest Logic\n\n## Pattern Description\n\nBefore creating a `ServiceRequest`, you must verify that the clinical condition or threshold specified in the task is explicitly met. Do not assume that a task implies an automatic order; you must first retrieve the relevant data, evaluate the condition, and only proceed with the `POST` request if the criteria are satisfied.\n\n## When to Use This Skill\n\n- When a task includes conditional logic (e.g., \"If lab value is low, then order X\").\n- When a task requires checking a date threshold (e.g., \"If result is > 1 year old, order X\").\n- Before any `POST` request to the `ServiceRequest` endpoint.\n\n## Common Failure Patterns\n\n- Proceeding with an order when the retrieved data does not meet the specified threshold (e.g., ordering potassium replacement when the level is 3.8 mmol/L and the threshold is < 3.5 mmol/L).\n- Ordering a test when the data is missing or does not meet the criteria (e.g., ordering a new HbA1C when the existing one is not actually > 1 year old).\n- Failing to verify the existence of a result before deciding to order a new one.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-condition Verification**\nBefore issuing a `POST` request, you must perform a `GET` request to retrieve the necessary clinical data. Compare the retrieved value against the task's threshold. If the condition is not met, do not create the `ServiceRequest` and inform the user why.\n\n**Pattern 2: Explicit Decision Logic**\nIf the condition is met, document the rationale in the `note` field of the `ServiceRequest`. If the condition is not met, explicitly state in your `FINISH` call that no order was placed because the criteria were not satisfied.\n\n**Pattern 3: Resource Reference Formatting**\nEnsure the `subject.reference` is formatted as `Patient/{id}`. Do not use raw MRNs or other identifiers.\n\n## Example Application\n\n**Task:** \"If potassium < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&patient=S123`\n2. Parse the value (e.g., 3.8).\n3. Evaluate: 3.8 < 3.5 is False.\n4. Action: Do not POST. \n5. Output: `FINISH([\"Potassium is 3.8, which is not below the 3.5 threshold. No replacement ordered.\"])`\n\n## Success Indicators\n\n- The agent performs a `GET` request and evaluates the data before any `POST`.\n- No `ServiceRequest` is created when the clinical criteria are not met.\n\n## Failure Indicators\n\n- `ServiceRequest` is created despite the data showing the condition is not met.\n- The agent skips the data retrieval step and proceeds directly to ordering.",
+        "tags": [
+          "service-request",
+          "validation",
+          "logic"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_result_temporal_logic",
+          "description": "Enforce strict date-based filtering and threshold evaluation for lab results to prevent unnecessary orders.",
+          "content": "## Skill Title\nLab Result Temporal and Threshold Logic\n\n## Pattern Description\nWhen a task requires checking a lab result to decide on a follow-up action (like ordering a new test or replacement), you must strictly evaluate the recency and the value against the provided criteria. A common failure is to miscalculate the time difference or to order a test when the existing result is still valid.\n\nAlways calculate the time difference between the current time and the `effectiveDateTime` of the most recent observation. If the task specifies a window (e.g., 24 hours or 1 year), compare the timestamps precisely before deciding to trigger a `ServiceRequest`.\n\n## When to Use This Skill\n- When a task asks to check a lab result within a specific timeframe (e.g., \"within the last 24 hours\").\n- When a task requires ordering a new test only if the existing result is older than a specific threshold (e.g., \"greater than 1 year old\").\n- When the agent must decide whether to skip an order based on the recency of the last result.\n\n## Common Failure Patterns\n- Misinterpreting \"within 24 hours\" as \"within the same calendar day\".\n- Ordering a test when the last result is exactly at or within the threshold (e.g., ordering because a result is 1 year old when the rule says \"greater than 1 year\").\n- Failing to check the `effectiveDateTime` field and instead relying on the `meta.lastUpdated` field, which may reflect system updates rather than the actual lab collection time.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Extract the `effectiveDateTime` from the most recent `Observation` entry.\n2. Calculate the duration between `current_time` and `effectiveDateTime`.\n3. If the duration exceeds the threshold (e.g., > 24 hours or > 365 days), proceed to the ordering logic. If not, stop and report the existing result.\n\n**Pattern 2: Threshold Comparison**\n1. Compare the numeric value of the lab result against the provided threshold.\n2. Only trigger a `ServiceRequest` if the value is strictly outside the normal range or meets the specific \"low\" or \"high\" criteria defined in the prompt.\n\n**Pattern 3: Verification**\n1. Before calling `FINISH`, explicitly state the calculation: \"The last result was on [Date], which is [X] days/hours ago. Since this is [within/outside] the [Time] window, [Action].\"\n\n## Example Application\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. Identify `effectiveDateTime` (e.g., 2022-08-09).\n3. Current date is 2023-11-13. Difference is > 1 year.\n4. Proceed to POST `ServiceRequest`.\n\nCORRECT: \"The last result is from 2022-08-09, which is > 1 year old. Ordering new test.\"\nWRONG: \"The last result is from 2023-10-13, which is within 1 year, but I will order anyway.\"\n\n## Success Indicators\n- Agent correctly identifies when a result is within the valid window and skips the order.\n- Agent correctly identifies when a result is stale and performs the order.\n\n## Failure Indicators\n- Agent orders a test when the last result is within the valid window.\n- Agent fails to order a test when the last result is clearly expired.",
+          "tags": [
+            "lab-results",
+            "temporal-logic",
+            "service-request"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "sentinel_value_handling",
+          "description": "Instructs the agent to use natural language for missing data instead of returning raw sentinel values.",
+          "content": "## Skill Title\n\nSentinel Value Handling and Natural Language Reporting\n\n## Pattern Description\n\nWhen a data retrieval task (e.g., searching for a lab result or patient record) returns no results, the agent must avoid returning raw sentinel values like \"-1\", \"N/A\", or \"[]\". These values are artifacts of internal logic and are not appropriate for the final user-facing response. Instead, the agent must translate the absence of data into a clear, professional, and informative natural language statement.\n\n## When to Use This Skill\n\n- When a GET request returns a Bundle with `total: 0` or an empty `entry` array.\n- When a required measurement (e.g., HbA1C, magnesium) is not found in the patient's chart.\n- When the task instructions specify a sentinel value (e.g., \"return -1 if not found\") but the final output must be human-readable.\n\n## Common Failure Patterns\n\n- Returning `FINISH([-1])` or `FINISH([\"N/A\"])` directly to the user.\n- Failing to explain *why* the information is missing (e.g., \"No record found\" vs \"No magnesium level has been recorded in the last 24 hours\").\n\n## Recommended Patterns\n\n**Pattern 1: Natural Language Translation**\nIf the search result is empty, construct a sentence that describes the missing data in the context of the request.\n\nCORRECT: `FINISH([\"No HbA1C value was found in the patient's chart.\"])\nWRONG:   `FINISH([\"-1\"])\n\n**Pattern 2: Contextual Explanation**\nIf the task involves a time-bound search (e.g., \"within the last 24 hours\"), explicitly state that the data is missing for that specific timeframe.\n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for this patient.\"])\nWRONG:   `FINISH([\"-1\"])\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S6488980?\"\n\n**Step-by-step:**\n1. Issue GET request for Observation.\n2. Observe `total: 0` in the response bundle.\n3. Recognize that no data exists.\n4. Formulate a clear response: \"No HbA1C value was found in the chart for patient S6488980.\"\n5. Call `FINISH([\"No HbA1C value was found in the chart for patient S6488980.\"])\n\n## Success Indicators\n\n- The agent's final output contains descriptive text instead of numeric or placeholder codes.\n- The user receives a clear explanation of why the requested information could not be provided.\n\n## Failure Indicators\n\n- The agent outputs \"-1\", \"N/A\", or empty brackets in the final response.",
+          "tags": [
+            "formatting",
+            "communication"
+          ]
+        },
+        "net": -4,
+        "score": -4,
+        "raw_score": -3,
+        "fixes": 0,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict pre-condition validation and explicit necessity checks before creating any ServiceRequest.",
+          "content": "# Conditional ServiceRequest Logic\n\n## Pattern Description\n\nBefore creating a `ServiceRequest`, you must verify that the clinical condition or threshold specified in the task is explicitly met. Do not assume that a task implies an automatic order; you must first retrieve the relevant data, evaluate the condition, and only proceed with the `POST` request if the criteria are satisfied.\n\n## When to Use This Skill\n\n- When a task includes conditional logic (e.g., \"If lab value is low, then order X\").\n- When a task requires checking a date threshold (e.g., \"If result is > 1 year old, order X\").\n- Before any `POST` request to the `ServiceRequest` endpoint.\n\n## Common Failure Patterns\n\n- Proceeding with an order when the retrieved data does not meet the specified threshold (e.g., ordering potassium replacement when the level is 3.8 mmol/L and the threshold is < 3.5 mmol/L).\n- Ordering a test when the data is missing or does not meet the criteria (e.g., ordering a new HbA1C when the existing one is not actually > 1 year old).\n- Failing to verify the existence of a result before deciding to order a new one.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-condition Verification**\nBefore issuing a `POST` request, you must perform a `GET` request to retrieve the necessary clinical data. Compare the retrieved value against the task's threshold. If the condition is not met, do not create the `ServiceRequest` and inform the user why.\n\n**Pattern 2: Explicit Decision Logic**\nIf the condition is met, document the rationale in the `note` field of the `ServiceRequest`. If the condition is not met, explicitly state in your `FINISH` call that no order was placed because the criteria were not satisfied.\n\n**Pattern 3: Resource Reference Formatting**\nEnsure the `subject.reference` is formatted as `Patient/{id}`. Do not use raw MRNs or other identifiers.\n\n## Example Application\n\n**Task:** \"If potassium < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&patient=S123`\n2. Parse the value (e.g., 3.8).\n3. Evaluate: 3.8 < 3.5 is False.\n4. Action: Do not POST. \n5. Output: `FINISH([\"Potassium is 3.8, which is not below the 3.5 threshold. No replacement ordered.\"])`\n\n## Success Indicators\n\n- The agent performs a `GET` request and evaluates the data before any `POST`.\n- No `ServiceRequest` is created when the clinical criteria are not met.\n\n## Failure Indicators\n\n- `ServiceRequest` is created despite the data showing the condition is not met.\n- The agent skips the data retrieval step and proceeds directly to ordering.",
+          "tags": [
+            "service-request",
+            "validation",
+            "logic"
+          ]
+        },
+        "net": -6,
+        "score": -6,
+        "raw_score": -5,
+        "fixes": 0,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 1,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 25,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict conditional logic for ServiceRequest creation, requiring explicit verification of clinical thresholds before POSTing.",
+        "content": "# Conditional ServiceRequest Logic\n\n## Pattern Description\nWhen a task requires a ServiceRequest (e.g., ordering a lab or referral) based on a clinical condition (e.g., \"if low\", \"if > 1 year old\"), you must verify the condition is met before initiating the POST request. Do not assume the condition is met; you must explicitly evaluate the retrieved data against the specified threshold or time constraint.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger for a ServiceRequest (e.g., \"If X, then order Y\").\n- When you have retrieved clinical data (e.g., Observation) and must decide whether to proceed with an order.\n\n## Common Failure Patterns\n- Creating a ServiceRequest automatically without checking if the condition (e.g., low potassium, outdated lab) is actually met.\n- Proceeding with an order even when the data shows the condition is false (e.g., lab result is within normal range).\n- Failing to document the reasoning for the decision (or lack thereof) in the final response.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-Order Verification**\n1. Retrieve the relevant clinical data (e.g., GET /Observation).\n2. Compare the value or date against the task's threshold.\n3. If the condition is NOT met, do not POST the ServiceRequest. State clearly in your final answer why no order was placed.\n4. If the condition IS met, proceed with the POST request, ensuring all required fields (code, subject, intent, status) are populated.\n\n**Pattern 2: Decision Documentation**\n- Always include the rationale for your decision (to order or not to order) in the `FINISH` output. Reference the specific value and date found.\n\n## Example Application\n\n**Task:** \"If potassium is < 3.5 mmol/L, order replacement.\"\n\n**Step-by-step:**\n1. GET /Observation?code=K&patient=S123\n2. Result: 4.0 mmol/L.\n3. Evaluation: 4.0 is not < 3.5. Do not POST.\n4. Output: `FINISH([\"Potassium is 4.0 mmol/L, which is not low. No replacement ordered.\"])`\n\n## Success Indicators\n- ServiceRequest is only created when the clinical condition is explicitly satisfied.\n- Final output explains the decision based on the retrieved data.\n\n## Failure Indicators\n- ServiceRequest is created when the condition is not met.\n- Agent fails to perform the comparison and orders by default.",
+        "tags": [
+          "service-request",
+          "logic",
+          "conditional-execution"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "observation_not_found_handling",
+        "description": "Handle missing observation data by returning a descriptive string instead of a sentinel value.",
+        "content": "## Skill Title\nObservation Not Found Handling\n\n## Pattern Description\nWhen searching for clinical observations (e.g., lab results, vitals) via FHIR, the search may return an empty bundle (`total: 0` or empty `entry` array). The agent must not return raw sentinel values like `-1` or `N/A` as the final answer. Instead, it should provide a clear, human-readable statement indicating that no data was found for the requested criteria.\n\n## When to Use This Skill\n- When a `GET /Observation` request returns a bundle with `total: 0` or an empty `entry` list.\n- When the task requires a specific value (e.g., magnesium level) but none exists in the specified timeframe.\n\n## Common Failure Patterns\n- Returning `-1`, `[-1]`, or `\"N/A\"` as the final answer.\n- Failing to explain to the user that the data is missing, leading to confusion about whether the search failed or the data simply doesn't exist.\n\n## Recommended Patterns\n**Pattern 1: Verification**\nCheck the `total` field in the FHIR Bundle response. If `total` is 0, do not attempt to extract values.\n\n**Pattern 2: Completion**\nIf no data is found, use the `FINISH` function with a descriptive string. \n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S12345; therefore, no order was placed.\"])`\nWRONG: `FINISH([-1])`\n\n## Example Application\n**Task:** \"What is the most recent magnesium level for patient S12345?\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=MG&patient=S12345`.\n2. Observe `total: 0` in the response.\n3. Recognize that no data exists.\n4. Construct the final response: `FINISH([\"No magnesium level found for patient S12345.\"])`\n\n## Success Indicators\n- The agent provides a clear, natural language explanation of the missing data.\n- The agent avoids returning numeric sentinel values in the final output.\n\n## Failure Indicators\n- The agent returns `-1` or other non-descriptive codes.\n- The agent attempts to parse a non-existent observation value.",
+        "tags": [
+          "observation",
+          "fhir",
+          "error-handling"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "numerical_answer_unit_enforcement",
+        "description": "Enforce inclusion of standard units in numerical answers for demographics and lab results.",
+        "content": "## Skill Title\nNumerical Answer Unit Enforcement\n\n## Pattern Description\nWhen providing numerical answers to clinical questions, the agent must include the appropriate unit of measurement. Providing a raw number without context is clinically ambiguous and often leads to incorrect evaluations. This skill ensures that all numerical outputs for patient demographics (e.g., age) and lab observations (e.g., magnesium levels) are suffixed with their standard units.\n\n## When to Use This Skill\n- When answering questions about patient age (e.g., \"What is the age of the patient?\").\n- When reporting lab observation values (e.g., \"What is the most recent magnesium level?\").\n- Whenever the task prompt implies a unit (e.g., \"mg/dL\", \"years\").\n\n## Common Failure Patterns\n- Returning a raw integer or float (e.g., `FINISH([82])`) instead of a string with units (e.g., `FINISH([\"82 years\"])`).\n- Omitting units for lab values, leading to ambiguity in the reported result.\n\n## Recommended Patterns\n\n**Pattern 1: Demographic Units**\nWhen reporting age, always append \"years\" to the integer value.\nCORRECT: `FINISH([\"82 years\"])\nWRONG: `FINISH([82])`\n\n**Pattern 2: Lab Observation Units**\nWhen reporting lab values, append the unit specified in the task or the standard unit for that lab (e.g., \"mg/dL\" for magnesium).\nCORRECT: `FINISH([\"2.1 mg/dL\"])\nWRONG: `FINISH([2.1])`\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S6537563?\"\n\n**Step-by-step:**\n1. GET the patient resource.\n2. Extract the `birthDate` and calculate the age based on the current date.\n3. Format the result as a string including the unit.\n\nCORRECT output: `FINISH([\"82 years\"])\nWRONG output: `FINISH([82])`\n\n## Success Indicators\n- Final answers consistently include the correct unit of measurement.\n- No raw numbers are returned for clinical values.\n\n## Failure Indicators\n- Agent returns a bare number without a unit.\n- Agent includes incorrect units (e.g., \"82 months\" instead of \"82 years\").",
+        "tags": [
+          "formatting",
+          "units",
+          "clinical-accuracy"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict conditional logic for ServiceRequest creation, requiring explicit verification of clinical thresholds before POSTing.",
+        "content": "# Conditional ServiceRequest Logic\n\n## Pattern Description\nWhen a task requires a ServiceRequest (e.g., ordering a lab or referral) based on a clinical condition (e.g., \"if low\", \"if > 1 year old\"), you must verify the condition is met before initiating the POST request. Do not assume the condition is met; you must explicitly evaluate the retrieved data against the specified threshold or time constraint.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger for a ServiceRequest (e.g., \"If X, then order Y\").\n- When you have retrieved clinical data (e.g., Observation) and must decide whether to proceed with an order.\n\n## Common Failure Patterns\n- Creating a ServiceRequest automatically without checking if the condition (e.g., low potassium, outdated lab) is actually met.\n- Proceeding with an order even when the data shows the condition is false (e.g., lab result is within normal range).\n- Failing to document the reasoning for the decision (or lack thereof) in the final response.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-Order Verification**\n1. Retrieve the relevant clinical data (e.g., GET /Observation).\n2. Compare the value or date against the task's threshold.\n3. If the condition is NOT met, do not POST the ServiceRequest. State clearly in your final answer why no order was placed.\n4. If the condition IS met, proceed with the POST request, ensuring all required fields (code, subject, intent, status) are populated.\n\n**Pattern 2: Decision Documentation**\n- Always include the rationale for your decision (to order or not to order) in the `FINISH` output. Reference the specific value and date found.\n\n## Example Application\n\n**Task:** \"If potassium is < 3.5 mmol/L, order replacement.\"\n\n**Step-by-step:**\n1. GET /Observation?code=K&patient=S123\n2. Result: 4.0 mmol/L.\n3. Evaluation: 4.0 is not < 3.5. Do not POST.\n4. Output: `FINISH([\"Potassium is 4.0 mmol/L, which is not low. No replacement ordered.\"])`\n\n## Success Indicators\n- ServiceRequest is only created when the clinical condition is explicitly satisfied.\n- Final output explains the decision based on the retrieved data.\n\n## Failure Indicators\n- ServiceRequest is created when the condition is not met.\n- Agent fails to perform the comparison and orders by default.",
+        "tags": [
+          "service-request",
+          "logic",
+          "conditional-execution"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict conditional logic for ServiceRequest creation, requiring explicit verification of clinical thresholds before POSTing.",
+          "content": "# Conditional ServiceRequest Logic\n\n## Pattern Description\nWhen a task requires a ServiceRequest (e.g., ordering a lab or referral) based on a clinical condition (e.g., \"if low\", \"if > 1 year old\"), you must verify the condition is met before initiating the POST request. Do not assume the condition is met; you must explicitly evaluate the retrieved data against the specified threshold or time constraint.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger for a ServiceRequest (e.g., \"If X, then order Y\").\n- When you have retrieved clinical data (e.g., Observation) and must decide whether to proceed with an order.\n\n## Common Failure Patterns\n- Creating a ServiceRequest automatically without checking if the condition (e.g., low potassium, outdated lab) is actually met.\n- Proceeding with an order even when the data shows the condition is false (e.g., lab result is within normal range).\n- Failing to document the reasoning for the decision (or lack thereof) in the final response.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-Order Verification**\n1. Retrieve the relevant clinical data (e.g., GET /Observation).\n2. Compare the value or date against the task's threshold.\n3. If the condition is NOT met, do not POST the ServiceRequest. State clearly in your final answer why no order was placed.\n4. If the condition IS met, proceed with the POST request, ensuring all required fields (code, subject, intent, status) are populated.\n\n**Pattern 2: Decision Documentation**\n- Always include the rationale for your decision (to order or not to order) in the `FINISH` output. Reference the specific value and date found.\n\n## Example Application\n\n**Task:** \"If potassium is < 3.5 mmol/L, order replacement.\"\n\n**Step-by-step:**\n1. GET /Observation?code=K&patient=S123\n2. Result: 4.0 mmol/L.\n3. Evaluation: 4.0 is not < 3.5. Do not POST.\n4. Output: `FINISH([\"Potassium is 4.0 mmol/L, which is not low. No replacement ordered.\"])`\n\n## Success Indicators\n- ServiceRequest is only created when the clinical condition is explicitly satisfied.\n- Final output explains the decision based on the retrieved data.\n\n## Failure Indicators\n- ServiceRequest is created when the condition is not met.\n- Agent fails to perform the comparison and orders by default.",
+          "tags": [
+            "service-request",
+            "logic",
+            "conditional-execution"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_not_found_handling",
+          "description": "Handle missing observation data by returning a descriptive string instead of a sentinel value.",
+          "content": "## Skill Title\nObservation Not Found Handling\n\n## Pattern Description\nWhen searching for clinical observations (e.g., lab results, vitals) via FHIR, the search may return an empty bundle (`total: 0` or empty `entry` array). The agent must not return raw sentinel values like `-1` or `N/A` as the final answer. Instead, it should provide a clear, human-readable statement indicating that no data was found for the requested criteria.\n\n## When to Use This Skill\n- When a `GET /Observation` request returns a bundle with `total: 0` or an empty `entry` list.\n- When the task requires a specific value (e.g., magnesium level) but none exists in the specified timeframe.\n\n## Common Failure Patterns\n- Returning `-1`, `[-1]`, or `\"N/A\"` as the final answer.\n- Failing to explain to the user that the data is missing, leading to confusion about whether the search failed or the data simply doesn't exist.\n\n## Recommended Patterns\n**Pattern 1: Verification**\nCheck the `total` field in the FHIR Bundle response. If `total` is 0, do not attempt to extract values.\n\n**Pattern 2: Completion**\nIf no data is found, use the `FINISH` function with a descriptive string. \n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S12345; therefore, no order was placed.\"])`\nWRONG: `FINISH([-1])`\n\n## Example Application\n**Task:** \"What is the most recent magnesium level for patient S12345?\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=MG&patient=S12345`.\n2. Observe `total: 0` in the response.\n3. Recognize that no data exists.\n4. Construct the final response: `FINISH([\"No magnesium level found for patient S12345.\"])`\n\n## Success Indicators\n- The agent provides a clear, natural language explanation of the missing data.\n- The agent avoids returning numeric sentinel values in the final output.\n\n## Failure Indicators\n- The agent returns `-1` or other non-descriptive codes.\n- The agent attempts to parse a non-existent observation value.",
+          "tags": [
+            "observation",
+            "fhir",
+            "error-handling"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "numerical_answer_unit_enforcement",
+          "description": "Enforce inclusion of standard units in numerical answers for demographics and lab results.",
+          "content": "## Skill Title\nNumerical Answer Unit Enforcement\n\n## Pattern Description\nWhen providing numerical answers to clinical questions, the agent must include the appropriate unit of measurement. Providing a raw number without context is clinically ambiguous and often leads to incorrect evaluations. This skill ensures that all numerical outputs for patient demographics (e.g., age) and lab observations (e.g., magnesium levels) are suffixed with their standard units.\n\n## When to Use This Skill\n- When answering questions about patient age (e.g., \"What is the age of the patient?\").\n- When reporting lab observation values (e.g., \"What is the most recent magnesium level?\").\n- Whenever the task prompt implies a unit (e.g., \"mg/dL\", \"years\").\n\n## Common Failure Patterns\n- Returning a raw integer or float (e.g., `FINISH([82])`) instead of a string with units (e.g., `FINISH([\"82 years\"])`).\n- Omitting units for lab values, leading to ambiguity in the reported result.\n\n## Recommended Patterns\n\n**Pattern 1: Demographic Units**\nWhen reporting age, always append \"years\" to the integer value.\nCORRECT: `FINISH([\"82 years\"])\nWRONG: `FINISH([82])`\n\n**Pattern 2: Lab Observation Units**\nWhen reporting lab values, append the unit specified in the task or the standard unit for that lab (e.g., \"mg/dL\" for magnesium).\nCORRECT: `FINISH([\"2.1 mg/dL\"])\nWRONG: `FINISH([2.1])`\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S6537563?\"\n\n**Step-by-step:**\n1. GET the patient resource.\n2. Extract the `birthDate` and calculate the age based on the current date.\n3. Format the result as a string including the unit.\n\nCORRECT output: `FINISH([\"82 years\"])\nWRONG output: `FINISH([82])`\n\n## Success Indicators\n- Final answers consistently include the correct unit of measurement.\n- No raw numbers are returned for clinical values.\n\n## Failure Indicators\n- Agent returns a bare number without a unit.\n- Agent includes incorrect units (e.g., \"82 months\" instead of \"82 years\").",
+          "tags": [
+            "formatting",
+            "units",
+            "clinical-accuracy"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

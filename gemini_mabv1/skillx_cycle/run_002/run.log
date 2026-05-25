@@ -1,0 +1,120 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+[Baseline] Val: 47.5%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+
+'route'
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+[Epoch 0] Dev: 50/96 (52.1%) | Val: 51.2% | Skills extracted: 131, total: 22
+[BestCheckpoint] New best: epoch=0, val=51.2% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+
+
+
+'route'
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+
+
+[Epoch 1] Dev: 50/96 (52.1%) | Val: 45.0% | Skills extracted: 128, total: 45
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 2] Dev: 43/96 (44.8%) | Val: 52.5% | Skills extracted: 109, total: 59
+[BestCheckpoint] New best: epoch=2, val=52.5% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+
+
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 3] Dev: 50/96 (52.1%) | Val: 52.5% | Skills extracted: 125, total: 75
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+'route'
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 4] Dev: 49/96 (51.0%) | Val: 50.0% | Skills extracted: 123, total: 91
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 47.5%  █████████
+         0: 51.2%  ██████████
+         1: 45.0%  █████████
+         2: 52.5%  ██████████
+         3: 52.5%  ██████████
+         4: 50.0%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 91 functional skill(s)

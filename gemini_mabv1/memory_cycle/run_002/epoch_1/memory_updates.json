@@ -1,0 +1,514 @@
+[
+  {
+    "epoch": 1,
+    "sample_idx": 0,
+    "sample_id": "task5_19",
+    "memory_version_before": 47,
+    "new_bullets": [
+      "when asked \"If low, then order replacement IV magnesium according to dosing instructions,\" low indicates a value below 1.7 mg/dL; ensure your threshold comparison is accurate and execute the order tool immediately if the value is below this limit. If you have not performed a tool call to fetch the actual patient data, you must do so before concluding that no action is required."
+    ],
+    "memory_size": 48
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 1,
+    "sample_id": "task2_9",
+    "memory_version_before": 48,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current date, rather than outputting a hardcoded or guessed value in a `FINISH` block. Ensure your final response presents the calculated age as a clear text response rather than encapsulating it in a `FINISH` function."
+    ],
+    "memory_size": 49
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 5,
+    "sample_id": "task2_30",
+    "memory_version_before": 49,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current date, rather than outputting a hardcoded or guessed value in a `FINISH` block. Ensure your final response presents the calculated age as a clear text response rather than encapsulating it in a `FINISH` function."
+    ],
+    "memory_size": 50
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 6,
+    "sample_id": "task10_17",
+    "memory_version_before": 50,
+    "new_bullets": [],
+    "memory_size": 50
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 9,
+    "sample_id": "task4_23",
+    "memory_version_before": 50,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call to retrieve the patient's laboratory data using the correct LOINC code (e.g., 4951-6 for magnesium) before providing an answer. Do not output a `FINISH` block with a placeholder value; instead, you must parse the retrieved data to identify the most recent observation and report that specific value."
+    ],
+    "memory_size": 51
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 10,
+    "sample_id": "task4_7",
+    "memory_version_before": 51,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call to retrieve the patient's laboratory data using the correct LOINC code (e.g., 4951-6 for magnesium) instead of returning a placeholder value. You must then parse the retrieved results by `effectiveDateTime` to identify the most recent observation and report that specific value."
+    ],
+    "memory_size": 52
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 12,
+    "sample_id": "task9_27",
+    "memory_version_before": 52,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must retrieve the data, evaluate it against this threshold, and if low, execute the necessary tool calls to place both the replacement potassium order and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 53
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 14,
+    "sample_id": "task2_14",
+    "memory_version_before": 53,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current date, rather than outputting a hardcoded or guessed value in a `FINISH` block. Ensure your final response presents the calculated age as a clear text response rather than encapsulating it in a `FINISH` function."
+    ],
+    "memory_size": 54
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 15,
+    "sample_id": "task5_23",
+    "memory_version_before": 54,
+    "new_bullets": [],
+    "memory_size": 54
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 16,
+    "sample_id": "task4_27",
+    "memory_version_before": 54,
+    "new_bullets": [
+      "when asked for the most recent magnesium level, you must first execute a search tool using the specific LOINC code 4951-6 to retrieve the patient's actual data. If the search returns no results, you must clearly state that no data was found rather than returning an arbitrary or placeholder value in the `FINISH` block."
+    ],
+    "memory_size": 55
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 18,
+    "sample_id": "task10_27",
+    "memory_version_before": 55,
+    "new_bullets": [
+      "when asked to determine if a lab test is greater than 1 year old, you must calculate the duration by comparing the result's `effectiveDateTime` to the current system date; if the result is older than 365 days, you must execute the tool call to order the new test within the same turn. If the result is less than 1 year old, you must explicitly state that no new test is required and refrain from placing an order."
+    ],
+    "memory_size": 56
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 19,
+    "sample_id": "task9_6",
+    "memory_version_before": 56,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must perform a targeted search using the LOINC code 2823-3 for potassium and execute the tool calls to place both the replacement and follow-up orders if the result is below this threshold."
+    ],
+    "memory_size": 57
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 22,
+    "sample_id": "task5_16",
+    "memory_version_before": 57,
+    "new_bullets": [
+      "when asked to check for a patient's magnesium level, you must first perform a broad search using the LOINC code 4951-6 without overly restrictive date filters to ensure no data exists before concluding that no replacement is required. If the initial query returns no results, you must verify the patient's record for any available magnesium observations before stating that no level has been recorded."
+    ],
+    "memory_size": 58
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 23,
+    "sample_id": "task8_5",
+    "memory_version_before": 58,
+    "new_bullets": [
+      "when asked to order a referral, you must perform the appropriate tool call to place the order (e.g., `order_referral`) with the specified clinical details in the request body, rather than simply stating in a `FINISH` block that the order has been completed."
+    ],
+    "memory_size": 59
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 25,
+    "sample_id": "task10_13",
+    "memory_version_before": 59,
+    "new_bullets": [
+      "when asked to evaluate if a lab test is greater than 1 year old, you must execute the appropriate tool call to order the new test within the same turn if the result is older than 365 days, rather than simply stating in your final response that the test has been ordered. Ensure the tool call is included as part of your interaction to formally initiate the order."
+    ],
+    "memory_size": 60
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 27,
+    "sample_id": "task9_14",
+    "memory_version_before": 60,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must perform a targeted search using the LOINC code 2823-3 for potassium and execute the tool calls to place both the replacement and follow-up orders if the result is below this threshold."
+    ],
+    "memory_size": 61
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 31,
+    "sample_id": "task2_15",
+    "memory_version_before": 61,
+    "new_bullets": [],
+    "memory_size": 61
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 33,
+    "sample_id": "task4_28",
+    "memory_version_before": 61,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call to retrieve the patient's laboratory data using the specific LOINC code for the requested test (e.g., 4951-6 for magnesium) rather than returning a placeholder or arbitrary value. You must then parse the retrieved results to identify the most recent observation within the specified timeframe and report that specific value in your final response."
+    ],
+    "memory_size": 62
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 35,
+    "sample_id": "task10_8",
+    "memory_version_before": 62,
+    "new_bullets": [
+      "when asked to determine if a lab test is greater than 1 year old, you must explicitly compare the result date to the current date and only trigger the order tool if the duration exceeds 365 days. If your calculation confirms the result is less than 1 year old, you must state that no new test is required and refrain from initiating any order, as placing an unnecessary lab order contradicts the clinical instruction."
+    ],
+    "memory_size": 63
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 36,
+    "sample_id": "task9_20",
+    "memory_version_before": 63,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must perform a targeted search using the LOINC code 2823-3 for potassium and execute the tool calls to place both the replacement and follow-up orders if the result is below this threshold."
+    ],
+    "memory_size": 64
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 38,
+    "sample_id": "task5_7",
+    "memory_version_before": 64,
+    "new_bullets": [],
+    "memory_size": 64
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 39,
+    "sample_id": "task9_9",
+    "memory_version_before": 64,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must retrieve the data, evaluate it against this threshold, and if low, execute the necessary tool calls to place both the replacement potassium order and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 65
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 40,
+    "sample_id": "task10_20",
+    "memory_version_before": 65,
+    "new_bullets": [],
+    "memory_size": 65
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 48,
+    "sample_id": "task9_8",
+    "memory_version_before": 65,
+    "new_bullets": [],
+    "memory_size": 65
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 49,
+    "sample_id": "task5_3",
+    "memory_version_before": 65,
+    "new_bullets": [
+      "when asked \"If low, then order replacement IV magnesium according to dosing instructions,\" low indicates a value below 1.7 mg/dL; ensure your threshold comparison is accurate and execute the order tool immediately if the value is below this limit. If the initial search returns no results, you must perform a broader search without date filters to confirm the absence of data before concluding that no action is required."
+    ],
+    "memory_size": 66
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 50,
+    "sample_id": "task10_18",
+    "memory_version_before": 66,
+    "new_bullets": [
+      "when asked to evaluate if an HbA1C lab test is greater than 1 year old, accurately calculate the duration relative to the current date; if the result is less than 1 year old, you must explicitly state that no new test is required and refrain from calling the order tool, as performing an unnecessary order contradicts the clinical instruction."
+    ],
+    "memory_size": 67
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 52,
+    "sample_id": "task9_28",
+    "memory_version_before": 67,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" you must use the specific LOINC code `2823-3` for potassium in your search query rather than performing a generic patient search. If the retrieved value is below 3.5 mEq/L, you must execute the necessary tool calls to place both the replacement potassium order and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 68
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 56,
+    "sample_id": "task10_10",
+    "memory_version_before": 68,
+    "new_bullets": [
+      "when asked to retrieve the last HbA1C value and order a new one if the result is older than one year, you must first execute a tool call to search for the test using the correct LOINC code (e.g., 4548-4) rather than assuming the data is missing. If the search returns no results or results older than one year, you must then execute the appropriate tool call to place the new lab order and include the tool output in your response."
+    ],
+    "memory_size": 69
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 57,
+    "sample_id": "task10_16",
+    "memory_version_before": 69,
+    "new_bullets": [
+      "when asked to retrieve the last HbA1C value and order a new one if the result is older than one year, you must first execute a tool call to search for the test using the correct LOINC code (e.g., 4548-4) rather than assuming the data is missing. If the search returns no results or results older than one year, you must then execute the appropriate tool call to place the new lab order and include the tool output in your response."
+    ],
+    "memory_size": 70
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 58,
+    "sample_id": "task2_6",
+    "memory_version_before": 70,
+    "new_bullets": [],
+    "memory_size": 70
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 59,
+    "sample_id": "task2_17",
+    "memory_version_before": 70,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age accurately, rather than providing an unverified or hardcoded value. Ensure the final response is the product of this tool-based calculation and does not rely on pre-existing knowledge of the patient's identity."
+    ],
+    "memory_size": 71
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 60,
+    "sample_id": "task9_11",
+    "memory_version_before": 71,
+    "new_bullets": [],
+    "memory_size": 71
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 61,
+    "sample_id": "task9_5",
+    "memory_version_before": 71,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must perform a targeted search using the LOINC code 2823-3 for potassium, and if the result is below this threshold, you must execute the tool calls to place both the replacement and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 72
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 62,
+    "sample_id": "task5_2",
+    "memory_version_before": 72,
+    "new_bullets": [],
+    "memory_size": 72
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 63,
+    "sample_id": "task2_1",
+    "memory_version_before": 72,
+    "new_bullets": [
+      "when asked to retrieve a patient's age using an MRN, you must execute the `get_patient_details` tool to obtain the actual birth date and perform the age calculation based on the current system date, rather than including the patient's name or pre-filled demographic information in your response. Ensure the final output is derived solely from the tool's data and explicitly states the calculated age."
+    ],
+    "memory_size": 73
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 64,
+    "sample_id": "task5_5",
+    "memory_version_before": 73,
+    "new_bullets": [
+      "when asked \"If low, then order replacement IV magnesium according to dosing instructions,\" you must retrieve the data using the LOINC code 4951-6, sort by `effectiveDateTime` to find the most recent result, and verify if it falls within the last 24 hours before comparing it to the threshold of 1.5 mg/dL. If the result is below 1.5 mg/dL and within the 24-hour window, you must execute the tool call to order the replacement magnesium in the same turn."
+    ],
+    "memory_size": 74
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 65,
+    "sample_id": "task4_4",
+    "memory_version_before": 74,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call to retrieve the patient's actual laboratory data using the correct LOINC code (4951-6 for magnesium) instead of returning a placeholder value like \"-1\" in a `FINISH` block. You must parse the retrieved data to identify the most recent observation within the last 24 hours and report that specific value."
+    ],
+    "memory_size": 75
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 66,
+    "sample_id": "task2_22",
+    "memory_version_before": 75,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current system date, rather than providing an unverified or hardcoded value. You must ensure the response is derived solely from the tool's output and explicitly state the calculated age without including extraneous personal information like the patient's name."
+    ],
+    "memory_size": 76
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 76,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must retrieve the data, evaluate it against this threshold, and if low, execute the necessary tool calls to place both the replacement potassium order and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 77
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 70,
+    "sample_id": "task9_1",
+    "memory_version_before": 77,
+    "new_bullets": [],
+    "memory_size": 77
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 74,
+    "sample_id": "task10_24",
+    "memory_version_before": 77,
+    "new_bullets": [],
+    "memory_size": 77
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 75,
+    "sample_id": "task2_16",
+    "memory_version_before": 77,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current system date, rather than providing an unverified or hardcoded value. You must ensure the response is derived solely from the tool's output and explicitly state the calculated age without including extraneous personal information like the patient's name."
+    ],
+    "memory_size": 78
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 76,
+    "sample_id": "task2_26",
+    "memory_version_before": 78,
+    "new_bullets": [],
+    "memory_size": 78
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 77,
+    "sample_id": "task9_22",
+    "memory_version_before": 78,
+    "new_bullets": [
+      "when asked \"If low, then order replacement potassium according to dosing instructions,\" low indicates a value below 3.5 mEq/L; you must retrieve the data, evaluate it against this threshold, and if low, execute the necessary tool calls to place both the replacement potassium order and the follow-up serum potassium order in the same turn."
+    ],
+    "memory_size": 79
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 80,
+    "sample_id": "task4_15",
+    "memory_version_before": 79,
+    "new_bullets": [],
+    "memory_size": 79
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 81,
+    "sample_id": "task4_20",
+    "memory_version_before": 79,
+    "new_bullets": [],
+    "memory_size": 79
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 83,
+    "sample_id": "task5_17",
+    "memory_version_before": 79,
+    "new_bullets": [
+      "when asked to check for a patient's magnesium level, you must first perform a comprehensive search using the LOINC code 4951-6 without restrictive date filters to ensure no data exists before concluding that no replacement is required. If the initial search returns no results, you must verify the patient's record for any available magnesium observations across all dates before stating that no level has been recorded in the last 24 hours."
+    ],
+    "memory_size": 80
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 84,
+    "sample_id": "task10_15",
+    "memory_version_before": 80,
+    "new_bullets": [
+      "when asked to retrieve the last HbA1C value and order a new one if the result is older than one year, you must perform a search using the correct LOINC code (4548-4) across the entire record before concluding that no data exists. If the data is truly missing or older than one year, you must execute the tool call to order the new test within the same turn and include the tool output in your response."
+    ],
+    "memory_size": 81
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 85,
+    "sample_id": "task2_25",
+    "memory_version_before": 81,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age accurately based on the current system date, rather than providing an unverified or hardcoded value in a `FINISH` block. Ensure the final response is a clear text statement of the calculated age and avoid using the `FINISH` function to output the age as a final answer."
+    ],
+    "memory_size": 82
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 86,
+    "sample_id": "task4_26",
+    "memory_version_before": 82,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call using the correct LOINC code to retrieve actual patient data instead of returning a placeholder value like \"-1\". You must parse the retrieved data to identify the most recent observation and report that specific value in your final response."
+    ],
+    "memory_size": 83
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 89,
+    "sample_id": "task4_21",
+    "memory_version_before": 83,
+    "new_bullets": [
+      "when asked for the most recent lab value, you must first execute a tool call to retrieve the patient's actual laboratory data using the correct LOINC code (4951-6 for magnesium) instead of returning a placeholder value like \"-1\" in a `FINISH` block. You must parse the retrieved data to identify the most recent observation within the last 24 hours and report that specific value or explicitly state that no data exists."
+    ],
+    "memory_size": 84
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 91,
+    "sample_id": "task10_12",
+    "memory_version_before": 84,
+    "new_bullets": [
+      "when asked to retrieve the last HbA1C value and order a new one if the result is older than one year, you must perform a search using the correct LOINC code (4548-4) across the entire record before concluding that no data exists. If the data is truly missing or the most recent result is older than one year, you must execute the tool call to order the new test within the same turn and include the tool output in your response."
+    ],
+    "memory_size": 85
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 92,
+    "sample_id": "task2_28",
+    "memory_version_before": 85,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must execute the `get_patient_details` tool to retrieve the birth date and calculate the age based on the current system date, rather than including the patient's name or pre-filled demographic information in your response. Ensure the final output is derived solely from the tool's data and explicitly states the calculated age without including extraneous personal information like the patient's name."
+    ],
+    "memory_size": 86
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 95,
+    "sample_id": "task10_21",
+    "memory_version_before": 86,
+    "new_bullets": [
+      "when asked to retrieve the last HbA1C value and order a new one if the result is older than one year, you must perform a search using the correct LOINC code (4548-4) across the entire record before concluding that no data exists. If the data is truly missing or the most recent result is older than one year, you must execute the tool call to order the new test within the same turn and include the tool output in your response rather than simply stating it has been ordered."
+    ],
+    "memory_size": 87
+  }
+]

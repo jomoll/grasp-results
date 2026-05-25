@@ -1,0 +1,90 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+[Baseline] Val: 48.8%
+[BestCheckpoint] New best: epoch=baseline, val=48.8% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+
+[Epoch 0] Dev: 44/96 (45.8%) | Val: 51.2% | Rules: 20 (pairs critiqued: 52)
+[BestCheckpoint] New best: epoch=0, val=51.2% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 1] Dev: 53/96 (55.2%) | Val: 50.0% | Rules: 20 (pairs critiqued: 95)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 2] Dev: 50/96 (52.1%) | Val: 51.2% | Rules: 20 (pairs critiqued: 141)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+list index out of range
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 2): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 3): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 4): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 5): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 3] Dev: 52/96 (54.2%) | Val: 47.5% | Rules: 20 (pairs critiqued: 185)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 2): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 3): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 4): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 5): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 57/96 (59.4%) | Val: 58.8% | Rules: 20 (pairs critiqued: 224)
+[BestCheckpoint] New best: epoch=4, val=58.8% — ExpeL rules snapshot saved
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 48.8%  █████████
+         0: 51.2%  ██████████
+         1: 50.0%  ██████████
+         2: 51.2%  ██████████
+         3: 47.5%  █████████
+         4: 58.8%  ███████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

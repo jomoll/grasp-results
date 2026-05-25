@@ -1,0 +1,256 @@
+[
+  {
+    "epoch": 3,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 37,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "fhir_observation_search_strategy",
+        "description": "Use _sort=-date and multiple code aliases when searching for laboratory observations to ensure the most recent data is retrieved.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, the agent must ensure it retrieves the most recent data and accounts for potential variations in coding (e.g., LOINC codes vs. local display names). Relying on a single, potentially incomplete search query often leads to missing records or empty results. This skill mandates using sorting parameters and, if necessary, iterative searching to ensure the chart is accurately represented.\n\n## When to Use This Skill\n- When searching for a specific lab result (e.g., HbA1C, Potassium, Magnesium) and the initial search returns no results or an empty bundle.\n- When the task requires the \"most recent\" value, necessitating a chronological sort.\n\n## Common Failure Patterns\n- Searching without `_sort=-date`, which may return older records or require manual filtering of large bundles.\n- Assuming a single code (e.g., 'A1C') is sufficient when the system might index the record under a different code or display text.\n- Concluding a value is missing after only one search attempt without trying alternative identifiers or sorting.\n\n## Recommended Patterns\n\n**Pattern 1: Sort by Date**\nAlways append `&_sort=-date` to your `GET /Observation` requests to ensure the most recent entry appears first in the bundle.\n\n**Pattern 2: Multi-Code Search**\nIf a search for a specific code (e.g., `code=A1C`) returns zero results, immediately attempt a secondary search using the formal LOINC code (e.g., `code=4548-4`) or other known aliases before concluding the data is missing.\n\n**Pattern 3: Verification**\nIf the search returns a bundle, inspect the `entry` array. If the array is empty, do not immediately assume the value is missing; verify if the `total` count is 0 or if the search parameters were too restrictive.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value for patient S6550627?\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /Observation?patient=S6550627&code=A1C&_sort=-date`\n2. If `total` is 0, perform secondary search: `GET /Observation?patient=S6550627&code=4548-4&_sort=-date`\n3. If both return 0, only then conclude the value is unavailable.\n4. If a result is found, extract the `valueQuantity.value` from the first entry in the sorted bundle.\n\n## Success Indicators\n- The agent successfully retrieves the most recent observation by using `_sort=-date`.\n- The agent finds records that were previously missed by trying alternative codes.\n\n## Failure Indicators\n- The agent reports \"not found\" despite the record existing under a different code or being buried in a large, unsorted list.",
+        "tags": [
+          "fhir",
+          "search",
+          "observation",
+          "lab-results"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_observation_search_strategy",
+        "description": "Use _sort=-date and multiple code aliases when searching for laboratory observations to ensure the most recent data is retrieved.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, the agent must ensure it retrieves the most recent data and accounts for potential variations in coding (e.g., LOINC codes vs. local display names). Relying on a single, potentially incomplete search query often leads to missing records or empty results. This skill mandates using sorting parameters and, if necessary, iterative searching to ensure the chart is accurately represented.\n\n## When to Use This Skill\n- When searching for a specific lab result (e.g., HbA1C, Potassium, Magnesium) and the initial search returns no results or an empty bundle.\n- When the task requires the \"most recent\" value, necessitating a chronological sort.\n\n## Common Failure Patterns\n- Searching without `_sort=-date`, which may return older records or require manual filtering of large bundles.\n- Assuming a single code (e.g., 'A1C') is sufficient when the system might index the record under a different code or display text.\n- Concluding a value is missing after only one search attempt without trying alternative identifiers or sorting.\n\n## Recommended Patterns\n\n**Pattern 1: Sort by Date**\nAlways append `&_sort=-date` to your `GET /Observation` requests to ensure the most recent entry appears first in the bundle.\n\n**Pattern 2: Multi-Code Search**\nIf a search for a specific code (e.g., `code=A1C`) returns zero results, immediately attempt a secondary search using the formal LOINC code (e.g., `code=4548-4`) or other known aliases before concluding the data is missing.\n\n**Pattern 3: Verification**\nIf the search returns a bundle, inspect the `entry` array. If the array is empty, do not immediately assume the value is missing; verify if the `total` count is 0 or if the search parameters were too restrictive.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value for patient S6550627?\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /Observation?patient=S6550627&code=A1C&_sort=-date`\n2. If `total` is 0, perform secondary search: `GET /Observation?patient=S6550627&code=4548-4&_sort=-date`\n3. If both return 0, only then conclude the value is unavailable.\n4. If a result is found, extract the `valueQuantity.value` from the first entry in the sorted bundle.\n\n## Success Indicators\n- The agent successfully retrieves the most recent observation by using `_sort=-date`.\n- The agent finds records that were previously missed by trying alternative codes.\n\n## Failure Indicators\n- The agent reports \"not found\" despite the record existing under a different code or being buried in a large, unsorted list.",
+        "tags": [
+          "fhir",
+          "search",
+          "observation",
+          "lab-results"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "lab_result_recency_and_threshold_validation",
+        "description": "Verify lab result recency and value thresholds before ordering new tests or medications.",
+        "content": "# Lab Result Recency and Threshold Validation\n\n## Pattern Description\nWhen a task requires checking a lab value to decide on a new order (e.g., a new lab test or medication), you must first verify if the existing data is current and if the value warrants intervention. Do not assume that a lab result exists or that it requires action. Always compare the `effectiveDateTime` of the most recent observation against the current time to determine if it meets the recency threshold (e.g., 1 year for HbA1C, 24 hours for electrolytes).\n\n## When to Use This Skill\n- When the task asks to check a lab value and conditionally order a new test or medication.\n- When you need to determine if an existing lab result is \"stale\" or \"current\".\n- When you need to decide if a value (e.g., potassium level) is outside the normal range before ordering a replacement.\n\n## Common Failure Patterns\n- Ordering a new test despite finding a recent, valid result in the chart.\n- Ordering medication when the lab value is within the normal range.\n- Failing to check the `effectiveDateTime` and assuming the most recent result is automatically \"old\".\n\n## Recommended Patterns\n\n**Pattern 1: Recency Check**\n1. Retrieve the most recent observation for the requested code.\n2. Parse the `effectiveDateTime`.\n3. Calculate the difference between the current time and the `effectiveDateTime`.\n4. If the difference is within the specified threshold (e.g., < 1 year), do not order a new test. Report the existing value and date instead.\n\n**Pattern 2: Threshold Validation**\n1. Extract the `valueQuantity.value`.\n2. Compare this value against the clinical threshold provided in the instructions.\n3. Only proceed with a `ServiceRequest` or `MedicationRequest` if the value is outside the normal range.\n\n## Example Application\n\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. Identify the most recent `effectiveDateTime` (e.g., 2023-10-13).\n3. Compare to current date (2023-11-13). Difference is 1 month.\n4. Since 1 month < 1 year, do not POST `ServiceRequest`.\n5. FINISH([\"The last HbA1C was 6.1% on 2023-10-13. No new test is required.\"])\n\n## Success Indicators\n- Agent correctly identifies when no action is needed based on data recency or value.\n- No unnecessary `ServiceRequest` or `MedicationRequest` resources are created.\n\n## Failure Indicators\n- Agent orders a test despite a recent result being present.\n- Agent orders medication when the lab value is normal.",
+        "tags": [
+          "lab",
+          "validation",
+          "conditional-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_query_optimization_strategy",
+        "description": "Prevents infinite loops and 400 errors by enforcing specific search parameters and avoiding pagination links.",
+        "content": "## Skill Title\nFHIR Search Query Optimization Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, avoid generic or overly broad queries that trigger large result sets or pagination links, as these often lead to 400 errors or infinite loops in the agent's reasoning process. Instead, prioritize specific, narrow queries using known identifiers or codes.\n\nIf a search returns a `link` array containing a `next` relation, do not attempt to follow it. Instead, refine your search parameters (e.g., adding a date range, specific status, or more precise code) to narrow the result set to the most relevant resources.\n\n## When to Use This Skill\n- When a previous search returned a `next` link or a large number of results.\n- When a search for a specific lab code (e.g., potassium, magnesium) returns no results or an empty bundle.\n- When the agent is stuck in a loop of repeating the same broad search (e.g., `GET /Observation?patient=...`).\n\n## Common Failure Patterns\n- Following `next` links in the `link` array, which often leads to 400 errors.\n- Using broad queries like `GET /Observation?patient=ID` when a specific code is required.\n- Repeatedly querying the same endpoint without changing parameters after a failed search.\n\n## Recommended Patterns\n\n**Pattern 1: Narrowing the Search**\nIf a search returns no results, do not repeat the same query. Add specific filters like `date` or `category`.\nCORRECT: `GET /Observation?patient=S123&code=2823-3&date=ge2023-11-12`\nWRONG: `GET /Observation?patient=S123` (repeatedly)\n\n**Pattern 2: Ignoring Pagination**\nIf a bundle contains a `next` link, ignore it. If the data you need isn't in the first page, your query is too broad. Refine the query instead of paginating.\n\n**Pattern 3: Verification**\nIf a search returns 0 results, explicitly state that no data was found for the specific criteria rather than attempting to search again with the same parameters.\n\n## Example Application\n\n**Task:** \"Check patient S3213957's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the specific LOINC code for potassium (e.g., 2823-3).\n2. Issue a targeted GET: `GET /Observation?patient=S3213957&code=2823-3`.\n3. If the bundle returns `total: 0`, do not try `category=laboratory` or `code=K`. \n4. Conclude that no data is available for that specific code.\n\n## Success Indicators\n- Agent stops repeating identical GET requests.\n- Agent avoids 400 errors by not following `next` links.\n- Agent successfully identifies when data is missing for a specific code.\n\n## Failure Indicators\n- Agent continues to cycle through different broad search parameters (e.g., `category=laboratory`, then `code=K`).\n- Agent attempts to follow `next` links in the `link` array.",
+        "tags": [
+          "fhir",
+          "search",
+          "error-handling"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "lab_value_interpretation_strategy",
+        "description": "Standardize lab value extraction and clinical threshold comparison for decision-making.",
+        "content": "## Skill Title\nLab Value Interpretation Strategy\n\n## Pattern Description\nWhen a task requires evaluating a lab result against a clinical threshold (e.g., \"if low, order replacement\"), you must avoid hardcoding thresholds in your reasoning. Instead, extract the numerical value and the unit from the `Observation` resource, then explicitly compare the value against the reference range provided in the task or the `referenceRange` field of the `Observation` resource.\n\n## When to Use This Skill\n- When a task requires a conditional action based on a lab result (e.g., \"if low, order X\").\n- When you need to determine if a value is within, above, or below a normal range.\n\n## Common Failure Patterns\n- Assuming a value is \"normal\" or \"low\" without explicitly checking the `referenceRange` or the task-provided threshold.\n- Mixing up units (e.g., mg/dL vs mmol/L) when comparing values.\n- Returning a descriptive string (e.g., \"2.0 mg/dL\") instead of the raw number when the task requires a numerical comparison or specific output format.\n\n## Recommended Patterns\n\n**Pattern 1: Extraction**\nAlways extract the `valueQuantity.value` as a float and `valueQuantity.unit` as a string. If `valueQuantity` is missing, check `valueString` for patterns like \"118/77 mmHg\".\n\n**Pattern 2: Threshold Comparison**\n1. Identify the threshold from the task description (e.g., \">= 1.5 mg/dL\").\n2. Compare the extracted `valueQuantity.value` against this threshold.\n3. If the value is ambiguous, look for the `referenceRange` array in the `Observation` resource to confirm the clinical context.\n\n**Pattern 3: Decision Logic**\n- If the value meets the criteria for action, proceed with the order.\n- If the value is within the normal range, explicitly state that no action is required.\n\n## Example Application\n\n**Task:** \"Check patient S0636132's last serum magnesium level. If < 1.5 mg/dL, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S0636132`.\n2. Extract `valueQuantity.value` (e.g., 2.0) and `valueQuantity.unit` (e.g., \"mg/dL\").\n3. Compare 2.0 >= 1.5.\n4. Since 2.0 is not < 1.5, conclude: \"The level is 2.0 mg/dL, which is within the normal range. No replacement is required.\"\n\n## Success Indicators\n- Agent correctly identifies whether a lab value is abnormal based on the provided threshold.\n- Agent avoids unnecessary orders when values are within normal limits.\n\n## Failure Indicators\n- Agent orders medication when the lab value is normal.\n- Agent fails to order medication when the lab value is clearly outside the threshold.",
+        "tags": [
+          "lab",
+          "observation",
+          "clinical-decision"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_observation_search_strategy",
+          "description": "Use _sort=-date and multiple code aliases when searching for laboratory observations to ensure the most recent data is retrieved.",
+          "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, the agent must ensure it retrieves the most recent data and accounts for potential variations in coding (e.g., LOINC codes vs. local display names). Relying on a single, potentially incomplete search query often leads to missing records or empty results. This skill mandates using sorting parameters and, if necessary, iterative searching to ensure the chart is accurately represented.\n\n## When to Use This Skill\n- When searching for a specific lab result (e.g., HbA1C, Potassium, Magnesium) and the initial search returns no results or an empty bundle.\n- When the task requires the \"most recent\" value, necessitating a chronological sort.\n\n## Common Failure Patterns\n- Searching without `_sort=-date`, which may return older records or require manual filtering of large bundles.\n- Assuming a single code (e.g., 'A1C') is sufficient when the system might index the record under a different code or display text.\n- Concluding a value is missing after only one search attempt without trying alternative identifiers or sorting.\n\n## Recommended Patterns\n\n**Pattern 1: Sort by Date**\nAlways append `&_sort=-date` to your `GET /Observation` requests to ensure the most recent entry appears first in the bundle.\n\n**Pattern 2: Multi-Code Search**\nIf a search for a specific code (e.g., `code=A1C`) returns zero results, immediately attempt a secondary search using the formal LOINC code (e.g., `code=4548-4`) or other known aliases before concluding the data is missing.\n\n**Pattern 3: Verification**\nIf the search returns a bundle, inspect the `entry` array. If the array is empty, do not immediately assume the value is missing; verify if the `total` count is 0 or if the search parameters were too restrictive.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value for patient S6550627?\"\n\n**Step-by-step:**\n1. Perform initial search: `GET /Observation?patient=S6550627&code=A1C&_sort=-date`\n2. If `total` is 0, perform secondary search: `GET /Observation?patient=S6550627&code=4548-4&_sort=-date`\n3. If both return 0, only then conclude the value is unavailable.\n4. If a result is found, extract the `valueQuantity.value` from the first entry in the sorted bundle.\n\n## Success Indicators\n- The agent successfully retrieves the most recent observation by using `_sort=-date`.\n- The agent finds records that were previously missed by trying alternative codes.\n\n## Failure Indicators\n- The agent reports \"not found\" despite the record existing under a different code or being buried in a large, unsorted list.",
+          "tags": [
+            "fhir",
+            "search",
+            "observation",
+            "lab-results"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_result_recency_and_threshold_validation",
+          "description": "Verify lab result recency and value thresholds before ordering new tests or medications.",
+          "content": "# Lab Result Recency and Threshold Validation\n\n## Pattern Description\nWhen a task requires checking a lab value to decide on a new order (e.g., a new lab test or medication), you must first verify if the existing data is current and if the value warrants intervention. Do not assume that a lab result exists or that it requires action. Always compare the `effectiveDateTime` of the most recent observation against the current time to determine if it meets the recency threshold (e.g., 1 year for HbA1C, 24 hours for electrolytes).\n\n## When to Use This Skill\n- When the task asks to check a lab value and conditionally order a new test or medication.\n- When you need to determine if an existing lab result is \"stale\" or \"current\".\n- When you need to decide if a value (e.g., potassium level) is outside the normal range before ordering a replacement.\n\n## Common Failure Patterns\n- Ordering a new test despite finding a recent, valid result in the chart.\n- Ordering medication when the lab value is within the normal range.\n- Failing to check the `effectiveDateTime` and assuming the most recent result is automatically \"old\".\n\n## Recommended Patterns\n\n**Pattern 1: Recency Check**\n1. Retrieve the most recent observation for the requested code.\n2. Parse the `effectiveDateTime`.\n3. Calculate the difference between the current time and the `effectiveDateTime`.\n4. If the difference is within the specified threshold (e.g., < 1 year), do not order a new test. Report the existing value and date instead.\n\n**Pattern 2: Threshold Validation**\n1. Extract the `valueQuantity.value`.\n2. Compare this value against the clinical threshold provided in the instructions.\n3. Only proceed with a `ServiceRequest` or `MedicationRequest` if the value is outside the normal range.\n\n## Example Application\n\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. Identify the most recent `effectiveDateTime` (e.g., 2023-10-13).\n3. Compare to current date (2023-11-13). Difference is 1 month.\n4. Since 1 month < 1 year, do not POST `ServiceRequest`.\n5. FINISH([\"The last HbA1C was 6.1% on 2023-10-13. No new test is required.\"])\n\n## Success Indicators\n- Agent correctly identifies when no action is needed based on data recency or value.\n- No unnecessary `ServiceRequest` or `MedicationRequest` resources are created.\n\n## Failure Indicators\n- Agent orders a test despite a recent result being present.\n- Agent orders medication when the lab value is normal.",
+          "tags": [
+            "lab",
+            "validation",
+            "conditional-logic"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_query_optimization_strategy",
+          "description": "Prevents infinite loops and 400 errors by enforcing specific search parameters and avoiding pagination links.",
+          "content": "## Skill Title\nFHIR Search Query Optimization Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, avoid generic or overly broad queries that trigger large result sets or pagination links, as these often lead to 400 errors or infinite loops in the agent's reasoning process. Instead, prioritize specific, narrow queries using known identifiers or codes.\n\nIf a search returns a `link` array containing a `next` relation, do not attempt to follow it. Instead, refine your search parameters (e.g., adding a date range, specific status, or more precise code) to narrow the result set to the most relevant resources.\n\n## When to Use This Skill\n- When a previous search returned a `next` link or a large number of results.\n- When a search for a specific lab code (e.g., potassium, magnesium) returns no results or an empty bundle.\n- When the agent is stuck in a loop of repeating the same broad search (e.g., `GET /Observation?patient=...`).\n\n## Common Failure Patterns\n- Following `next` links in the `link` array, which often leads to 400 errors.\n- Using broad queries like `GET /Observation?patient=ID` when a specific code is required.\n- Repeatedly querying the same endpoint without changing parameters after a failed search.\n\n## Recommended Patterns\n\n**Pattern 1: Narrowing the Search**\nIf a search returns no results, do not repeat the same query. Add specific filters like `date` or `category`.\nCORRECT: `GET /Observation?patient=S123&code=2823-3&date=ge2023-11-12`\nWRONG: `GET /Observation?patient=S123` (repeatedly)\n\n**Pattern 2: Ignoring Pagination**\nIf a bundle contains a `next` link, ignore it. If the data you need isn't in the first page, your query is too broad. Refine the query instead of paginating.\n\n**Pattern 3: Verification**\nIf a search returns 0 results, explicitly state that no data was found for the specific criteria rather than attempting to search again with the same parameters.\n\n## Example Application\n\n**Task:** \"Check patient S3213957's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the specific LOINC code for potassium (e.g., 2823-3).\n2. Issue a targeted GET: `GET /Observation?patient=S3213957&code=2823-3`.\n3. If the bundle returns `total: 0`, do not try `category=laboratory` or `code=K`. \n4. Conclude that no data is available for that specific code.\n\n## Success Indicators\n- Agent stops repeating identical GET requests.\n- Agent avoids 400 errors by not following `next` links.\n- Agent successfully identifies when data is missing for a specific code.\n\n## Failure Indicators\n- Agent continues to cycle through different broad search parameters (e.g., `category=laboratory`, then `code=K`).\n- Agent attempts to follow `next` links in the `link` array.",
+          "tags": [
+            "fhir",
+            "search",
+            "error-handling"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_value_interpretation_strategy",
+          "description": "Standardize lab value extraction and clinical threshold comparison for decision-making.",
+          "content": "## Skill Title\nLab Value Interpretation Strategy\n\n## Pattern Description\nWhen a task requires evaluating a lab result against a clinical threshold (e.g., \"if low, order replacement\"), you must avoid hardcoding thresholds in your reasoning. Instead, extract the numerical value and the unit from the `Observation` resource, then explicitly compare the value against the reference range provided in the task or the `referenceRange` field of the `Observation` resource.\n\n## When to Use This Skill\n- When a task requires a conditional action based on a lab result (e.g., \"if low, order X\").\n- When you need to determine if a value is within, above, or below a normal range.\n\n## Common Failure Patterns\n- Assuming a value is \"normal\" or \"low\" without explicitly checking the `referenceRange` or the task-provided threshold.\n- Mixing up units (e.g., mg/dL vs mmol/L) when comparing values.\n- Returning a descriptive string (e.g., \"2.0 mg/dL\") instead of the raw number when the task requires a numerical comparison or specific output format.\n\n## Recommended Patterns\n\n**Pattern 1: Extraction**\nAlways extract the `valueQuantity.value` as a float and `valueQuantity.unit` as a string. If `valueQuantity` is missing, check `valueString` for patterns like \"118/77 mmHg\".\n\n**Pattern 2: Threshold Comparison**\n1. Identify the threshold from the task description (e.g., \">= 1.5 mg/dL\").\n2. Compare the extracted `valueQuantity.value` against this threshold.\n3. If the value is ambiguous, look for the `referenceRange` array in the `Observation` resource to confirm the clinical context.\n\n**Pattern 3: Decision Logic**\n- If the value meets the criteria for action, proceed with the order.\n- If the value is within the normal range, explicitly state that no action is required.\n\n## Example Application\n\n**Task:** \"Check patient S0636132's last serum magnesium level. If < 1.5 mg/dL, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S0636132`.\n2. Extract `valueQuantity.value` (e.g., 2.0) and `valueQuantity.unit` (e.g., \"mg/dL\").\n3. Compare 2.0 >= 1.5.\n4. Since 2.0 is not < 1.5, conclude: \"The level is 2.0 mg/dL, which is within the normal range. No replacement is required.\"\n\n## Success Indicators\n- Agent correctly identifies whether a lab value is abnormal based on the provided threshold.\n- Agent avoids unnecessary orders when values are within normal limits.\n\n## Failure Indicators\n- Agent orders medication when the lab value is normal.\n- Agent fails to order medication when the lab value is clearly outside the threshold.",
+          "tags": [
+            "lab",
+            "observation",
+            "clinical-decision"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 3,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 30,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "conditional_intervention_logic",
+        "description": "Enforce strict threshold-based conditional logic before executing any intervention or follow-up orders.",
+        "content": "# Conditional Intervention Logic\n\n## Pattern Description\nWhen a task requires an intervention (e.g., medication, follow-up lab) based on a clinical threshold (e.g., \"if low\", \"if > 1 year old\"), you must perform an explicit verification step before initiating any POST requests. Do not assume an intervention is required; you must compare the retrieved value or date against the specified criteria and only proceed if the condition is met.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger (e.g., \"If low\", \"If > 1 year old\").\n- When you have retrieved a lab value or date and need to decide whether to perform a follow-up action.\n- When you are tempted to order a medication or service request without first confirming the clinical necessity.\n\n## Common Failure Patterns\n- Ordering a medication with a dose of 0 mEq when the lab value is normal.\n- Ordering a follow-up lab test when the existing result is recent (e.g., < 1 year).\n- Proceeding with an intervention despite the retrieved value being within the normal range.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the most recent observation.\n2. Compare the value or date against the threshold specified in the task.\n3. If the condition is not met (e.g., value is normal, date is recent), stop and report that no intervention is required.\n4. Only if the condition is met, proceed to construct the POST body for the intervention.\n\n**Pattern 2: Explicit Decision Logic**\n- If the task says \"If low, then order\", explicitly state in your internal reasoning: \"The value is X. The threshold is Y. Since X is not < Y, I will not order.\"\n\n## Example Application\n\n**Task:** \"Check potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for potassium.\n2. Extract value (e.g., 3.9 mmol/L).\n3. Compare: 3.9 is not < 3.5.\n4. Decision: Do not POST MedicationRequest.\n5. FINISH with: \"The potassium level is 3.9 mmol/L. Since this is not low, no replacement is required.\"\n\n## Success Indicators\n- No unnecessary POST requests are sent when clinical criteria are not met.\n- The final response clearly explains why an intervention was or was not performed based on the data.\n\n## Failure Indicators\n- POST requests are sent for normal lab values.\n- The agent ignores the threshold and orders regardless of the result.",
+        "tags": [
+          "conditional-logic",
+          "intervention",
+          "threshold-check"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "natural_language_answer_formatting",
+        "description": "Format final answers as descriptive natural language sentences instead of raw data structures.",
+        "content": "## Skill Title\nNatural Language Answer Formatting\n\n## Pattern Description\nWhen providing a final answer to a user, avoid returning raw data structures, list indices, or empty brackets. Instead, synthesize the retrieved information into a clear, professional, and complete sentence that directly addresses the user's question. This ensures the output is human-readable and contextually appropriate.\n\n## When to Use This Skill\n- When the task requires reporting a lab value, a date, or a patient identifier.\n- When the agent has successfully retrieved data and is ready to call the `FINISH` function.\n- When the previous output format was a list (e.g., `[\"5.4%\", \"2023-11-02\"]`) or a raw index (e.g., `[-1]`).\n\n## Common Failure Patterns\n- Returning raw lists like `[\"5.4%\", \"2023-11-02\"]` which are difficult for users to interpret.\n- Returning error codes like `[-1]` without explaining that the data was not found.\n- Providing fragmented information that lacks context (e.g., just the value without the date or patient name).\n\n## Recommended Patterns\n\n**Pattern 1: Successful Retrieval**\nConstruct a sentence that includes the value, the date, and the patient context if available.\nCORRECT: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\nWRONG: `FINISH([\"5.4%\", \"2023-11-02\"])`\n\n**Pattern 2: Data Not Found**\nIf the data is missing, explicitly state that the information is unavailable for the specified timeframe.\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1733937.\"])`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S0658561 and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the value (5.4%) and the date (2023-11-02).\n3. Combine these into a natural language sentence.\n4. Call `FINISH` with the formatted string.\n\nCORRECT output: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\n\n## Success Indicators\n- The final output is a complete, readable sentence.\n- The user receives all requested information (value, date, context) in one clear statement.\n\n## Failure Indicators\n- The output contains raw list brackets or indices.\n- The output is ambiguous or lacks necessary context.",
+        "tags": [
+          "formatting",
+          "communication"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_intervention_logic",
+        "description": "Enforce strict threshold-based conditional logic before executing any intervention or follow-up orders.",
+        "content": "# Conditional Intervention Logic\n\n## Pattern Description\nWhen a task requires an intervention (e.g., medication, follow-up lab) based on a clinical threshold (e.g., \"if low\", \"if > 1 year old\"), you must perform an explicit verification step before initiating any POST requests. Do not assume an intervention is required; you must compare the retrieved value or date against the specified criteria and only proceed if the condition is met.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger (e.g., \"If low\", \"If > 1 year old\").\n- When you have retrieved a lab value or date and need to decide whether to perform a follow-up action.\n- When you are tempted to order a medication or service request without first confirming the clinical necessity.\n\n## Common Failure Patterns\n- Ordering a medication with a dose of 0 mEq when the lab value is normal.\n- Ordering a follow-up lab test when the existing result is recent (e.g., < 1 year).\n- Proceeding with an intervention despite the retrieved value being within the normal range.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the most recent observation.\n2. Compare the value or date against the threshold specified in the task.\n3. If the condition is not met (e.g., value is normal, date is recent), stop and report that no intervention is required.\n4. Only if the condition is met, proceed to construct the POST body for the intervention.\n\n**Pattern 2: Explicit Decision Logic**\n- If the task says \"If low, then order\", explicitly state in your internal reasoning: \"The value is X. The threshold is Y. Since X is not < Y, I will not order.\"\n\n## Example Application\n\n**Task:** \"Check potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for potassium.\n2. Extract value (e.g., 3.9 mmol/L).\n3. Compare: 3.9 is not < 3.5.\n4. Decision: Do not POST MedicationRequest.\n5. FINISH with: \"The potassium level is 3.9 mmol/L. Since this is not low, no replacement is required.\"\n\n## Success Indicators\n- No unnecessary POST requests are sent when clinical criteria are not met.\n- The final response clearly explains why an intervention was or was not performed based on the data.\n\n## Failure Indicators\n- POST requests are sent for normal lab values.\n- The agent ignores the threshold and orders regardless of the result.",
+        "tags": [
+          "conditional-logic",
+          "intervention",
+          "threshold-check"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "natural_language_answer_formatting",
+        "description": "Format final answers as descriptive natural language sentences instead of raw data structures.",
+        "content": "## Skill Title\nNatural Language Answer Formatting\n\n## Pattern Description\nWhen providing a final answer to a user, avoid returning raw data structures, list indices, or empty brackets. Instead, synthesize the retrieved information into a clear, professional, and complete sentence that directly addresses the user's question. This ensures the output is human-readable and contextually appropriate.\n\n## When to Use This Skill\n- When the task requires reporting a lab value, a date, or a patient identifier.\n- When the agent has successfully retrieved data and is ready to call the `FINISH` function.\n- When the previous output format was a list (e.g., `[\"5.4%\", \"2023-11-02\"]`) or a raw index (e.g., `[-1]`).\n\n## Common Failure Patterns\n- Returning raw lists like `[\"5.4%\", \"2023-11-02\"]` which are difficult for users to interpret.\n- Returning error codes like `[-1]` without explaining that the data was not found.\n- Providing fragmented information that lacks context (e.g., just the value without the date or patient name).\n\n## Recommended Patterns\n\n**Pattern 1: Successful Retrieval**\nConstruct a sentence that includes the value, the date, and the patient context if available.\nCORRECT: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\nWRONG: `FINISH([\"5.4%\", \"2023-11-02\"])`\n\n**Pattern 2: Data Not Found**\nIf the data is missing, explicitly state that the information is unavailable for the specified timeframe.\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1733937.\"])`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S0658561 and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the value (5.4%) and the date (2023-11-02).\n3. Combine these into a natural language sentence.\n4. Call `FINISH` with the formatted string.\n\nCORRECT output: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\n\n## Success Indicators\n- The final output is a complete, readable sentence.\n- The user receives all requested information (value, date, context) in one clear statement.\n\n## Failure Indicators\n- The output contains raw list brackets or indices.\n- The output is ambiguous or lacks necessary context.",
+        "tags": [
+          "formatting",
+          "communication"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_intervention_logic",
+          "description": "Enforce strict threshold-based conditional logic before executing any intervention or follow-up orders.",
+          "content": "# Conditional Intervention Logic\n\n## Pattern Description\nWhen a task requires an intervention (e.g., medication, follow-up lab) based on a clinical threshold (e.g., \"if low\", \"if > 1 year old\"), you must perform an explicit verification step before initiating any POST requests. Do not assume an intervention is required; you must compare the retrieved value or date against the specified criteria and only proceed if the condition is met.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger (e.g., \"If low\", \"If > 1 year old\").\n- When you have retrieved a lab value or date and need to decide whether to perform a follow-up action.\n- When you are tempted to order a medication or service request without first confirming the clinical necessity.\n\n## Common Failure Patterns\n- Ordering a medication with a dose of 0 mEq when the lab value is normal.\n- Ordering a follow-up lab test when the existing result is recent (e.g., < 1 year).\n- Proceeding with an intervention despite the retrieved value being within the normal range.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the most recent observation.\n2. Compare the value or date against the threshold specified in the task.\n3. If the condition is not met (e.g., value is normal, date is recent), stop and report that no intervention is required.\n4. Only if the condition is met, proceed to construct the POST body for the intervention.\n\n**Pattern 2: Explicit Decision Logic**\n- If the task says \"If low, then order\", explicitly state in your internal reasoning: \"The value is X. The threshold is Y. Since X is not < Y, I will not order.\"\n\n## Example Application\n\n**Task:** \"Check potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for potassium.\n2. Extract value (e.g., 3.9 mmol/L).\n3. Compare: 3.9 is not < 3.5.\n4. Decision: Do not POST MedicationRequest.\n5. FINISH with: \"The potassium level is 3.9 mmol/L. Since this is not low, no replacement is required.\"\n\n## Success Indicators\n- No unnecessary POST requests are sent when clinical criteria are not met.\n- The final response clearly explains why an intervention was or was not performed based on the data.\n\n## Failure Indicators\n- POST requests are sent for normal lab values.\n- The agent ignores the threshold and orders regardless of the result.",
+          "tags": [
+            "conditional-logic",
+            "intervention",
+            "threshold-check"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "natural_language_answer_formatting",
+          "description": "Format final answers as descriptive natural language sentences instead of raw data structures.",
+          "content": "## Skill Title\nNatural Language Answer Formatting\n\n## Pattern Description\nWhen providing a final answer to a user, avoid returning raw data structures, list indices, or empty brackets. Instead, synthesize the retrieved information into a clear, professional, and complete sentence that directly addresses the user's question. This ensures the output is human-readable and contextually appropriate.\n\n## When to Use This Skill\n- When the task requires reporting a lab value, a date, or a patient identifier.\n- When the agent has successfully retrieved data and is ready to call the `FINISH` function.\n- When the previous output format was a list (e.g., `[\"5.4%\", \"2023-11-02\"]`) or a raw index (e.g., `[-1]`).\n\n## Common Failure Patterns\n- Returning raw lists like `[\"5.4%\", \"2023-11-02\"]` which are difficult for users to interpret.\n- Returning error codes like `[-1]` without explaining that the data was not found.\n- Providing fragmented information that lacks context (e.g., just the value without the date or patient name).\n\n## Recommended Patterns\n\n**Pattern 1: Successful Retrieval**\nConstruct a sentence that includes the value, the date, and the patient context if available.\nCORRECT: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\nWRONG: `FINISH([\"5.4%\", \"2023-11-02\"])`\n\n**Pattern 2: Data Not Found**\nIf the data is missing, explicitly state that the information is unavailable for the specified timeframe.\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1733937.\"])`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S0658561 and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the value (5.4%) and the date (2023-11-02).\n3. Combine these into a natural language sentence.\n4. Call `FINISH` with the formatted string.\n\nCORRECT output: `FINISH([\"The last HbA1C value for patient S0658561 was 5.4%, recorded on 2023-11-02.\"])`\n\n## Success Indicators\n- The final output is a complete, readable sentence.\n- The user receives all requested information (value, date, context) in one clear statement.\n\n## Failure Indicators\n- The output contains raw list brackets or indices.\n- The output is ambiguous or lacks necessary context.",
+          "tags": [
+            "formatting",
+            "communication"
+          ]
+        },
+        "net": -14,
+        "score": -14,
+        "raw_score": -14,
+        "fixes": 0,
+        "regressions": 14,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

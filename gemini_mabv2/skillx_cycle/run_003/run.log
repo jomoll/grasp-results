@@ -1,0 +1,103 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+[Baseline] Val: 43.8%
+[BestCheckpoint] New best: epoch=baseline, val=43.8% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 0] Dev: 41/96 (42.7%) | Val: 55.0% | Skills extracted: 168, total: 56
+[BestCheckpoint] New best: epoch=0, val=55.0% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 1] Dev: 57/96 (59.4%) | Val: 63.7% | Skills extracted: 231, total: 109
+[BestCheckpoint] New best: epoch=1, val=63.7% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+Warning (attempt 1): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 2): ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 2): ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Warning (attempt 3): cannot import name 'AgentContextLimitException' from 'src.client.agent' (/Users/admin/dev/skill-agent-dev-min/MedAgentBench-v2/src/client/agent.py)
+Warning (attempt 4): ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Warning (attempt 1): ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+list index out of range
+list index out of range
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 2] Dev: 51/96 (53.1%) | Val: 57.5% | Skills extracted: 202, total: 142
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Max retries exceeded with url: /v1/projects/johannes-moll/locations/us-central1/publishers/google/models/gemini-3.1-flash-lite-preview:generateContent (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x3005a0b90>: Failed to resolve 'aiplatform.googleapis.com' ([Errno 8] nodename nor servname provided, or not known)"))
+
+[Epoch 3] Dev: 59/96 (61.5%) | Val: 60.0% | Skills extracted: 233, total: 201
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 51/96 (53.1%) | Val: 57.5% | Skills extracted: 202, total: 239
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 43.8%  ████████
+         0: 55.0%  ███████████
+         1: 63.7%  ████████████
+         2: 57.5%  ███████████
+         3: 60.0%  ████████████
+         4: 57.5%  ███████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 239 functional skill(s)

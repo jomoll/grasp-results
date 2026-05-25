@@ -1,0 +1,526 @@
+[
+  {
+    "epoch": 0,
+    "sample_idx": 1,
+    "sample_id": "task1_12",
+    "memory_version_before": 0,
+    "new_bullets": [
+      "when asked to find a recent procedure, you must first explicitly state the date of the most recent finding found in the patient's record before determining if it exceeds the 12-month threshold. Do not conclude that a procedure was \"not found\" or skip the evidence gathering step; you must provide the specific date identified to justify whether an order is required."
+    ],
+    "memory_size": 1
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 2,
+    "sample_id": "task1_26",
+    "memory_version_before": 1,
+    "new_bullets": [
+      "when asked to find a recent procedure, you must first explicitly list the dates of all identified CT Abdomen procedures found in the patient's record rather than claiming none exist. You must then compare the most recent date to the current date to determine if it exceeds the 12-month threshold before deciding whether to place a new order."
+    ],
+    "memory_size": 2
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 3,
+    "sample_id": "task1_13",
+    "memory_version_before": 2,
+    "new_bullets": [
+      "when asked to determine if a procedure was performed more than 12 months ago, you must explicitly calculate the difference between the current date and the procedure date to ensure the \"12 months\" threshold is applied accurately. Ensure you verify the current date provided in the prompt context before concluding whether an order is required, as failing to correctly calculate the temporal gap is the primary cause of error."
+    ],
+    "memory_size": 3
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 7,
+    "sample_id": "task9_11",
+    "memory_version_before": 3,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must exhaustively search the patient's entire medical history for any record of the vaccine before concluding that none exists. If the vaccine is found, you must explicitly state the specific date identified and compare it to the 365-day threshold before deciding whether to place a new order."
+    ],
+    "memory_size": 4
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 8,
+    "sample_id": "task9_14",
+    "memory_version_before": 4,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must explicitly report the date found in the record or state that no record exists; do not conflate the absence of a record with the assumption that the vaccine was administered more than 365 days ago. If no record is found, you must clarify that the order is being placed because there is no evidence of a prior vaccination, rather than falsely claiming it was administered over a year ago."
+    ],
+    "memory_size": 5
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 13,
+    "sample_id": "task3_12",
+    "memory_version_before": 5,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must perform a comprehensive search across all vital sign tables for the specified time window rather than relying on a single overview. If the average cannot be calculated, explicitly state the specific time ranges searched and the lack of numeric data points found before concluding that no observations exist."
+    ],
+    "memory_size": 6
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 15,
+    "sample_id": "task1_11",
+    "memory_version_before": 6,
+    "new_bullets": [
+      "when asked to determine the date of a procedure, you must explicitly cite the specific CPT codes and the exact dates found in the patient’s record, or explicitly state that no such records exist after a thorough search. Do not assume or invent a procedure history; if no records are found, justify the new order solely based on the absence of evidence rather than claiming a prior study occurred over 12 months ago."
+    ],
+    "memory_size": 7
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 16,
+    "sample_id": "task3_10",
+    "memory_version_before": 7,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must first output the specific timestamps and heart rate values retrieved from the database to demonstrate the data extraction process. If no data is found, you must explicitly list the queried time window and confirm that a search across all relevant vital sign tables yielded zero entries before reporting that no data exists."
+    ],
+    "memory_size": 8
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 20,
+    "sample_id": "task10_8",
+    "memory_version_before": 8,
+    "new_bullets": [
+      "when asked to review vaccination status, you must only order a booster if a prior dose is found and that date is over 12 months ago; do not automatically order a booster if no record is found, as the instruction specifically requires a prior dose to exist to trigger the \"more than 12 months\" criteria. If no record is found, you should report that the status is unknown or incomplete rather than proceeding with an order based on a false assumption of prior vaccination."
+    ],
+    "memory_size": 9
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 21,
+    "sample_id": "task1_6",
+    "memory_version_before": 9,
+    "new_bullets": [
+      "when asked to determine if a procedure was performed more than 12 months ago, you must explicitly state the exact date of the most recent procedure found or confirm that no such procedure exists in the entire patient history; do not incorrectly state that a procedure was \"not found in the past 12 months\" if the search yielded no records at all, as this conflates a lack of historical data with a recent procedure."
+    ],
+    "memory_size": 10
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 22,
+    "sample_id": "task2_14",
+    "memory_version_before": 10,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active order retrieved from the medication list before concluding whether to keep, discontinue, or create an order. Do not assume a single order is correct without first confirming if other active agents (e.g., Enoxaparin, Heparin, or Fondaparinux) are present, as the existence of multiple active prophylaxis medications constitutes a violation of the \"exactly one\" requirement."
+    ],
+    "memory_size": 11
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 26,
+    "sample_id": "task10_10",
+    "memory_version_before": 11,
+    "new_bullets": [
+      "when asked to review vaccination status, if no record of a prior vaccine is found, you must explicitly state that no record exists and refrain from ordering a booster unless the instructions explicitly authorize vaccination for patients with no prior history. Do not assume that a lack of record implies a need for a booster dose unless the clinical guidelines provided in the prompt specifically state that a \"missing record\" is equivalent to \"past 12 months\" for vaccination eligibility."
+    ],
+    "memory_size": 12
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 29,
+    "sample_id": "task3_27",
+    "memory_version_before": 12,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search terms to include all variations of heart rate naming conventions (e.g., \"HR\", \"Pulse\", \"Heart Rate\") and verify if the data exists in different tables or categories if the initial search returns no results. If data is found, present the raw data points used for the calculation to ensure transparency."
+    ],
+    "memory_size": 13
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 30,
+    "sample_id": "task9_5",
+    "memory_version_before": 13,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must clarify whether the instruction authorizes an order based on the absence of a record or only if a record is found to be older than 365 days. If the instructions do not explicitly state that a missing record is equivalent to a vaccine being overdue, you must report the lack of history rather than automatically placing an order."
+    ],
+    "memory_size": 14
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 31,
+    "sample_id": "task8_29",
+    "memory_version_before": 14,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must first list all active medications and specifically categorize them as \"opioid\" or \"non-opioid\" to ensure no opioids are missed. Do not conclude that no opioid orders exist without explicitly checking for all common opioid names (e.g., Fentanyl, Oxycodone, Hydromorphone, Morphine) rather than just scanning the patient's current list for obvious matches."
+    ],
+    "memory_size": 15
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 32,
+    "sample_id": "task3_7",
+    "memory_version_before": 15,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must verify the specific patient ID and check both the \"vitals\" and \"flowsheets\" or \"nursing notes\" tables, as heart rate data is often stored in multiple locations; do not conclude that no data exists until you have queried all potential sources for the specified time window."
+    ],
+    "memory_size": 16
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 33,
+    "sample_id": "task9_6",
+    "memory_version_before": 16,
+    "new_bullets": [
+      "when asked to determine if a patient needs an influenza vaccine based on a 365-day threshold, you must first confirm if the instructions explicitly authorize an order for patients with no record of prior vaccination; if they do not, you must report the lack of history rather than automatically placing an order."
+    ],
+    "memory_size": 17
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 35,
+    "sample_id": "task2_1",
+    "memory_version_before": 17,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must perform the actual discontinuation of the duplicate orders by calling the appropriate tool or function, rather than simply stating your intent to do so in the final response. The task requires you to modify the patient's active medication list to ensure only one order remains, not just to report which orders you identified as duplicates."
+    ],
+    "memory_size": 18
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 36,
+    "sample_id": "task2_26",
+    "memory_version_before": 18,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must prioritize the \"exactly one\" constraint by using the provided medication management tools to actively discontinue any redundant orders if multiple are found, rather than creating a new order that increases the total count. Only create a new order if the current count is zero; if the count is already one, you must take no action."
+    ],
+    "memory_size": 19
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 37,
+    "sample_id": "task8_23",
+    "memory_version_before": 19,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform an exhaustive search of the medication list using a comprehensive list of opioid drug names (e.g., Fentanyl, Oxycodone, Hydromorphone, Morphine, Codeine, Tramadol) rather than relying on a superficial scan. If an opioid is identified, you must explicitly document its presence before confirming whether a corresponding naloxone order exists; do not conclude that no opioids are present until you have cross-referenced the entire active medication list against a complete pharmacological list of opioid analgesics."
+    ],
+    "memory_size": 20
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 38,
+    "sample_id": "task3_19",
+    "memory_version_before": 20,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must query both the \"vitals\" table and the \"flowsheets\" table, as vital sign data is frequently stored in separate locations; do not conclude that no heart rate data exists until you have cross-referenced all potential data sources."
+    ],
+    "memory_size": 21
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 39,
+    "sample_id": "task10_16",
+    "memory_version_before": 21,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must interpret the instruction \"if the last dose was more than 12 months ago, order a booster\" as a requirement to assess the patient's need for primary vaccination or a booster if no record exists; if the patient is entirely unvaccinated according to the record, you must initiate the primary vaccination sequence or a booster as appropriate, rather than assuming the instruction only applies to patients with a documented history."
+    ],
+    "memory_size": 22
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 40,
+    "sample_id": "task8_19",
+    "memory_version_before": 22,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list every active medication found in the patient's record by name before concluding that no opioids are present. Do not rely on a summary or filtered view; you must demonstrate that you have cross-referenced the full medication list against a comprehensive list of all opioid types (including patches, long-acting formulations, and combination products) to ensure no active orders were missed."
+    ],
+    "memory_size": 23
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 42,
+    "sample_id": "task1_23",
+    "memory_version_before": 23,
+    "new_bullets": [
+      "when asked to determine the date of a procedure, you must perform a comprehensive search across all relevant clinical tables and CPT code categories rather than relying on a limited search; if your search yields no results, you must explicitly state that no procedure was found in the entire patient history before deciding to place a new order. Do not invent or assume the existence of specific CPT codes that were not found in the record, and ensure your final response clearly distinguishes between a search that returned zero results and a search that confirmed a procedure occurred more than 12 months ago."
+    ],
+    "memory_size": 24
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 43,
+    "sample_id": "task10_27",
+    "memory_version_before": 24,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must interpret the instruction to \"order a booster\" if the last dose was more than 12 months ago as a directive to ensure the patient is up-to-date; if no record of vaccination exists, you must treat the patient as unvaccinated and initiate the appropriate vaccination order rather than concluding the condition is not met."
+    ],
+    "memory_size": 25
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 45,
+    "sample_id": "task10_20",
+    "memory_version_before": 25,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, if no record of a prior vaccine is found, you must explicitly state that no record exists and then proceed to order the vaccine as a primary dose, rather than concluding that the criteria for a \"booster\" cannot be met. Do not assume the instruction only applies to patients with a documented history; interpret the goal as ensuring the patient is vaccinated, meaning an empty record necessitates an order for the initial dose."
+    ],
+    "memory_size": 26
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 46,
+    "sample_id": "task2_17",
+    "memory_version_before": 26,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active order retrieved from the medication list to demonstrate that you have performed a comprehensive search. If you claim that no orders were found, you must justify this by confirming you searched for all common prophylaxis agents (e.g., heparin, enoxaparin, fondaparinux) rather than just a single drug name."
+    ],
+    "memory_size": 27
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 47,
+    "sample_id": "task8_7",
+    "memory_version_before": 27,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list every active medication found in the patient's record and categorize each as an opioid or non-opioid to prove an exhaustive review was performed. Do not conclude that no opioid orders exist until you have cross-referenced the full medication list against a comprehensive list of opioid types, including combination products and long-acting formulations, to ensure no active orders were missed."
+    ],
+    "memory_size": 28
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 48,
+    "sample_id": "task4_21",
+    "memory_version_before": 28,
+    "new_bullets": [
+      "when asked to check for an active urinary catheter, you must first search the active orders or current procedure list for any indication of a catheter; if none is found, do not create a removal order, as you cannot remove what does not exist. Explicitly state that no catheter was found in the patient's records to justify why no service request was created."
+    ],
+    "memory_size": 29
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 52,
+    "sample_id": "task6_26",
+    "memory_version_before": 29,
+    "new_bullets": [
+      "when asked to retrieve TSH and free T4 values and take action according to protocol, you must explicitly state the specific protocol criteria (e.g., TSH > 10 uIU/mL) and compare the patient's retrieved values against those thresholds. Do not conclude that no medication should be started without explicitly documenting the specific threshold values required for treatment versus the values actually retrieved from the patient's record."
+    ],
+    "memory_size": 30
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 53,
+    "sample_id": "task2_15",
+    "memory_version_before": 30,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must broaden your search to include all pharmacological classes of prophylaxis, such as LMWH (e.g., enoxaparin), unfractionated heparin, and DOACs (e.g., apixaban, rivaroxaban), rather than relying on a single medication name. You must explicitly list all identified active agents of any class to demonstrate that your search for duplicates or zero-order scenarios was comprehensive."
+    ],
+    "memory_size": 31
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 54,
+    "sample_id": "task9_1",
+    "memory_version_before": 31,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination and order a new one if it was administered more than 365 days ago, you must only place an order if the record confirms a prior dose occurred more than 365 days ago; do not place an order if the most recent dose is within the 365-day window."
+    ],
+    "memory_size": 32
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 55,
+    "sample_id": "task3_30",
+    "memory_version_before": 32,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search terms beyond \"HEARTRATE\" to include all possible clinical aliases such as \"Pulse,\" \"HR,\" or \"Ventricular Rate,\" and verify these across all available data tables (e.g., flowsheets, nursing notes, and vital signs) before concluding that no data exists."
+    ],
+    "memory_size": 33
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 56,
+    "sample_id": "task9_27",
+    "memory_version_before": 33,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination and order a new one if it was administered more than 365 days ago, you must strictly follow the conditional logic: if no record exists, you must report that the vaccination status is unknown or missing, rather than automatically placing an order. Do not interpret an absence of records as equivalent to a vaccine being \"overdue\" unless the instructions explicitly authorize an order for patients with no prior vaccination history."
+    ],
+    "memory_size": 34
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 59,
+    "sample_id": "task2_6",
+    "memory_version_before": 34,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must execute the actual discontinuation of duplicate medication orders using the appropriate API tool, rather than simply identifying them or stating your intent to do so. If multiple active orders exist, you are required to use the system's discontinue function to ensure only the newest order remains active."
+    ],
+    "memory_size": 35
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 60,
+    "sample_id": "task4_11",
+    "memory_version_before": 35,
+    "new_bullets": [
+      "when asked to check for a urinary catheter, you must broaden your search beyond active orders to include the \"procedures\" or \"clinical notes\" tables, as catheters are often documented as procedures rather than medications. If no catheter is found in the orders, you must explicitly confirm that you have searched all procedure and nursing note records before concluding that no catheter exists."
+    ],
+    "memory_size": 36
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 61,
+    "sample_id": "task9_22",
+    "memory_version_before": 36,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination and order a new one if it was administered more than 365 days ago, you must strictly follow the conditional logic: if no record exists, you must report that the vaccination status is unknown or missing, rather than automatically placing an order. Do not interpret an absence of records as equivalent to a vaccine being \"overdue\" unless the instructions explicitly authorize an order for patients with no prior vaccination history."
+    ],
+    "memory_size": 37
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 63,
+    "sample_id": "task9_9",
+    "memory_version_before": 37,
+    "new_bullets": [],
+    "memory_size": 37
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 65,
+    "sample_id": "task9_28",
+    "memory_version_before": 37,
+    "new_bullets": [],
+    "memory_size": 37
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 67,
+    "sample_id": "task3_14",
+    "memory_version_before": 37,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search terms beyond \"HEARTRATE\" to include all possible clinical aliases such as \"Pulse,\" \"HR,\" or \"Ventricular Rate,\" and verify these across all available data tables (e.g., flowsheets, nursing notes, and vital signs) before concluding that no data exists. Do not rely on a single table or name; if a search returns no results, you must explicitly list the specific terms and tables queried to demonstrate that a comprehensive search was performed."
+    ],
+    "memory_size": 38
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 70,
+    "sample_id": "task9_8",
+    "memory_version_before": 38,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination and order a new one if it was administered more than 365 days ago, you must interpret the absence of a record as a need to vaccinate, as the absence of a prior dose confirms the patient has not received one within the 365-day period. Explicitly state that no prior record was found to justify why the vaccination is being ordered today."
+    ],
+    "memory_size": 39
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 72,
+    "sample_id": "task3_17",
+    "memory_version_before": 39,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must confirm the patient ID and search across all clinical tables including \"vitals,\" \"flowsheets,\" and \"nursing notes\" using all possible aliases like \"Pulse,\" \"HR,\" and \"Ventricular Rate.\" If no numeric data is found, you must explicitly list the specific tables and time windows queried to prove the search was exhaustive before stating that no data exists."
+    ],
+    "memory_size": 40
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 73,
+    "sample_id": "task1_16",
+    "memory_version_before": 40,
+    "new_bullets": [
+      "when asked to find the date of a procedure, you must perform an exhaustive search of the patient's history and explicitly report the date of the most recent finding or confirm that no record exists. Do not assume a procedure occurred or use placeholder CPT codes; if your search yields no results, you must justify the new order solely based on the absence of evidence rather than claiming a prior study was performed over 12 months ago."
+    ],
+    "memory_size": 41
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 74,
+    "sample_id": "task8_3",
+    "memory_version_before": 41,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must prioritize clinical accuracy by only creating a naloxone order if an active opioid is actually present. Do not create a \"precautionary\" order if no opioid analgesic is identified, as this violates the requirement to only act when a specific clinical condition is met."
+    ],
+    "memory_size": 42
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 75,
+    "sample_id": "task3_3",
+    "memory_version_before": 42,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search terms to include all variations of heart rate naming conventions (e.g., \"HR\", \"Pulse\", \"Heart Rate\", \"Ventricular Rate\") and verify if the data exists in different tables, such as \"vitals\", \"flowsheets\", and \"nursing notes\". Do not conclude that no data exists until you have explicitly listed the specific tables and time windows queried to demonstrate that a comprehensive search was performed across all potential data sources."
+    ],
+    "memory_size": 43
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 78,
+    "sample_id": "task2_28",
+    "memory_version_before": 43,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first perform an exhaustive search for all pharmacological classes of prophylaxis (e.g., heparin, LMWH, DOACs, fondaparinux) and explicitly list every active order found. If multiple orders exist, you must use the discontinuation tool to remove all but the newest one; if zero orders are found, you must create exactly one new order."
+    ],
+    "memory_size": 44
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 80,
+    "sample_id": "task8_26",
+    "memory_version_before": 44,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list every active medication found in the patient's record and categorize each as an opioid or non-opioid to demonstrate a comprehensive search. Do not conclude that no opioid orders exist until you have cross-referenced the full medication list against a complete pharmacological list of opioid analgesics (e.g., Fentanyl, Oxycodone, Hydromorphone, Morphine, Codeine, Tramadol), as failing to identify an existing opioid leads to a failure to fulfill the safety requirement."
+    ],
+    "memory_size": 45
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 81,
+    "sample_id": "task3_29",
+    "memory_version_before": 45,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must recognize that heart rate data is often logged as discrete observations rather than a single summary, so you must query for all individual observations within the 6-hour and 12-hour windows across all tables. If you do not find data, you must explicitly confirm that you searched for all clinical aliases (e.g., \"Pulse\", \"HR\") in both the \"vitals\" and \"flowsheets\" tables before reporting that the calculation cannot be performed."
+    ],
+    "memory_size": 46
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 84,
+    "sample_id": "task2_22",
+    "memory_version_before": 46,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first list all identified active orders to prove you have performed a comprehensive search across all pharmacological classes; if multiple orders exist, you must use the discontinuation tool to remove the older ones, and if zero exist, you must create exactly one. Do not simply report that you found zero orders without explicitly documenting the search results for all potential prophylaxis medications (e.g., heparin, enoxaparin, fondaparinux, DOACs)."
+    ],
+    "memory_size": 47
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 85,
+    "sample_id": "task8_5",
+    "memory_version_before": 47,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that buprenorphine is a potent opioid analgesic and requires a matching naloxone prescription regardless of whether it is formulated as a combination product. Do not classify buprenorphine-containing medications as \"non-opioid\"; instead, treat them as active opioid orders that necessitate an accompanying naloxone order if one is not already present."
+    ],
+    "memory_size": 48
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 86,
+    "sample_id": "task3_16",
+    "memory_version_before": 48,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must prioritize querying the specific \"vitals\" or \"flowsheet\" tables that store discrete numeric readings rather than relying on summary views. If your initial query returns no results, you must explicitly document the exact time window and all aliases (e.g., \"Pulse\", \"HR\", \"Ventricular Rate\") you queried across multiple data sources before concluding that no observations exist for that patient."
+    ],
+    "memory_size": 49
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 88,
+    "sample_id": "task3_1",
+    "memory_version_before": 49,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must prioritize querying the specific \"vitals\" or \"flowsheet\" tables that store discrete numeric readings rather than relying on summary views. If your initial query returns no results, you must explicitly document the exact time window and all aliases (e.g., \"Pulse\", \"HR\", \"Ventricular Rate\") you queried across multiple data sources before concluding that no observations exist for that patient."
+    ],
+    "memory_size": 50
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 92,
+    "sample_id": "task2_30",
+    "memory_version_before": 50,
+    "new_bullets": [],
+    "memory_size": 50
+  }
+]

@@ -1,0 +1,200 @@
+[
+  {
+    "epoch": 9,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "fhir_bundle_validation_strategy",
+        "description": "Verify bundle entries and total count before concluding searches to prevent premature termination on empty results.",
+        "content": "## Skill Title\nFHIR Bundle Validation Strategy\n\n## Pattern Description\nWhen performing a FHIR search, the server returns a Bundle resource. A common failure occurs when the agent assumes an empty `total` or missing `entry` array implies the data does not exist, when in fact the search parameters might be incorrect or the resource might be missing. You must explicitly validate the bundle content before concluding that a search has returned no results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with `total: 0` or an empty `entry` array.\n- Before calling `FINISH` with a negative result (e.g., \"not found\" or \"-1\").\n- When you have multiple search strategies (e.g., searching by code alias) and the first one returns empty.\n\n## Common Failure Patterns\n- Concluding a search immediately after one empty GET request without verifying if other codes or search parameters should be tried.\n- Assuming a `total: 0` response is the final truth without checking if the search parameters (like `code` or `patient`) were correctly formatted.\n- Returning a default value like `[-1, -1]` when the search was simply incomplete.\n\n## Recommended Patterns\n\n**Pattern 1: Verify Bundle Content**\nAlways inspect the `total` field and the `entry` array in the returned JSON. If `total` is 0, do not immediately conclude the task.\n\n**Pattern 2: Exhaustive Search**\nIf the primary search (e.g., using a specific LOINC code) returns an empty bundle, attempt a secondary search using an alternative code or alias provided in the context before giving up.\n\n**Pattern 3: Explicit Negative Confirmation**\nOnly call `FINISH` with a \"not found\" result after you have exhausted all provided search codes and verified the patient identifier is correct.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6550473&code=2823-3&_sort=-date`\n2. Observe `total: 0` in the response.\n3. Do not `FINISH` yet. Attempt the alternative code: GET `.../Observation?patient=S6550473&code=K&_sort=-date`\n4. If this also returns `total: 0`, then conclude the search.\n\n## Success Indicators\n- The agent attempts multiple search codes before concluding a value is missing.\n- The agent correctly identifies when a search is truly empty versus when it just needs a different parameter.\n\n## Failure Indicators\n- The agent returns `[-1, -1]` or \"not found\" after only one failed search attempt.\n- The agent ignores the `total` field and proceeds as if data was found.",
+        "tags": [
+          "fhir",
+          "search",
+          "validation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_order_verification_strategy",
+        "description": "Verify task requirements before executing POST requests to ensure orders are only placed when explicitly requested.",
+        "content": "## Skill Title\nConditional Order Verification Strategy\n\n## Pattern Description\nBefore performing any state-changing action (such as a POST request for a ServiceRequest), you must explicitly verify that the task instruction requires an order to be placed. Many tasks involve retrieving data (e.g., \"What is the last value?\") and only conditionally ordering a test if specific criteria are met (e.g., \"If the value is > 1 year old, order a new test\").\n\nDo not assume that because a condition is mentioned, an order must be placed. If the task is primarily informational, or if the condition for ordering is not met, you must not execute the POST request.\n\n## When to Use This Skill\n- When the task contains conditional logic (e.g., \"If X, then order Y\").\n- Before executing any POST request for a ServiceRequest or similar order resource.\n- When you have retrieved the necessary data but the criteria for ordering have not been satisfied.\n\n## Common Failure Patterns\n- Executing a POST request automatically whenever a condition is mentioned, even if the condition (e.g., date threshold) is not met.\n- Failing to check if the user actually requested an order or just requested the data.\n- Assuming that the presence of a LOINC code or NDC code in the prompt implies an immediate requirement to order.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Requirement Check**\nBefore calling the POST function, re-read the prompt. Ask: \"Does the user explicitly ask me to order this, or am I only supposed to order it if a specific condition is met?\"\n\n**Pattern 2: Threshold Validation**\nIf the condition is time-based (e.g., \"older than 1 year\"), calculate the delta between the current date and the `effectiveDateTime` of the retrieved resource. Only proceed to POST if the delta strictly exceeds the threshold.\n\n**Pattern 3: Informational Completion**\nIf the condition is not met, or if the task only asks for the value, immediately call `FINISH()` with the retrieved data. Do not perform the POST.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If the result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the Observation.\n2. Extract `effectiveDateTime` and compare with current date.\n3. If the date is within 1 year, do NOT call POST. Call `FINISH([value, date])` immediately.\n4. If the date is > 1 year, proceed to POST.\n\n## Success Indicators\n- No unnecessary ServiceRequest resources are created when the condition is not met.\n- The agent correctly identifies when a task is purely informational.\n\n## Failure Indicators\n- A ServiceRequest is created when the lab result is recent.\n- A ServiceRequest is created when the user only asked for the value.",
+        "tags": [
+          "fhir",
+          "service-request",
+          "conditional-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "idempotent_order_submission_strategy",
+        "description": "Prevent duplicate orders by checking for existing active requests before submitting new ones.",
+        "content": "# Idempotent Order Submission Strategy\n\n## Pattern Description\nWhen a task requires ordering a medication or service, you must ensure that an identical order has not already been placed for the same patient and clinical context. Submitting duplicate orders leads to redundant clinical actions and potential medication errors. Before executing a POST request, you must first search for existing active orders to verify if the requested action is already pending or completed.\n\n## When to Use This Skill\n- When the task requires ordering a medication (MedicationRequest) or a service (ServiceRequest).\n- When you have already performed a search or action for the same patient and clinical intent in the current session.\n- Before any POST request that creates a new clinical order.\n\n## Common Failure Patterns\n- Submitting a POST request without checking if a similar request exists in the patient's record.\n- Ignoring existing active orders for the same code/intent, leading to duplicate entries.\n- Failing to verify the status of previous orders before initiating a new one.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-submission Search**\nBefore POSTing, perform a GET request for the resource type (e.g., `ServiceRequest` or `MedicationRequest`) filtered by `patient` and `code`. \n\n**Pattern 2: Status Verification**\nInspect the returned bundle. If an entry exists with `status=active` or `status=on-hold` for the same code, do not proceed with the new POST request. Instead, inform the user that an order is already active.\n\n**Pattern 3: Final Decision**\nOnly proceed with the POST request if the search returns no active orders for the specified clinical intent.\n\n## Example Application\n\n**Task:** \"Order a serum potassium level for patient S6550627.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/ServiceRequest?patient=S6550627&code=2823-3`\n2. If the bundle contains an active `ServiceRequest` for this code, stop and report: \"An active order for this test already exists.\"\n3. If the bundle is empty or contains only completed/cancelled orders, proceed with the POST request.\n\n## Success Indicators\n- Agent performs a GET search for existing orders before POSTing.\n- No duplicate orders are created for the same patient and clinical intent.\n\n## Failure Indicators\n- Multiple identical POST requests are sent in the same session.\n- Agent ignores existing active orders and submits redundant requests.",
+        "tags": [
+          "fhir",
+          "order",
+          "idempotency"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_bundle_validation_strategy",
+        "description": "Verify bundle entries and total count before concluding searches to prevent premature termination on empty results.",
+        "content": "## Skill Title\nFHIR Bundle Validation Strategy\n\n## Pattern Description\nWhen performing a FHIR search, the server returns a Bundle resource. A common failure occurs when the agent assumes an empty `total` or missing `entry` array implies the data does not exist, when in fact the search parameters might be incorrect or the resource might be missing. You must explicitly validate the bundle content before concluding that a search has returned no results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with `total: 0` or an empty `entry` array.\n- Before calling `FINISH` with a negative result (e.g., \"not found\" or \"-1\").\n- When you have multiple search strategies (e.g., searching by code alias) and the first one returns empty.\n\n## Common Failure Patterns\n- Concluding a search immediately after one empty GET request without verifying if other codes or search parameters should be tried.\n- Assuming a `total: 0` response is the final truth without checking if the search parameters (like `code` or `patient`) were correctly formatted.\n- Returning a default value like `[-1, -1]` when the search was simply incomplete.\n\n## Recommended Patterns\n\n**Pattern 1: Verify Bundle Content**\nAlways inspect the `total` field and the `entry` array in the returned JSON. If `total` is 0, do not immediately conclude the task.\n\n**Pattern 2: Exhaustive Search**\nIf the primary search (e.g., using a specific LOINC code) returns an empty bundle, attempt a secondary search using an alternative code or alias provided in the context before giving up.\n\n**Pattern 3: Explicit Negative Confirmation**\nOnly call `FINISH` with a \"not found\" result after you have exhausted all provided search codes and verified the patient identifier is correct.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6550473&code=2823-3&_sort=-date`\n2. Observe `total: 0` in the response.\n3. Do not `FINISH` yet. Attempt the alternative code: GET `.../Observation?patient=S6550473&code=K&_sort=-date`\n4. If this also returns `total: 0`, then conclude the search.\n\n## Success Indicators\n- The agent attempts multiple search codes before concluding a value is missing.\n- The agent correctly identifies when a search is truly empty versus when it just needs a different parameter.\n\n## Failure Indicators\n- The agent returns `[-1, -1]` or \"not found\" after only one failed search attempt.\n- The agent ignores the `total` field and proceeds as if data was found.",
+        "tags": [
+          "fhir",
+          "search",
+          "validation"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_bundle_validation_strategy",
+          "description": "Verify bundle entries and total count before concluding searches to prevent premature termination on empty results.",
+          "content": "## Skill Title\nFHIR Bundle Validation Strategy\n\n## Pattern Description\nWhen performing a FHIR search, the server returns a Bundle resource. A common failure occurs when the agent assumes an empty `total` or missing `entry` array implies the data does not exist, when in fact the search parameters might be incorrect or the resource might be missing. You must explicitly validate the bundle content before concluding that a search has returned no results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with `total: 0` or an empty `entry` array.\n- Before calling `FINISH` with a negative result (e.g., \"not found\" or \"-1\").\n- When you have multiple search strategies (e.g., searching by code alias) and the first one returns empty.\n\n## Common Failure Patterns\n- Concluding a search immediately after one empty GET request without verifying if other codes or search parameters should be tried.\n- Assuming a `total: 0` response is the final truth without checking if the search parameters (like `code` or `patient`) were correctly formatted.\n- Returning a default value like `[-1, -1]` when the search was simply incomplete.\n\n## Recommended Patterns\n\n**Pattern 1: Verify Bundle Content**\nAlways inspect the `total` field and the `entry` array in the returned JSON. If `total` is 0, do not immediately conclude the task.\n\n**Pattern 2: Exhaustive Search**\nIf the primary search (e.g., using a specific LOINC code) returns an empty bundle, attempt a secondary search using an alternative code or alias provided in the context before giving up.\n\n**Pattern 3: Explicit Negative Confirmation**\nOnly call `FINISH` with a \"not found\" result after you have exhausted all provided search codes and verified the patient identifier is correct.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6550473&code=2823-3&_sort=-date`\n2. Observe `total: 0` in the response.\n3. Do not `FINISH` yet. Attempt the alternative code: GET `.../Observation?patient=S6550473&code=K&_sort=-date`\n4. If this also returns `total: 0`, then conclude the search.\n\n## Success Indicators\n- The agent attempts multiple search codes before concluding a value is missing.\n- The agent correctly identifies when a search is truly empty versus when it just needs a different parameter.\n\n## Failure Indicators\n- The agent returns `[-1, -1]` or \"not found\" after only one failed search attempt.\n- The agent ignores the `total` field and proceeds as if data was found.",
+          "tags": [
+            "fhir",
+            "search",
+            "validation"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_order_verification_strategy",
+          "description": "Verify task requirements before executing POST requests to ensure orders are only placed when explicitly requested.",
+          "content": "## Skill Title\nConditional Order Verification Strategy\n\n## Pattern Description\nBefore performing any state-changing action (such as a POST request for a ServiceRequest), you must explicitly verify that the task instruction requires an order to be placed. Many tasks involve retrieving data (e.g., \"What is the last value?\") and only conditionally ordering a test if specific criteria are met (e.g., \"If the value is > 1 year old, order a new test\").\n\nDo not assume that because a condition is mentioned, an order must be placed. If the task is primarily informational, or if the condition for ordering is not met, you must not execute the POST request.\n\n## When to Use This Skill\n- When the task contains conditional logic (e.g., \"If X, then order Y\").\n- Before executing any POST request for a ServiceRequest or similar order resource.\n- When you have retrieved the necessary data but the criteria for ordering have not been satisfied.\n\n## Common Failure Patterns\n- Executing a POST request automatically whenever a condition is mentioned, even if the condition (e.g., date threshold) is not met.\n- Failing to check if the user actually requested an order or just requested the data.\n- Assuming that the presence of a LOINC code or NDC code in the prompt implies an immediate requirement to order.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Requirement Check**\nBefore calling the POST function, re-read the prompt. Ask: \"Does the user explicitly ask me to order this, or am I only supposed to order it if a specific condition is met?\"\n\n**Pattern 2: Threshold Validation**\nIf the condition is time-based (e.g., \"older than 1 year\"), calculate the delta between the current date and the `effectiveDateTime` of the retrieved resource. Only proceed to POST if the delta strictly exceeds the threshold.\n\n**Pattern 3: Informational Completion**\nIf the condition is not met, or if the task only asks for the value, immediately call `FINISH()` with the retrieved data. Do not perform the POST.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If the result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the Observation.\n2. Extract `effectiveDateTime` and compare with current date.\n3. If the date is within 1 year, do NOT call POST. Call `FINISH([value, date])` immediately.\n4. If the date is > 1 year, proceed to POST.\n\n## Success Indicators\n- No unnecessary ServiceRequest resources are created when the condition is not met.\n- The agent correctly identifies when a task is purely informational.\n\n## Failure Indicators\n- A ServiceRequest is created when the lab result is recent.\n- A ServiceRequest is created when the user only asked for the value.",
+          "tags": [
+            "fhir",
+            "service-request",
+            "conditional-logic"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "idempotent_order_submission_strategy",
+          "description": "Prevent duplicate orders by checking for existing active requests before submitting new ones.",
+          "content": "# Idempotent Order Submission Strategy\n\n## Pattern Description\nWhen a task requires ordering a medication or service, you must ensure that an identical order has not already been placed for the same patient and clinical context. Submitting duplicate orders leads to redundant clinical actions and potential medication errors. Before executing a POST request, you must first search for existing active orders to verify if the requested action is already pending or completed.\n\n## When to Use This Skill\n- When the task requires ordering a medication (MedicationRequest) or a service (ServiceRequest).\n- When you have already performed a search or action for the same patient and clinical intent in the current session.\n- Before any POST request that creates a new clinical order.\n\n## Common Failure Patterns\n- Submitting a POST request without checking if a similar request exists in the patient's record.\n- Ignoring existing active orders for the same code/intent, leading to duplicate entries.\n- Failing to verify the status of previous orders before initiating a new one.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-submission Search**\nBefore POSTing, perform a GET request for the resource type (e.g., `ServiceRequest` or `MedicationRequest`) filtered by `patient` and `code`. \n\n**Pattern 2: Status Verification**\nInspect the returned bundle. If an entry exists with `status=active` or `status=on-hold` for the same code, do not proceed with the new POST request. Instead, inform the user that an order is already active.\n\n**Pattern 3: Final Decision**\nOnly proceed with the POST request if the search returns no active orders for the specified clinical intent.\n\n## Example Application\n\n**Task:** \"Order a serum potassium level for patient S6550627.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/ServiceRequest?patient=S6550627&code=2823-3`\n2. If the bundle contains an active `ServiceRequest` for this code, stop and report: \"An active order for this test already exists.\"\n3. If the bundle is empty or contains only completed/cancelled orders, proceed with the POST request.\n\n## Success Indicators\n- Agent performs a GET search for existing orders before POSTing.\n- No duplicate orders are created for the same patient and clinical intent.\n\n## Failure Indicators\n- Multiple identical POST requests are sent in the same session.\n- Agent ignores existing active orders and submits redundant requests.",
+          "tags": [
+            "fhir",
+            "order",
+            "idempotency"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 9,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 38,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_exhaustive_search_strategy",
+        "description": "Mandate systematic iteration through multiple code aliases when initial FHIR searches return empty results.",
+        "content": "## Skill Title\nFHIR Exhaustive Search Strategy\n\n## Pattern Description\nWhen searching for clinical data like laboratory observations, a single code (e.g., a specific LOINC code) may not yield results even if the data exists under a different alias or local code. You must treat an empty search result as a signal to attempt alternative codes before concluding that the data is missing.\n\n## When to Use This Skill\n- When a GET request for a clinical observation returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding a specific lab value (e.g., Potassium, HbA1C) and the primary code search fails.\n\n## Common Failure Patterns\n- Assuming data is absent after one failed search attempt.\n- Relying on a single code (e.g., 'K' or '2823-3') when multiple standard or local codes exist for the same analyte.\n- Prematurely returning -1 or a 'not found' message without exhausting known aliases.\n\n## Recommended Patterns\n\n**Pattern 1: Systematic Code Iteration**\nIf the initial search returns no results, immediately identify and query the next likely code alias. Maintain a list of known aliases for common labs (e.g., Potassium: ['2823-3', 'K']; HbA1C: ['4548-4', 'A1C']).\n\n**Pattern 2: Bundle Validation**\nAlways check the `total` field in the FHIR bundle response. If `total` is 0, do not assume the patient has no record; proceed to the next code in your list.\n\n**Pattern 3: Finality**\nOnly conclude that data is missing after you have exhausted all relevant codes for the requested analyte.\n\n## Example Application\n\n**Task:** \"Check patient's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=2823-3&_sort=-date`\n2. If bundle `total` is 0, GET `.../Observation?patient=S123&code=K&_sort=-date`\n3. If both return empty, then conclude data is unavailable.\n\n## Success Indicators\n- Agent performs multiple GET requests with different codes when the first returns empty.\n- Agent successfully retrieves data using a secondary code after the primary fails.\n\n## Failure Indicators\n- Agent returns -1 or 'not found' after only one failed search attempt.\n- Agent repeats the same failed search multiple times.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_exhaustive_search_strategy",
+        "description": "Mandate systematic iteration through multiple code aliases when initial FHIR searches return empty results.",
+        "content": "## Skill Title\nFHIR Exhaustive Search Strategy\n\n## Pattern Description\nWhen searching for clinical data like laboratory observations, a single code (e.g., a specific LOINC code) may not yield results even if the data exists under a different alias or local code. You must treat an empty search result as a signal to attempt alternative codes before concluding that the data is missing.\n\n## When to Use This Skill\n- When a GET request for a clinical observation returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding a specific lab value (e.g., Potassium, HbA1C) and the primary code search fails.\n\n## Common Failure Patterns\n- Assuming data is absent after one failed search attempt.\n- Relying on a single code (e.g., 'K' or '2823-3') when multiple standard or local codes exist for the same analyte.\n- Prematurely returning -1 or a 'not found' message without exhausting known aliases.\n\n## Recommended Patterns\n\n**Pattern 1: Systematic Code Iteration**\nIf the initial search returns no results, immediately identify and query the next likely code alias. Maintain a list of known aliases for common labs (e.g., Potassium: ['2823-3', 'K']; HbA1C: ['4548-4', 'A1C']).\n\n**Pattern 2: Bundle Validation**\nAlways check the `total` field in the FHIR bundle response. If `total` is 0, do not assume the patient has no record; proceed to the next code in your list.\n\n**Pattern 3: Finality**\nOnly conclude that data is missing after you have exhausted all relevant codes for the requested analyte.\n\n## Example Application\n\n**Task:** \"Check patient's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=2823-3&_sort=-date`\n2. If bundle `total` is 0, GET `.../Observation?patient=S123&code=K&_sort=-date`\n3. If both return empty, then conclude data is unavailable.\n\n## Success Indicators\n- Agent performs multiple GET requests with different codes when the first returns empty.\n- Agent successfully retrieves data using a secondary code after the primary fails.\n\n## Failure Indicators\n- Agent returns -1 or 'not found' after only one failed search attempt.\n- Agent repeats the same failed search multiple times.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_exhaustive_search_strategy",
+        "description": "Mandate systematic iteration through multiple code aliases when initial FHIR searches return empty results.",
+        "content": "## Skill Title\nFHIR Exhaustive Search Strategy\n\n## Pattern Description\nWhen searching for clinical data like laboratory observations, a single code (e.g., a specific LOINC code) may not yield results even if the data exists under a different alias or local code. You must treat an empty search result as a signal to attempt alternative codes before concluding that the data is missing.\n\n## When to Use This Skill\n- When a GET request for a clinical observation returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding a specific lab value (e.g., Potassium, HbA1C) and the primary code search fails.\n\n## Common Failure Patterns\n- Assuming data is absent after one failed search attempt.\n- Relying on a single code (e.g., 'K' or '2823-3') when multiple standard or local codes exist for the same analyte.\n- Prematurely returning -1 or a 'not found' message without exhausting known aliases.\n\n## Recommended Patterns\n\n**Pattern 1: Systematic Code Iteration**\nIf the initial search returns no results, immediately identify and query the next likely code alias. Maintain a list of known aliases for common labs (e.g., Potassium: ['2823-3', 'K']; HbA1C: ['4548-4', 'A1C']).\n\n**Pattern 2: Bundle Validation**\nAlways check the `total` field in the FHIR bundle response. If `total` is 0, do not assume the patient has no record; proceed to the next code in your list.\n\n**Pattern 3: Finality**\nOnly conclude that data is missing after you have exhausted all relevant codes for the requested analyte.\n\n## Example Application\n\n**Task:** \"Check patient's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=2823-3&_sort=-date`\n2. If bundle `total` is 0, GET `.../Observation?patient=S123&code=K&_sort=-date`\n3. If both return empty, then conclude data is unavailable.\n\n## Success Indicators\n- Agent performs multiple GET requests with different codes when the first returns empty.\n- Agent successfully retrieves data using a secondary code after the primary fails.\n\n## Failure Indicators\n- Agent returns -1 or 'not found' after only one failed search attempt.\n- Agent repeats the same failed search multiple times.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_exhaustive_search_strategy",
+        "description": "Mandate systematic iteration through multiple code aliases when initial FHIR searches return empty results.",
+        "content": "## Skill Title\nFHIR Exhaustive Search Strategy\n\n## Pattern Description\nWhen searching for clinical data like laboratory observations, a single code (e.g., a specific LOINC code) may not yield results even if the data exists under a different alias or local code. You must treat an empty search result as a signal to attempt alternative codes before concluding that the data is missing.\n\n## When to Use This Skill\n- When a GET request for a clinical observation returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding a specific lab value (e.g., Potassium, HbA1C) and the primary code search fails.\n\n## Common Failure Patterns\n- Assuming data is absent after one failed search attempt.\n- Relying on a single code (e.g., 'K' or '2823-3') when multiple standard or local codes exist for the same analyte.\n- Prematurely returning -1 or a 'not found' message without exhausting known aliases.\n\n## Recommended Patterns\n\n**Pattern 1: Systematic Code Iteration**\nIf the initial search returns no results, immediately identify and query the next likely code alias. Maintain a list of known aliases for common labs (e.g., Potassium: ['2823-3', 'K']; HbA1C: ['4548-4', 'A1C']).\n\n**Pattern 2: Bundle Validation**\nAlways check the `total` field in the FHIR bundle response. If `total` is 0, do not assume the patient has no record; proceed to the next code in your list.\n\n**Pattern 3: Finality**\nOnly conclude that data is missing after you have exhausted all relevant codes for the requested analyte.\n\n## Example Application\n\n**Task:** \"Check patient's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=2823-3&_sort=-date`\n2. If bundle `total` is 0, GET `.../Observation?patient=S123&code=K&_sort=-date`\n3. If both return empty, then conclude data is unavailable.\n\n## Success Indicators\n- Agent performs multiple GET requests with different codes when the first returns empty.\n- Agent successfully retrieves data using a secondary code after the primary fails.\n\n## Failure Indicators\n- Agent returns -1 or 'not found' after only one failed search attempt.\n- Agent repeats the same failed search multiple times.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_exhaustive_search_strategy",
+          "description": "Mandate systematic iteration through multiple code aliases when initial FHIR searches return empty results.",
+          "content": "## Skill Title\nFHIR Exhaustive Search Strategy\n\n## Pattern Description\nWhen searching for clinical data like laboratory observations, a single code (e.g., a specific LOINC code) may not yield results even if the data exists under a different alias or local code. You must treat an empty search result as a signal to attempt alternative codes before concluding that the data is missing.\n\n## When to Use This Skill\n- When a GET request for a clinical observation returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding a specific lab value (e.g., Potassium, HbA1C) and the primary code search fails.\n\n## Common Failure Patterns\n- Assuming data is absent after one failed search attempt.\n- Relying on a single code (e.g., 'K' or '2823-3') when multiple standard or local codes exist for the same analyte.\n- Prematurely returning -1 or a 'not found' message without exhausting known aliases.\n\n## Recommended Patterns\n\n**Pattern 1: Systematic Code Iteration**\nIf the initial search returns no results, immediately identify and query the next likely code alias. Maintain a list of known aliases for common labs (e.g., Potassium: ['2823-3', 'K']; HbA1C: ['4548-4', 'A1C']).\n\n**Pattern 2: Bundle Validation**\nAlways check the `total` field in the FHIR bundle response. If `total` is 0, do not assume the patient has no record; proceed to the next code in your list.\n\n**Pattern 3: Finality**\nOnly conclude that data is missing after you have exhausted all relevant codes for the requested analyte.\n\n## Example Application\n\n**Task:** \"Check patient's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=2823-3&_sort=-date`\n2. If bundle `total` is 0, GET `.../Observation?patient=S123&code=K&_sort=-date`\n3. If both return empty, then conclude data is unavailable.\n\n## Success Indicators\n- Agent performs multiple GET requests with different codes when the first returns empty.\n- Agent successfully retrieves data using a secondary code after the primary fails.\n\n## Failure Indicators\n- Agent returns -1 or 'not found' after only one failed search attempt.\n- Agent repeats the same failed search multiple times.",
+          "tags": [
+            "fhir",
+            "search",
+            "lab-results"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

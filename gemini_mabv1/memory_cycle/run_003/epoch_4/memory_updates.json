@@ -1,0 +1,524 @@
+[
+  {
+    "epoch": 4,
+    "sample_idx": 4,
+    "sample_id": "task10_13",
+    "memory_version_before": 183,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=[ID]&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 5,
+    "sample_id": "task9_14",
+    "memory_version_before": 184,
+    "new_bullets": [],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 7,
+    "sample_id": "task8_21",
+    "memory_version_before": 184,
+    "new_bullets": [],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 8,
+    "sample_id": "task9_5",
+    "memory_version_before": 184,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, if an initial search for a specific LOINC code returns no results, you must perform a broader search (e.g., searching by patient ID without the LOINC filter) to verify the data is truly missing before concluding that no record exists. Never assume data is missing after a single failed query, as you must confirm the absence of records before failing to execute the required clinical orders."
+    ],
+    "memory_size": 185
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 11,
+    "sample_id": "task4_11",
+    "memory_version_before": 185,
+    "new_bullets": [],
+    "memory_size": 185
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 13,
+    "sample_id": "task5_16",
+    "memory_version_before": 185,
+    "new_bullets": [],
+    "memory_size": 185
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 14,
+    "sample_id": "task4_27",
+    "memory_version_before": 185,
+    "new_bullets": [
+      "when asked for the most recent lab value within a specific timeframe, you must retrieve the actual value from the FHIR resource and return that specific value as a string inside the `FINISH` function, rather than returning a truncated list or a list containing the value. Ensure the output format strictly matches the expected return type for the evaluation function."
+    ],
+    "memory_size": 186
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 16,
+    "sample_id": "task4_7",
+    "memory_version_before": 186,
+    "new_bullets": [
+      "when asked for a patient's most recent lab value within a 24-hour window, you must perform a search query (e.g., `Observation?patient=[ID]&code=[LOINC]&_sort=-date`) and retrieve the actual value from the record's `valueQuantity` field. Never return an arbitrary placeholder like \"-1\" or a list; you must explicitly return the specific numeric value found or state that no record exists after confirming the timestamp falls within the required 24-hour period."
+    ],
+    "memory_size": 187
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 17,
+    "sample_id": "task2_15",
+    "memory_version_before": 187,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S1152319`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 188
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 19,
+    "sample_id": "task2_17",
+    "memory_version_before": 188,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S0611496`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 189
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 22,
+    "sample_id": "task8_9",
+    "memory_version_before": 189,
+    "new_bullets": [
+      "when asked to order a referral, you must execute the `order_service_request` function with the required parameters and the specified free-text narrative within the note field. The agent must not simply state in the final response that the order was placed, as the evaluation function requires the execution of the actual tool call to confirm the referral has been correctly submitted to the system."
+    ],
+    "memory_size": 190
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 25,
+    "sample_id": "task2_16",
+    "memory_version_before": 190,
+    "new_bullets": [],
+    "memory_size": 190
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 26,
+    "sample_id": "task4_15",
+    "memory_version_before": 190,
+    "new_bullets": [],
+    "memory_size": 190
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 27,
+    "sample_id": "task9_20",
+    "memory_version_before": 190,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, if an initial search using the specific LOINC code returns no results, you must perform a broader search (such as querying by patient ID without the LOINC filter) to verify the data is truly missing before concluding that no record exists. Never assume data is missing after a single failed query; you must confirm the total absence of records for that patient before failing to execute the required clinical orders."
+    ],
+    "memory_size": 191
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 28,
+    "sample_id": "task9_28",
+    "memory_version_before": 191,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, if an initial search for a specific LOINC code returns no results, you must perform a broader search (e.g., searching by patient ID without the LOINC filter) to verify the data is truly missing before concluding that no record exists. Never assume data is missing after a single failed query; you must confirm the total absence of records for that patient before failing to execute the required clinical orders."
+    ],
+    "memory_size": 192
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 29,
+    "sample_id": "task10_27",
+    "memory_version_before": 192,
+    "new_bullets": [],
+    "memory_size": 192
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 30,
+    "sample_id": "task4_26",
+    "memory_version_before": 192,
+    "new_bullets": [],
+    "memory_size": 192
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 32,
+    "sample_id": "task4_4",
+    "memory_version_before": 192,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value within the last 24 hours, you must perform a search query (e.g., `Observation?patient=[ID]&code=2951-2&_sort=-date`), extract the value from the most recent record's `valueQuantity` field, and return that numeric value directly within the `FINISH` function. Never return an arbitrary placeholder like \"-1\" if a record exists; only state that no data exists if your search confirms the absence of records from the last 24 hours."
+    ],
+    "memory_size": 193
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 33,
+    "sample_id": "task9_3",
+    "memory_version_before": 193,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value and order a follow-up if the result is low, you must retrieve the lab result, evaluate it against the clinical threshold, and then execute both the `order_medication` (or `order_lab_test`) function for the replacement and the `order_lab_test` function for the next-day follow-up as separate, explicit tool calls. The agent failed to transition from data retrieval to executing all required tool calls to complete the clinical workflow."
+    ],
+    "memory_size": 194
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 34,
+    "sample_id": "task10_17",
+    "memory_version_before": 194,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S2823623&code=4548-4&_sort=-date`) to identify the most recent record. Do not conclude that data is unavailable or order a new test until you have successfully performed this search to verify the patient's existing history."
+    ],
+    "memory_size": 195
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 35,
+    "sample_id": "task8_14",
+    "memory_version_before": 195,
+    "new_bullets": [],
+    "memory_size": 195
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 36,
+    "sample_id": "task10_16",
+    "memory_version_before": 195,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=[ID]&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 196
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 38,
+    "sample_id": "task8_19",
+    "memory_version_before": 196,
+    "new_bullets": [],
+    "memory_size": 196
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 39,
+    "sample_id": "task5_17",
+    "memory_version_before": 196,
+    "new_bullets": [
+      "when asked to check for a patient's magnesium level within the last 24 hours, you must perform a search query using the specific LOINC code (2951-2) without an initial date filter to capture all records, then manually verify if the most recent record's `effectiveDateTime` falls within the 24-hour window. If no record is found after this comprehensive search, you must explicitly report that no magnesium level has been recorded in the last 24 hours."
+    ],
+    "memory_size": 197
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 40,
+    "sample_id": "task4_20",
+    "memory_version_before": 197,
+    "new_bullets": [],
+    "memory_size": 197
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 41,
+    "sample_id": "task9_1",
+    "memory_version_before": 197,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, you must include the specific LOINC code for the test (e.g., 2823-3 for serum potassium) in your FHIR query to ensure you retrieve the correct clinical data. If the result is low, you must execute the `order_medication` (or `order_lab_test`) function for the replacement and the `order_lab_test` function for the next-day serum potassium follow-up as separate, explicit tool calls."
+    ],
+    "memory_size": 198
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 43,
+    "sample_id": "task2_25",
+    "memory_version_before": 198,
+    "new_bullets": [],
+    "memory_size": 198
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 44,
+    "sample_id": "task10_15",
+    "memory_version_before": 198,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S6545016&code=4548-4&_sort=-date`) to identify the most recent record. Do not conclude that data is unavailable or order a new test until you have successfully performed this search to verify the patient's existing history."
+    ],
+    "memory_size": 199
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 46,
+    "sample_id": "task9_8",
+    "memory_version_before": 199,
+    "new_bullets": [],
+    "memory_size": 199
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 49,
+    "sample_id": "task10_18",
+    "memory_version_before": 199,
+    "new_bullets": [],
+    "memory_size": 199
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 51,
+    "sample_id": "task9_22",
+    "memory_version_before": 199,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value and order a follow-up if the result is low, you must first perform a search using the specific LOINC code for the test (e.g., 2823-3 for potassium), evaluate the value against the clinical threshold, and then execute the `order_medication` and `order_lab_test` functions as separate, explicit tool calls if the condition is met. The agent must transition from data retrieval to executing both required order functions to fulfill the clinical workflow."
+    ],
+    "memory_size": 200
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 53,
+    "sample_id": "task4_23",
+    "memory_version_before": 200,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, you must perform an actual search query (e.g., `Observation?patient=S1876702&code=2951-2&_sort=-date`) to retrieve the data from the system, rather than returning an arbitrary placeholder like \"-1\". If no data exists within the 24-hour window, you must explicitly state that no results were found after confirming the absence of records via the search."
+    ],
+    "memory_size": 201
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 55,
+    "sample_id": "task10_21",
+    "memory_version_before": 201,
+    "new_bullets": [
+      "when asked to check for an HbA1C value, you must perform a formal search query (e.g., `Observation?patient=S0789363&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search by patient ID to confirm the data is truly absent before concluding the test is missing and ordering a new one."
+    ],
+    "memory_size": 202
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 56,
+    "sample_id": "task9_6",
+    "memory_version_before": 202,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, you must include the specific LOINC code for the test (e.g., 2823-3 for potassium) in your FHIR query to ensure you retrieve the correct clinical data. If the result is low, you must execute the `order_lab_test` function for both the replacement potassium and the next-day serum potassium follow-up as separate, explicit tool calls."
+    ],
+    "memory_size": 203
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 57,
+    "sample_id": "task4_28",
+    "memory_version_before": 203,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value within a specific timeframe, you must perform a formal search query (e.g., `Observation?patient=[ID]&code=[LOINC]&_sort=-date`) and verify the `effectiveDateTime` of the returned record to confirm it falls within that window. Never return an arbitrary placeholder like \"-1\" if no record exists; instead, you must explicitly state that no data is available after a thorough search."
+    ],
+    "memory_size": 204
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 59,
+    "sample_id": "task10_12",
+    "memory_version_before": 204,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=[ID]&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 205
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 60,
+    "sample_id": "task2_28",
+    "memory_version_before": 205,
+    "new_bullets": [],
+    "memory_size": 205
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 64,
+    "sample_id": "task9_11",
+    "memory_version_before": 205,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value and order a follow-up if the result is low, you must include the specific LOINC code (e.g., 2823-3 for potassium) in your FHIR query, evaluate the result against the clinical threshold, and then execute the `order_lab_test` function for both the replacement and the next-day follow-up as separate, explicit tool calls. The agent must transition from data retrieval to executing all required tool calls to complete the clinical workflow."
+    ],
+    "memory_size": 206
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 68,
+    "sample_id": "task10_20",
+    "memory_version_before": 206,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S0722219&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 207
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 69,
+    "sample_id": "task2_14",
+    "memory_version_before": 207,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S2450227`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 208
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 70,
+    "sample_id": "task2_26",
+    "memory_version_before": 208,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S6530532`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 209
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 73,
+    "sample_id": "task2_22",
+    "memory_version_before": 209,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S6537563`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 210
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 74,
+    "sample_id": "task2_30",
+    "memory_version_before": 210,
+    "new_bullets": [],
+    "memory_size": 210
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 75,
+    "sample_id": "task9_27",
+    "memory_version_before": 210,
+    "new_bullets": [],
+    "memory_size": 210
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 76,
+    "sample_id": "task10_10",
+    "memory_version_before": 210,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S6488980&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 211
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 77,
+    "sample_id": "task2_6",
+    "memory_version_before": 211,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first execute a search query (e.g., `Patient?identifier=S1733937`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 212
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 79,
+    "sample_id": "task5_3",
+    "memory_version_before": 212,
+    "new_bullets": [
+      "when asked to check for a patient's magnesium level within the last 24 hours, you must perform a search query using the specific LOINC code (2951-2) without an initial date filter to capture all records, then manually verify if the most recent record's `effectiveDateTime` falls within the 24-hour window. If no record is found after this comprehensive search, you must explicitly report that no magnesium level has been recorded in the last 24 hours instead of assuming missing data after a single failed attempt."
+    ],
+    "memory_size": 213
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 80,
+    "sample_id": "task5_7",
+    "memory_version_before": 213,
+    "new_bullets": [
+      "when asked to check for a patient's magnesium level within the last 24 hours, you must perform a search query using the specific LOINC code (2951-2) without an initial date filter to capture all records, then manually verify if the most recent record's `effectiveDateTime` falls within the 24-hour window. If the search returns no results, you must perform a broader search by patient ID to verify the data is truly missing before concluding that no record exists."
+    ],
+    "memory_size": 214
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 81,
+    "sample_id": "task2_1",
+    "memory_version_before": 214,
+    "new_bullets": [
+      "when asked for a patient's age using an MRN, you must first search for the patient by identifier (e.g., `Patient?identifier=S2874099`) to retrieve the `Patient` resource, extract the `birthDate` field, and calculate the exact age by finding the difference between that date and the current date. Do not guess, provide a placeholder, or output a value without first performing the search and the calculation."
+    ],
+    "memory_size": 215
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 85,
+    "sample_id": "task4_6",
+    "memory_version_before": 215,
+    "new_bullets": [
+      "when asked for the most recent lab value within a specific timeframe, you must perform a search query (e.g., `Observation?patient=[ID]&code=[LOINC]&_sort=-date`) and retrieve the actual value from the record's `valueQuantity` field. Never return an arbitrary placeholder like \"-1\" if no record is found; you must explicitly state that no data exists after confirming the absence of records through a comprehensive search."
+    ],
+    "memory_size": 216
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 89,
+    "sample_id": "task10_8",
+    "memory_version_before": 216,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S3114648&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 217
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 90,
+    "sample_id": "task5_19",
+    "memory_version_before": 217,
+    "new_bullets": [],
+    "memory_size": 217
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 91,
+    "sample_id": "task4_10",
+    "memory_version_before": 217,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, you must perform a formal search query (e.g., `Observation?patient=S3213957&code=2951-2&_sort=-date`) to retrieve the record, rather than returning an arbitrary placeholder like \"-1\". If the search returns no results, you must perform a broader search by patient ID to verify that no data exists before concluding the task."
+    ],
+    "memory_size": 218
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 92,
+    "sample_id": "task9_9",
+    "memory_version_before": 218,
+    "new_bullets": [
+      "when asked to check for a patient's most recent lab value, you must include the specific LOINC code for the test (e.g., 2823-3 for potassium) in your FHIR query. If the result is low, you must execute the `order_lab_test` function for the replacement potassium and the `order_lab_test` function for the next-day serum potassium follow-up as separate, explicit tool calls."
+    ],
+    "memory_size": 219
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 93,
+    "sample_id": "task10_24",
+    "memory_version_before": 219,
+    "new_bullets": [
+      "when asked to check for a patient's HbA1C value and order a new test if the result is > 1 year old, you must first execute a search query (e.g., `Observation?patient=S6500497&code=4548-4&_sort=-date`) to identify the most recent record. If this search returns no results, you must perform a broader search (e.g., by patient ID only) to confirm the data is truly absent before deciding to order a new test via the `order_lab_test` function, rather than assuming no data exists and ordering a test immediately."
+    ],
+    "memory_size": 220
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 220,
+    "new_bullets": [],
+    "memory_size": 220
+  }
+]

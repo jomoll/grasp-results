@@ -1,0 +1,123 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+[Baseline] Val: 47.5%
+[BestCheckpoint] New best: epoch=baseline, val=47.5% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+
+
+
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+'route'
+
+  [Val] evaluating 80 samples...
+
+
+
+
+Rate limited (attempt 1/6), waiting 5.5s...
+
+[Epoch 0] Dev: 48/96 (50.0%) | Val: 50.0% | Rules: 20 (pairs critiqued: 48)
+[BestCheckpoint] New best: epoch=0, val=50.0% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+
+Rate limited (attempt 1/6), waiting 5.2s...
+
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 4.7s...
+Rate limited (attempt 1/6), waiting 4.7s...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 1] Dev: 51/96 (53.1%) | Val: 50.0% | Rules: 20 (pairs critiqued: 93)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+
+
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 5.1s...
+Rate limited (attempt 1/6), waiting 5.5s...
+Rate limited (attempt 1/6), waiting 5.3s...
+Rate limited (attempt 1/6), waiting 5.4s...
+Rate limited (attempt 1/6), waiting 5.2s...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 2] Dev: 48/96 (50.0%) | Val: 47.5% | Rules: 20 (pairs critiqued: 141)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+
+Rate limited (attempt 1/6), waiting 4.6s...
+Rate limited (attempt 1/6), waiting 5.1s...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+
+[Epoch 3] Dev: 50/96 (52.1%) | Val: 50.0% | Rules: 20 (pairs critiqued: 187)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+Rate limited (attempt 1/6), waiting 4.5s...
+
+
+'route'
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 4.6s...
+
+  [Val] evaluating 80 samples...
+
+
+
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 51/96 (53.1%) | Val: 51.2% | Rules: 20 (pairs critiqued: 232)
+[BestCheckpoint] New best: epoch=4, val=51.2% — ExpeL rules snapshot saved
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 47.5%  █████████
+         0: 50.0%  ██████████
+         1: 50.0%  ██████████
+         2: 47.5%  █████████
+         3: 50.0%  ██████████
+         4: 51.2%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

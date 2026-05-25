@@ -1,0 +1,324 @@
+[
+  {
+    "epoch": 3,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Ensures distinct temporal segmentation and filtering for multiple requested time windows in observation data.",
+        "content": "## Skill Title\nObservation Time Window Calculation Strategy\n\n## Pattern Description\nWhen a task requires calculating metrics (like averages) over multiple distinct time windows (e.g., 6 hours vs. 12 hours), you must treat each window as a separate filtering operation on the retrieved dataset. Do not apply a single filter to the entire set and reuse the result for both windows.\n\nSegment the data into discrete buckets based on the `effectiveDateTime` of each observation relative to the current time. If no observations fall within a specific window, explicitly state that no data was found for that specific duration rather than defaulting to a global average or an incorrect calculation.\n\n## When to Use This Skill\n- When a task requests calculations over multiple, overlapping, or distinct time durations (e.g., \"past 6 hours\" and \"past 12 hours\").\n- When you have retrieved a bundle of observations and need to derive time-sensitive metrics.\n\n## Common Failure Patterns\n- Calculating a single average and applying it to all requested time windows.\n- Using the same temporal filter for both 6-hour and 12-hour requests.\n- Failing to handle empty result sets for specific sub-windows, leading to misleading or identical outputs.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Window Segmentation**\n1. Retrieve the full set of relevant observations.\n2. For each requested window (e.g., T-6h, T-12h), create a subset of observations where `effectiveDateTime` is within the range `[CurrentTime - Window, CurrentTime]`.\n3. Calculate the metric (e.g., average) independently for each subset.\n\n**Pattern 2: Handling Empty Windows**\n- If a subset is empty, report: \"No observations found for the [X] hour window.\"\n- Do not reuse the result from a larger window to fill a smaller one.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours and the past 12 hours.\"\n\n**Step-by-step:**\n1. GET `Observation?patient=S123&code=HEARTRATE`.\n2. Filter entries: \n   - Subset A (6h): `effectiveDateTime` >= `2023-11-07T16:47:00`.\n   - Subset B (12h): `effectiveDateTime` >= `2023-11-07T10:47:00`.\n3. Calculate average for Subset A and Subset B separately.\n4. Output: \"The 6-hour average is X. The 12-hour average is Y.\"\n\n## Success Indicators\n- The agent provides distinct values for different time windows.\n- The agent correctly identifies when data is missing for one window but present for another.\n\n## Failure Indicators\n- Identical values reported for different time windows.\n- The agent reports \"No data\" for all windows when data exists for at least one.",
+        "tags": [
+          "observation",
+          "temporal",
+          "calculation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "medication_request_search_by_code_strategy",
+        "description": "Refines medication search to include dosage and frequency parameters to prevent false-positive duplicate detection.",
+        "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen verifying the existence of a specific medication order, you must not rely on broad patient-wide searches. A broad search often returns multiple active orders that may differ in dosage, frequency, or intent. You must filter your search results by comparing the specific dosage, route, and frequency (e.g., q8h vs q12h) of the existing orders against the required order parameters.\n\n## When to Use This Skill\n- When the task requires verifying if a specific medication order (e.g., DVT prophylaxis) exists.\n- When you need to determine if an existing order is a duplicate or a distinct, non-matching order.\n- When a broad `GET /MedicationRequest?patient={id}` returns multiple active orders.\n\n## Common Failure Patterns\n- Assuming any active order for a drug (e.g., 'heparin') satisfies the requirement, ignoring dosage or frequency mismatches.\n- Failing to inspect `dosageInstruction` fields, leading to the creation of duplicate orders when a non-matching order (e.g., different frequency) already exists.\n- Relying on `medicationCodeableConcept.text` alone, which may be ambiguous.\n\n## Recommended Patterns\n\n**Pattern 1: Granular Verification**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. For each active order, inspect `dosageInstruction` to extract `doseQuantity.value`, `doseQuantity.unit`, and `timing.code` or `text`.\n3. Compare these values against the target order requirements.\n4. Only consider an order a \"duplicate\" if the medication, dose, and frequency match the target.\n\n**Pattern 2: Handling Mismatches**\n- If an order exists but has a different frequency (e.g., Q12H vs Q8H), do not treat it as a duplicate. You must either discontinue the old order if the protocol requires, or create the new, correct order alongside it.\n\n## Example Application\n\n**Task:** \"Verify that patient S0581164 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S0581164`.\n2. Inspect the bundle. If an order for \"heparin 5000 units SC q12h\" is found, recognize this as a non-matching order.\n3. Since the required \"q8h\" order is missing, create the new order.\n4. FINISH with a clear explanation of why the existing order did not satisfy the requirement.\n\n## Success Indicators\n- Agent correctly identifies that an existing order with a different frequency is not a duplicate.\n- Agent avoids creating redundant orders when a matching order already exists.\n\n## Failure Indicators\n- Agent creates a duplicate order despite an existing order being present.\n- Agent incorrectly flags a non-matching order as a duplicate and fails to create the required order.",
+        "tags": [
+          "medication",
+          "fhir",
+          "verification"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_search_temporal_fallback_strategy",
+        "description": "Ensures historical records are captured by performing an initial broad search before applying restrictive date filters, and explicitly avoids premature date filtering for longitudinal tasks.",
+        "content": "# FHIR Search Temporal Fallback Strategy\n\n## Pattern Description\nWhen searching for historical records (e.g., procedures, lab results, or vaccinations) to determine if a condition has been met over a specific duration (like 48 hours or 12 months), you must avoid applying restrictive date filters in your initial search. If you filter by date immediately, you risk missing records that fall outside that window, leading to false negatives.\n\nAlways perform an initial, broad search without date parameters to retrieve the full history. Only after you have the complete set of records should you perform the temporal calculation or filtering locally.\n\n## When to Use This Skill\n- When a task requires checking for the presence or duration of a resource (e.g., \"in place for more than 48 hours\").\n- When a task requires finding the \"most recent\" instance of a procedure or lab result.\n- When a search with a date filter returns zero results, but the task logic requires verifying historical status.\n\n## Common Failure Patterns\n- Applying `date=ge...` or `date=le...` in the initial GET request, which causes the server to exclude relevant older records.\n- Assuming that a lack of results in a date-filtered search means the event never occurred.\n- Failing to retrieve the full history when the initial specific search returns empty.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Initial Search**\nAlways start by searching for the resource by patient and code (if applicable) without any date constraints.\n\nCORRECT: `GET /Procedure?patient=S123&code=NUR1373`\nWRONG:   `GET /Procedure?patient=S123&code=NUR1373&date=ge2023-11-05`\n\n**Pattern 2: Local Temporal Filtering**\nOnce you receive the bundle, iterate through the entries to find the relevant dates. Perform your \"more than X hours/days\" logic on the `performedDateTime` or `effectiveDateTime` fields found in the response.\n\n**Pattern 3: Fallback to Full History**\nIf your initial search for a specific code returns no results, perform a broader search for the patient's entire history of that resource type to ensure you haven't missed a miscoded or unexpected entry.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place for > 48 hours.\"\n\n**Step-by-step:**\n1. Issue `GET /Procedure?patient=S6540602&code=NUR1373`.\n2. If the bundle is empty, do not assume the catheter is absent; perform `GET /Procedure?patient=S6540602` to scan all procedures.\n3. Extract the `performedDateTime` from the relevant procedure.\n4. Calculate the duration between the `performedDateTime` and the current time.\n5. If duration > 48 hours, proceed with the removal request.\n\n## Success Indicators\n- The agent retrieves a list of resources and performs the date comparison locally.\n- The agent successfully identifies records that were placed well before the current date filter window.\n\n## Failure Indicators\n- The agent returns \"No record found\" after a single, date-restricted search.\n- The agent fails to identify a procedure because it was performed outside the arbitrary date window it applied.",
+        "tags": [
+          "fhir",
+          "search",
+          "temporal",
+          "fallback"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_logic_temporal_verification_strategy",
+        "description": "Ensures temporal conditions are verified against the most recent resource before executing conditional orders.",
+        "content": "# Conditional Logic Temporal Verification Strategy\n\n## Pattern Description\nWhen a task requires conditional logic based on the recency of a procedure or medication (e.g., \"if administered more than X days ago\"), you must ensure you have identified the *most recent* instance of that resource before making a decision. Relying on a single search result or assuming a lack of records implies a date beyond the threshold can lead to unnecessary or duplicate orders.\n\n## When to Use This Skill\n- When a task requires a conditional action based on the date of a previous procedure or medication.\n- When the search for a specific code returns zero results, but you must confirm the absence of the record before proceeding.\n- When the task involves a \"look-back\" period (e.g., 365 days, 12 months).\n\n## Common Failure Patterns\n- Assuming that a search returning zero results for a specific code means the procedure never happened (it might be coded differently or missing from the initial filter).\n- Failing to verify the exact date of the most recent record when multiple records exist.\n- Proceeding to order a new resource without confirming the \"most recent\" date against the current system time.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf a specific code search returns no results, perform a broader search (e.g., by patient ID only) to ensure no relevant records were missed due to coding variations.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` or `authoredOn` of the most recent record against the current date. If the record is missing, explicitly state that no record was found before proceeding with the conditional order.\n\n**Pattern 3: Verification of Order**\nBefore placing a new order, verify that no other active orders for the same procedure exist to prevent duplication.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 days ago, order a new influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6474456&code=90686`.\n2. If empty, GET `Procedure?patient=S6474456` to check for other vaccine codes.\n3. If no vaccine found, conclude the last dose is effectively > 365 days ago.\n4. If a vaccine is found, extract the date and calculate the delta from today.\n5. If delta > 365, POST the new `MedicationRequest`.\n\nCORRECT output: `FINISH([\"Last vaccine was on 2022-01-01. Since this is > 365 days, ordering new vaccine.\"])`\nWRONG output: `FINISH([\"No vaccine found, so I am ordering one.\"])` (without verifying broader history).\n\n## Success Indicators\n- Agent performs secondary searches when primary searches return empty.\n- Agent explicitly calculates the date difference before triggering the conditional action.\n\n## Failure Indicators\n- Agent orders a duplicate procedure because it failed to find an existing record due to a narrow search filter.\n- Agent triggers an order based on an incorrect assumption about the \"last\" date.",
+        "tags": [
+          "temporal-logic",
+          "conditional-orders",
+          "fhir-search"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "observation_time_window_calculation_strategy",
+          "description": "Ensures distinct temporal segmentation and filtering for multiple requested time windows in observation data.",
+          "content": "## Skill Title\nObservation Time Window Calculation Strategy\n\n## Pattern Description\nWhen a task requires calculating metrics (like averages) over multiple distinct time windows (e.g., 6 hours vs. 12 hours), you must treat each window as a separate filtering operation on the retrieved dataset. Do not apply a single filter to the entire set and reuse the result for both windows.\n\nSegment the data into discrete buckets based on the `effectiveDateTime` of each observation relative to the current time. If no observations fall within a specific window, explicitly state that no data was found for that specific duration rather than defaulting to a global average or an incorrect calculation.\n\n## When to Use This Skill\n- When a task requests calculations over multiple, overlapping, or distinct time durations (e.g., \"past 6 hours\" and \"past 12 hours\").\n- When you have retrieved a bundle of observations and need to derive time-sensitive metrics.\n\n## Common Failure Patterns\n- Calculating a single average and applying it to all requested time windows.\n- Using the same temporal filter for both 6-hour and 12-hour requests.\n- Failing to handle empty result sets for specific sub-windows, leading to misleading or identical outputs.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Window Segmentation**\n1. Retrieve the full set of relevant observations.\n2. For each requested window (e.g., T-6h, T-12h), create a subset of observations where `effectiveDateTime` is within the range `[CurrentTime - Window, CurrentTime]`.\n3. Calculate the metric (e.g., average) independently for each subset.\n\n**Pattern 2: Handling Empty Windows**\n- If a subset is empty, report: \"No observations found for the [X] hour window.\"\n- Do not reuse the result from a larger window to fill a smaller one.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours and the past 12 hours.\"\n\n**Step-by-step:**\n1. GET `Observation?patient=S123&code=HEARTRATE`.\n2. Filter entries: \n   - Subset A (6h): `effectiveDateTime` >= `2023-11-07T16:47:00`.\n   - Subset B (12h): `effectiveDateTime` >= `2023-11-07T10:47:00`.\n3. Calculate average for Subset A and Subset B separately.\n4. Output: \"The 6-hour average is X. The 12-hour average is Y.\"\n\n## Success Indicators\n- The agent provides distinct values for different time windows.\n- The agent correctly identifies when data is missing for one window but present for another.\n\n## Failure Indicators\n- Identical values reported for different time windows.\n- The agent reports \"No data\" for all windows when data exists for at least one.",
+          "tags": [
+            "observation",
+            "temporal",
+            "calculation"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_search_by_code_strategy",
+          "description": "Refines medication search to include dosage and frequency parameters to prevent false-positive duplicate detection.",
+          "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen verifying the existence of a specific medication order, you must not rely on broad patient-wide searches. A broad search often returns multiple active orders that may differ in dosage, frequency, or intent. You must filter your search results by comparing the specific dosage, route, and frequency (e.g., q8h vs q12h) of the existing orders against the required order parameters.\n\n## When to Use This Skill\n- When the task requires verifying if a specific medication order (e.g., DVT prophylaxis) exists.\n- When you need to determine if an existing order is a duplicate or a distinct, non-matching order.\n- When a broad `GET /MedicationRequest?patient={id}` returns multiple active orders.\n\n## Common Failure Patterns\n- Assuming any active order for a drug (e.g., 'heparin') satisfies the requirement, ignoring dosage or frequency mismatches.\n- Failing to inspect `dosageInstruction` fields, leading to the creation of duplicate orders when a non-matching order (e.g., different frequency) already exists.\n- Relying on `medicationCodeableConcept.text` alone, which may be ambiguous.\n\n## Recommended Patterns\n\n**Pattern 1: Granular Verification**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. For each active order, inspect `dosageInstruction` to extract `doseQuantity.value`, `doseQuantity.unit`, and `timing.code` or `text`.\n3. Compare these values against the target order requirements.\n4. Only consider an order a \"duplicate\" if the medication, dose, and frequency match the target.\n\n**Pattern 2: Handling Mismatches**\n- If an order exists but has a different frequency (e.g., Q12H vs Q8H), do not treat it as a duplicate. You must either discontinue the old order if the protocol requires, or create the new, correct order alongside it.\n\n## Example Application\n\n**Task:** \"Verify that patient S0581164 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S0581164`.\n2. Inspect the bundle. If an order for \"heparin 5000 units SC q12h\" is found, recognize this as a non-matching order.\n3. Since the required \"q8h\" order is missing, create the new order.\n4. FINISH with a clear explanation of why the existing order did not satisfy the requirement.\n\n## Success Indicators\n- Agent correctly identifies that an existing order with a different frequency is not a duplicate.\n- Agent avoids creating redundant orders when a matching order already exists.\n\n## Failure Indicators\n- Agent creates a duplicate order despite an existing order being present.\n- Agent incorrectly flags a non-matching order as a duplicate and fails to create the required order.",
+          "tags": [
+            "medication",
+            "fhir",
+            "verification"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 0,
+        "fixes": 2,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_search_temporal_fallback_strategy",
+          "description": "Ensures historical records are captured by performing an initial broad search before applying restrictive date filters, and explicitly avoids premature date filtering for longitudinal tasks.",
+          "content": "# FHIR Search Temporal Fallback Strategy\n\n## Pattern Description\nWhen searching for historical records (e.g., procedures, lab results, or vaccinations) to determine if a condition has been met over a specific duration (like 48 hours or 12 months), you must avoid applying restrictive date filters in your initial search. If you filter by date immediately, you risk missing records that fall outside that window, leading to false negatives.\n\nAlways perform an initial, broad search without date parameters to retrieve the full history. Only after you have the complete set of records should you perform the temporal calculation or filtering locally.\n\n## When to Use This Skill\n- When a task requires checking for the presence or duration of a resource (e.g., \"in place for more than 48 hours\").\n- When a task requires finding the \"most recent\" instance of a procedure or lab result.\n- When a search with a date filter returns zero results, but the task logic requires verifying historical status.\n\n## Common Failure Patterns\n- Applying `date=ge...` or `date=le...` in the initial GET request, which causes the server to exclude relevant older records.\n- Assuming that a lack of results in a date-filtered search means the event never occurred.\n- Failing to retrieve the full history when the initial specific search returns empty.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Initial Search**\nAlways start by searching for the resource by patient and code (if applicable) without any date constraints.\n\nCORRECT: `GET /Procedure?patient=S123&code=NUR1373`\nWRONG:   `GET /Procedure?patient=S123&code=NUR1373&date=ge2023-11-05`\n\n**Pattern 2: Local Temporal Filtering**\nOnce you receive the bundle, iterate through the entries to find the relevant dates. Perform your \"more than X hours/days\" logic on the `performedDateTime` or `effectiveDateTime` fields found in the response.\n\n**Pattern 3: Fallback to Full History**\nIf your initial search for a specific code returns no results, perform a broader search for the patient's entire history of that resource type to ensure you haven't missed a miscoded or unexpected entry.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place for > 48 hours.\"\n\n**Step-by-step:**\n1. Issue `GET /Procedure?patient=S6540602&code=NUR1373`.\n2. If the bundle is empty, do not assume the catheter is absent; perform `GET /Procedure?patient=S6540602` to scan all procedures.\n3. Extract the `performedDateTime` from the relevant procedure.\n4. Calculate the duration between the `performedDateTime` and the current time.\n5. If duration > 48 hours, proceed with the removal request.\n\n## Success Indicators\n- The agent retrieves a list of resources and performs the date comparison locally.\n- The agent successfully identifies records that were placed well before the current date filter window.\n\n## Failure Indicators\n- The agent returns \"No record found\" after a single, date-restricted search.\n- The agent fails to identify a procedure because it was performed outside the arbitrary date window it applied.",
+          "tags": [
+            "fhir",
+            "search",
+            "temporal",
+            "fallback"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 1,
+        "fixes": 2,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_logic_temporal_verification_strategy",
+          "description": "Ensures temporal conditions are verified against the most recent resource before executing conditional orders.",
+          "content": "# Conditional Logic Temporal Verification Strategy\n\n## Pattern Description\nWhen a task requires conditional logic based on the recency of a procedure or medication (e.g., \"if administered more than X days ago\"), you must ensure you have identified the *most recent* instance of that resource before making a decision. Relying on a single search result or assuming a lack of records implies a date beyond the threshold can lead to unnecessary or duplicate orders.\n\n## When to Use This Skill\n- When a task requires a conditional action based on the date of a previous procedure or medication.\n- When the search for a specific code returns zero results, but you must confirm the absence of the record before proceeding.\n- When the task involves a \"look-back\" period (e.g., 365 days, 12 months).\n\n## Common Failure Patterns\n- Assuming that a search returning zero results for a specific code means the procedure never happened (it might be coded differently or missing from the initial filter).\n- Failing to verify the exact date of the most recent record when multiple records exist.\n- Proceeding to order a new resource without confirming the \"most recent\" date against the current system time.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf a specific code search returns no results, perform a broader search (e.g., by patient ID only) to ensure no relevant records were missed due to coding variations.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` or `authoredOn` of the most recent record against the current date. If the record is missing, explicitly state that no record was found before proceeding with the conditional order.\n\n**Pattern 3: Verification of Order**\nBefore placing a new order, verify that no other active orders for the same procedure exist to prevent duplication.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 days ago, order a new influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6474456&code=90686`.\n2. If empty, GET `Procedure?patient=S6474456` to check for other vaccine codes.\n3. If no vaccine found, conclude the last dose is effectively > 365 days ago.\n4. If a vaccine is found, extract the date and calculate the delta from today.\n5. If delta > 365, POST the new `MedicationRequest`.\n\nCORRECT output: `FINISH([\"Last vaccine was on 2022-01-01. Since this is > 365 days, ordering new vaccine.\"])`\nWRONG output: `FINISH([\"No vaccine found, so I am ordering one.\"])` (without verifying broader history).\n\n## Success Indicators\n- Agent performs secondary searches when primary searches return empty.\n- Agent explicitly calculates the date difference before triggering the conditional action.\n\n## Failure Indicators\n- Agent orders a duplicate procedure because it failed to find an existing record due to a narrow search filter.\n- Agent triggers an order based on an incorrect assumption about the \"last\" date.",
+          "tags": [
+            "temporal-logic",
+            "conditional-orders",
+            "fhir-search"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 3,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 34,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "medication_request_search_by_code_strategy",
+        "description": "Ensures medication searches use specific codes and verify existing orders before creating new ones to prevent duplication.",
+        "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen tasked with verifying or managing medication orders, you must avoid creating duplicate orders. A generic search by patient ID often returns too many results or misses specific active orders. You must first search for existing orders using specific codes (RxNorm/LOINC) or precise medication names, and then inspect the returned bundle to identify active orders before deciding to create a new one.\n\n## When to Use This Skill\n- When the task requires verifying that a patient has exactly one active order for a specific medication.\n- When you need to check for existing orders before creating a new one to avoid duplication.\n- When a generic search (e.g., `?patient=ID`) returns a large bundle that makes it difficult to identify specific active orders.\n\n## Common Failure Patterns\n- Relying on a broad `GET /MedicationRequest?patient=ID` search and failing to parse the results for existing active orders.\n- Creating a new order without first checking if an equivalent active order already exists.\n- Failing to discontinue existing duplicate orders when the task explicitly requires keeping only the newest one.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways perform a targeted search using the medication's code or name if available. If the initial search is too broad, filter the results locally or refine the search parameters.\n\n**Pattern 2: Verification Before Creation**\n1. GET `MedicationRequest?patient=[ID]`.\n2. Iterate through the `entry` array in the response.\n3. Check the `status` field of each `MedicationRequest`.\n4. If an active order for the same medication exists, do not create a new one. If the task requires only one, and multiple exist, identify the newest by `authoredOn` and discontinue the others.\n5. Only POST a new `MedicationRequest` if no active order is found.\n\n**Pattern 3: Discontinuation**\nIf you find multiple active orders, use `PUT` or `PATCH` to update the `status` of the older orders to `stopped` or `entered-in-error` as appropriate, keeping only the most recent one.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6227720`.\n2. Inspect the bundle for any `MedicationRequest` with `status: \"active\"` that matches the DVT prophylaxis criteria.\n3. If found, confirm it is the only one. If zero are found, proceed to POST the new order.\n4. If multiple are found, identify the newest by `authoredOn` and update the status of the others to `stopped`.\n\n## Success Indicators\n- Agent correctly identifies existing active orders before attempting to create new ones.\n- No duplicate orders are created for the same medication.\n- Older duplicate orders are correctly discontinued when required.\n\n## Failure Indicators\n- Agent creates a new order despite an active one already existing.\n- Agent fails to find an existing order because the search was too generic or the response was not parsed correctly.",
+        "tags": [
+          "medication",
+          "fhir",
+          "duplication"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "fhir_search_temporal_fallback_strategy",
+        "description": "Ensures broad searches by category or patient are performed when specific code-based searches return no results.",
+        "content": "# FHIR Search Fallback Strategy\n\n## Pattern Description\nWhen searching for specific clinical resources (Observations, Procedures, MedicationRequests) using a specific code, the server may return an empty bundle even if relevant data exists under a broader category or patient-level query. This strategy ensures you do not prematurely conclude that data is missing.\n\n## When to Use This Skill\n- When a GET request for a specific `code` returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding longitudinal data (e.g., heart rate, vaccination history) and the initial specific search fails.\n\n## Common Failure Patterns\n- Assuming that a zero-result search for a specific code means the patient has no relevant records.\n- Failing to broaden the search to `category` or just `patient` ID after a specific code search fails.\n- Stopping after one failed attempt when the data might be categorized differently.\n\n## Recommended Patterns\n\n**Pattern 1: Specific Search**\nStart by searching with the specific `code` provided in the task instructions.\n\n**Pattern 2: Broad Fallback**\nIf the specific search returns no results, perform a broader search using the patient ID and a relevant category (e.g., `category=vital-signs` for Observations or just `patient=ID` for Procedures/MedicationRequests).\n\n**Pattern 3: Verification**\nIf the broad search also returns no results, only then conclude that the data is missing. If the broad search returns results, filter them manually to find the relevant records.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6352985.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6352985&code=HEARTRATE`.\n2. If the response is empty, issue `GET /Observation?patient=S6352985&category=vital-signs`.\n3. If the second search returns results, parse the bundle for heart rate observations.\n4. If both return empty, conclude no data is available.\n\n## Success Indicators\n- The agent performs a second, broader search after the first one fails.\n- The agent finds relevant data in the broader search that was missed by the specific code search.\n\n## Failure Indicators\n- The agent returns \"No data found\" after only one failed specific search.\n- The agent enters an infinite loop of searching the same parameters.",
+        "tags": [
+          "fhir",
+          "search",
+          "fallback"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Ensures distinct temporal filtering for multiple time-window calculations by applying explicit date-range parameters.",
+        "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen a task requires calculating metrics (like averages) over multiple distinct time windows (e.g., 6 hours vs. 12 hours), you must perform separate, scoped queries for each window. Do not perform a single broad query and attempt to filter the results in memory, as this often leads to stale or identical results for both windows.\n\n## When to Use This Skill\n- When the task requires calculating a metric over multiple specific time durations (e.g., \"past 6 hours\" and \"past 12 hours\").\n- When you need to compare values across different temporal snapshots.\n\n## Common Failure Patterns\n- Performing one query without date parameters and applying the same logic to the entire set for both windows.\n- Using the same `effectiveDateTime` or `date` filter for different time windows.\n- Failing to calculate the start time relative to the current time provided in the context.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Temporal Scoping**\nFor each window, calculate the exact `date` parameter using the `ge` (greater than or equal) operator. \n- If the current time is `T`, the 6-hour window is `date=ge[T - 6 hours]`.\n- If the current time is `T`, the 12-hour window is `date=ge[T - 12 hours]`.\n\n**Pattern 2: Separate API Calls**\nIssue a distinct GET request for each window to ensure the server returns only the relevant observations.\n- Example: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00` (for 6 hours ago)\n- Example: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T10:47:00` (for 12 hours ago)\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours and the past 12 hours.\"\n\n**Step-by-step:**\n1. Identify current time (e.g., 2023-11-07T22:47:00).\n2. Calculate 6-hour threshold: 2023-11-07T16:47:00.\n3. Calculate 12-hour threshold: 2023-11-07T10:47:00.\n4. Issue `GET /Observation?patient=S1374652&code=HEARTRATE&date=ge2023-11-07T16:47:00`.\n5. Issue `GET /Observation?patient=S1374652&code=HEARTRATE&date=ge2023-11-07T10:47:00`.\n6. Calculate averages from the distinct bundles returned.\n\n## Success Indicators\n- The agent performs two distinct GET requests with different `date` parameters.\n- The calculated averages for the 6-hour and 12-hour windows are different (if the data supports it).\n\n## Failure Indicators\n- The agent performs only one GET request for both windows.\n- The agent returns identical values for both time windows.",
+        "tags": [
+          "observation",
+          "temporal",
+          "calculation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "medication_request_search_by_code_strategy",
+        "description": "Ensures medication searches use specific codes and verify existing orders before creating new ones to prevent duplication.",
+        "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen tasked with verifying or managing medication orders, you must avoid creating duplicate orders. A generic search by patient ID often returns too many results or misses specific active orders. You must first search for existing orders using specific codes (RxNorm/LOINC) or precise medication names, and then inspect the returned bundle to identify active orders before deciding to create a new one.\n\n## When to Use This Skill\n- When the task requires verifying that a patient has exactly one active order for a specific medication.\n- When you need to check for existing orders before creating a new one to avoid duplication.\n- When a generic search (e.g., `?patient=ID`) returns a large bundle that makes it difficult to identify specific active orders.\n\n## Common Failure Patterns\n- Relying on a broad `GET /MedicationRequest?patient=ID` search and failing to parse the results for existing active orders.\n- Creating a new order without first checking if an equivalent active order already exists.\n- Failing to discontinue existing duplicate orders when the task explicitly requires keeping only the newest one.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways perform a targeted search using the medication's code or name if available. If the initial search is too broad, filter the results locally or refine the search parameters.\n\n**Pattern 2: Verification Before Creation**\n1. GET `MedicationRequest?patient=[ID]`.\n2. Iterate through the `entry` array in the response.\n3. Check the `status` field of each `MedicationRequest`.\n4. If an active order for the same medication exists, do not create a new one. If the task requires only one, and multiple exist, identify the newest by `authoredOn` and discontinue the others.\n5. Only POST a new `MedicationRequest` if no active order is found.\n\n**Pattern 3: Discontinuation**\nIf you find multiple active orders, use `PUT` or `PATCH` to update the `status` of the older orders to `stopped` or `entered-in-error` as appropriate, keeping only the most recent one.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6227720`.\n2. Inspect the bundle for any `MedicationRequest` with `status: \"active\"` that matches the DVT prophylaxis criteria.\n3. If found, confirm it is the only one. If zero are found, proceed to POST the new order.\n4. If multiple are found, identify the newest by `authoredOn` and update the status of the others to `stopped`.\n\n## Success Indicators\n- Agent correctly identifies existing active orders before attempting to create new ones.\n- No duplicate orders are created for the same medication.\n- Older duplicate orders are correctly discontinued when required.\n\n## Failure Indicators\n- Agent creates a new order despite an active one already existing.\n- Agent fails to find an existing order because the search was too generic or the response was not parsed correctly.",
+        "tags": [
+          "medication",
+          "fhir",
+          "duplication"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_post_action_verification_strategy",
+        "description": "Ensures state changes (POST/PUT) are verified by re-fetching the resource to confirm the update was successful.",
+        "content": "# FHIR Post-Action Verification Strategy\n\n## Pattern Description\nWhen you perform a state-changing operation (POST or PUT) on a FHIR resource, you must verify that the server has processed the request as expected. Simply receiving a 200/201 response is insufficient, as the server may accept the request but fail to persist the change or apply it to the correct resource. You must re-fetch the resource or the relevant list to confirm the new state.\n\n## When to Use This Skill\n- After any POST or PUT request that modifies a resource (e.g., changing a status to 'stopped', creating a new order).\n- When the task requires ensuring a specific state (e.g., 'exactly one active order').\n- When you suspect the server might have silently failed or ignored a field update.\n\n## Common Failure Patterns\n- Assuming a PUT request succeeded without checking the current state of the resource.\n- Failing to re-query the resource list after a status change, leading to stale data in the final answer.\n- Ignoring system notes or warnings that indicate a resource was not found or not updated correctly.\n\n## Recommended Patterns\n\n**Pattern 1: Post-Action Verification**\n1. Perform the POST or PUT request.\n2. Immediately issue a GET request for the specific resource ID or the patient's relevant resource list.\n3. Inspect the returned resource(s) to confirm the `status` or field change matches your intent.\n4. If the change is not reflected, report the failure or retry the operation once.\n\n**Pattern 2: Verification Logic**\n- If you updated a `MedicationRequest` status to `stopped`, verify the GET response shows `\"status\": \"stopped\"`.\n- If you created a new resource, verify the GET response includes the new resource ID.\n\n## Example Application\n\n**Task:** Discontinue a duplicate DVT prophylaxis order.\n\n**Step-by-step:**\n1. PUT `.../MedicationRequest/765640` with `\"status\": \"stopped\"`.\n2. GET `.../MedicationRequest/765640`.\n3. Confirm the returned JSON has `\"status\": \"stopped\"`.\n4. FINISH([\"Verified order 765640 is now stopped.\"]).\n\n## Success Indicators\n- Agent performs a follow-up GET request after a modification.\n- Agent explicitly confirms the state change in the final output.\n\n## Failure Indicators\n- Agent stops after the PUT/POST request without verifying the result.\n- Agent reports success based solely on the HTTP response code of the modification request.",
+        "tags": [
+          "fhir",
+          "verification",
+          "state-management"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_search_temporal_fallback_strategy",
+          "description": "Ensures broad searches by category or patient are performed when specific code-based searches return no results.",
+          "content": "# FHIR Search Fallback Strategy\n\n## Pattern Description\nWhen searching for specific clinical resources (Observations, Procedures, MedicationRequests) using a specific code, the server may return an empty bundle even if relevant data exists under a broader category or patient-level query. This strategy ensures you do not prematurely conclude that data is missing.\n\n## When to Use This Skill\n- When a GET request for a specific `code` returns a bundle with `total: 0` or an empty `entry` array.\n- When the task requires finding longitudinal data (e.g., heart rate, vaccination history) and the initial specific search fails.\n\n## Common Failure Patterns\n- Assuming that a zero-result search for a specific code means the patient has no relevant records.\n- Failing to broaden the search to `category` or just `patient` ID after a specific code search fails.\n- Stopping after one failed attempt when the data might be categorized differently.\n\n## Recommended Patterns\n\n**Pattern 1: Specific Search**\nStart by searching with the specific `code` provided in the task instructions.\n\n**Pattern 2: Broad Fallback**\nIf the specific search returns no results, perform a broader search using the patient ID and a relevant category (e.g., `category=vital-signs` for Observations or just `patient=ID` for Procedures/MedicationRequests).\n\n**Pattern 3: Verification**\nIf the broad search also returns no results, only then conclude that the data is missing. If the broad search returns results, filter them manually to find the relevant records.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6352985.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6352985&code=HEARTRATE`.\n2. If the response is empty, issue `GET /Observation?patient=S6352985&category=vital-signs`.\n3. If the second search returns results, parse the bundle for heart rate observations.\n4. If both return empty, conclude no data is available.\n\n## Success Indicators\n- The agent performs a second, broader search after the first one fails.\n- The agent finds relevant data in the broader search that was missed by the specific code search.\n\n## Failure Indicators\n- The agent returns \"No data found\" after only one failed specific search.\n- The agent enters an infinite loop of searching the same parameters.",
+          "tags": [
+            "fhir",
+            "search",
+            "fallback"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 0,
+        "fixes": 2,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "observation_time_window_calculation_strategy",
+          "description": "Ensures distinct temporal filtering for multiple time-window calculations by applying explicit date-range parameters.",
+          "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen a task requires calculating metrics (like averages) over multiple distinct time windows (e.g., 6 hours vs. 12 hours), you must perform separate, scoped queries for each window. Do not perform a single broad query and attempt to filter the results in memory, as this often leads to stale or identical results for both windows.\n\n## When to Use This Skill\n- When the task requires calculating a metric over multiple specific time durations (e.g., \"past 6 hours\" and \"past 12 hours\").\n- When you need to compare values across different temporal snapshots.\n\n## Common Failure Patterns\n- Performing one query without date parameters and applying the same logic to the entire set for both windows.\n- Using the same `effectiveDateTime` or `date` filter for different time windows.\n- Failing to calculate the start time relative to the current time provided in the context.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Temporal Scoping**\nFor each window, calculate the exact `date` parameter using the `ge` (greater than or equal) operator. \n- If the current time is `T`, the 6-hour window is `date=ge[T - 6 hours]`.\n- If the current time is `T`, the 12-hour window is `date=ge[T - 12 hours]`.\n\n**Pattern 2: Separate API Calls**\nIssue a distinct GET request for each window to ensure the server returns only the relevant observations.\n- Example: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00` (for 6 hours ago)\n- Example: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T10:47:00` (for 12 hours ago)\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours and the past 12 hours.\"\n\n**Step-by-step:**\n1. Identify current time (e.g., 2023-11-07T22:47:00).\n2. Calculate 6-hour threshold: 2023-11-07T16:47:00.\n3. Calculate 12-hour threshold: 2023-11-07T10:47:00.\n4. Issue `GET /Observation?patient=S1374652&code=HEARTRATE&date=ge2023-11-07T16:47:00`.\n5. Issue `GET /Observation?patient=S1374652&code=HEARTRATE&date=ge2023-11-07T10:47:00`.\n6. Calculate averages from the distinct bundles returned.\n\n## Success Indicators\n- The agent performs two distinct GET requests with different `date` parameters.\n- The calculated averages for the 6-hour and 12-hour windows are different (if the data supports it).\n\n## Failure Indicators\n- The agent performs only one GET request for both windows.\n- The agent returns identical values for both time windows.",
+          "tags": [
+            "observation",
+            "temporal",
+            "calculation"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 0,
+        "fixes": 2,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_search_by_code_strategy",
+          "description": "Ensures medication searches use specific codes and verify existing orders before creating new ones to prevent duplication.",
+          "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen tasked with verifying or managing medication orders, you must avoid creating duplicate orders. A generic search by patient ID often returns too many results or misses specific active orders. You must first search for existing orders using specific codes (RxNorm/LOINC) or precise medication names, and then inspect the returned bundle to identify active orders before deciding to create a new one.\n\n## When to Use This Skill\n- When the task requires verifying that a patient has exactly one active order for a specific medication.\n- When you need to check for existing orders before creating a new one to avoid duplication.\n- When a generic search (e.g., `?patient=ID`) returns a large bundle that makes it difficult to identify specific active orders.\n\n## Common Failure Patterns\n- Relying on a broad `GET /MedicationRequest?patient=ID` search and failing to parse the results for existing active orders.\n- Creating a new order without first checking if an equivalent active order already exists.\n- Failing to discontinue existing duplicate orders when the task explicitly requires keeping only the newest one.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways perform a targeted search using the medication's code or name if available. If the initial search is too broad, filter the results locally or refine the search parameters.\n\n**Pattern 2: Verification Before Creation**\n1. GET `MedicationRequest?patient=[ID]`.\n2. Iterate through the `entry` array in the response.\n3. Check the `status` field of each `MedicationRequest`.\n4. If an active order for the same medication exists, do not create a new one. If the task requires only one, and multiple exist, identify the newest by `authoredOn` and discontinue the others.\n5. Only POST a new `MedicationRequest` if no active order is found.\n\n**Pattern 3: Discontinuation**\nIf you find multiple active orders, use `PUT` or `PATCH` to update the `status` of the older orders to `stopped` or `entered-in-error` as appropriate, keeping only the most recent one.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6227720`.\n2. Inspect the bundle for any `MedicationRequest` with `status: \"active\"` that matches the DVT prophylaxis criteria.\n3. If found, confirm it is the only one. If zero are found, proceed to POST the new order.\n4. If multiple are found, identify the newest by `authoredOn` and update the status of the others to `stopped`.\n\n## Success Indicators\n- Agent correctly identifies existing active orders before attempting to create new ones.\n- No duplicate orders are created for the same medication.\n- Older duplicate orders are correctly discontinued when required.\n\n## Failure Indicators\n- Agent creates a new order despite an active one already existing.\n- Agent fails to find an existing order because the search was too generic or the response was not parsed correctly.",
+          "tags": [
+            "medication",
+            "fhir",
+            "duplication"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_post_action_verification_strategy",
+          "description": "Ensures state changes (POST/PUT) are verified by re-fetching the resource to confirm the update was successful.",
+          "content": "# FHIR Post-Action Verification Strategy\n\n## Pattern Description\nWhen you perform a state-changing operation (POST or PUT) on a FHIR resource, you must verify that the server has processed the request as expected. Simply receiving a 200/201 response is insufficient, as the server may accept the request but fail to persist the change or apply it to the correct resource. You must re-fetch the resource or the relevant list to confirm the new state.\n\n## When to Use This Skill\n- After any POST or PUT request that modifies a resource (e.g., changing a status to 'stopped', creating a new order).\n- When the task requires ensuring a specific state (e.g., 'exactly one active order').\n- When you suspect the server might have silently failed or ignored a field update.\n\n## Common Failure Patterns\n- Assuming a PUT request succeeded without checking the current state of the resource.\n- Failing to re-query the resource list after a status change, leading to stale data in the final answer.\n- Ignoring system notes or warnings that indicate a resource was not found or not updated correctly.\n\n## Recommended Patterns\n\n**Pattern 1: Post-Action Verification**\n1. Perform the POST or PUT request.\n2. Immediately issue a GET request for the specific resource ID or the patient's relevant resource list.\n3. Inspect the returned resource(s) to confirm the `status` or field change matches your intent.\n4. If the change is not reflected, report the failure or retry the operation once.\n\n**Pattern 2: Verification Logic**\n- If you updated a `MedicationRequest` status to `stopped`, verify the GET response shows `\"status\": \"stopped\"`.\n- If you created a new resource, verify the GET response includes the new resource ID.\n\n## Example Application\n\n**Task:** Discontinue a duplicate DVT prophylaxis order.\n\n**Step-by-step:**\n1. PUT `.../MedicationRequest/765640` with `\"status\": \"stopped\"`.\n2. GET `.../MedicationRequest/765640`.\n3. Confirm the returned JSON has `\"status\": \"stopped\"`.\n4. FINISH([\"Verified order 765640 is now stopped.\"]).\n\n## Success Indicators\n- Agent performs a follow-up GET request after a modification.\n- Agent explicitly confirms the state change in the final output.\n\n## Failure Indicators\n- Agent stops after the PUT/POST request without verifying the result.\n- Agent reports success based solely on the HTTP response code of the modification request.",
+          "tags": [
+            "fhir",
+            "verification",
+            "state-management"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -4,
+        "fixes": 1,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_search_by_code_strategy",
+          "description": "Ensures medication searches use specific codes and verify existing orders before creating new ones, with explicit requirements to parse bundle results to prevent duplication.",
+          "content": "# Medication Request Search and Verification Strategy\n\n## Pattern Description\nWhen tasked with verifying or managing medication orders, you must avoid creating duplicate orders. A generic search by patient ID often returns a large bundle. You must parse the entire bundle (including pagination if necessary) to identify existing active orders before deciding to create a new one.\n\n## When to Use This Skill\n- When the task requires verifying that a patient has exactly one active order for a specific medication.\n- When you need to check for existing orders before creating a new one to avoid duplication.\n\n## Common Failure Patterns\n- Assuming a search result is empty or complete without checking for pagination (`link` field with `relation: next`).\n- Creating a new order without fully inspecting the returned bundle for existing active orders.\n- Failing to discontinue existing duplicate orders when the task explicitly requires keeping only the newest one.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Bundle Inspection**\n1. GET `MedicationRequest?patient=[ID]`.\n2. If the bundle contains a `next` link, you must follow it to retrieve all records before making a decision.\n3. Iterate through all `entry` items in the retrieved bundles.\n4. Check the `status` field of each `MedicationRequest`.\n\n**Pattern 2: Verification Before Creation**\n1. If an active order for the same medication exists, do not create a new one.\n2. If multiple active orders exist, identify the newest by `authoredOn` and update the status of the others to `stopped` or `entered-in-error`.\n3. Only POST a new `MedicationRequest` if zero active orders are found after a full inspection of all pages.\n\n## Example Application\n**Task:** \"Verify that patient S2823623 has exactly one active DVT prophylaxis order.\"\n1. GET `MedicationRequest?patient=S2823623`.\n2. Check if the bundle has a `next` link. If so, fetch the next page.\n3. Filter the combined results for `status: active` and the specific medication.\n4. If an active order exists, do nothing. If multiple exist, discontinue the older ones. If zero exist, POST the new order.",
+          "tags": [
+            "medication",
+            "fhir",
+            "verification",
+            "deduplication"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 1,
+        "contrastive_revision": true
+      }
+    ]
+  }
+]

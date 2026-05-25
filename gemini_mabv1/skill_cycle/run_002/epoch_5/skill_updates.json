@@ -1,0 +1,267 @@
+[
+  {
+    "epoch": 5,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 36,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "lab_result_temporal_validation_and_action",
+        "description": "Enforce strict temporal validation and prevent unnecessary orders when lab results are missing or stale.",
+        "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires checking a lab result within a specific timeframe (e.g., 24 hours or 1 year) and conditionally ordering a new test, you must first validate the existence and age of the most recent record. If no record exists or the record is outside the required timeframe, you must proceed with the order. If a valid record exists, you must not create a new order.\n\n## When to Use This Skill\n- When a task asks to check a lab result within a specific time window.\n- When the task specifies a conditional order (e.g., \"If no result in X time, order Y\").\n- When the task requires comparing the current system time against the `effectiveDateTime` or `issued` field of a retrieved Observation.\n\n## Common Failure Patterns\n- Ordering a new test when a valid, recent result already exists in the bundle.\n- Creating a ServiceRequest or MedicationRequest when the task explicitly states \"don't order anything\" if no data is found or if data is within the threshold.\n- Including internal reasoning, narrative text, or redundant confirmation messages in the `FINISH` output.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Retrieve the Observation bundle.\n2. If the bundle is empty (`total: 0`), proceed to the ordering step if the task allows, or report no data.\n3. If the bundle contains entries, extract the `effectiveDateTime` of the most recent entry.\n4. Calculate the time difference between the current system time and the `effectiveDateTime`.\n5. If the difference is within the threshold, do not order. If it exceeds the threshold, proceed to order.\n\n**Pattern 2: Output Formatting**\n- Your `FINISH` output must only contain the requested data (e.g., the value and date) or a simple status message. Do not include internal monologue, justifications, or narrative explanations of the logic used.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium. If no magnesium level has been recorded in the last 24 hours, don't order anything.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S1023381`.\n2. Inspect the `effectiveDateTime` of the most recent entry.\n3. If the date is > 24 hours old, do not order. If the bundle is empty, do not order.\n4. If no order is placed, `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- No unnecessary ServiceRequest or MedicationRequest resources are created.\n- `FINISH` output is concise and contains only the requested information.\n\n## Failure Indicators\n- Agent creates a request despite a valid, recent lab result being present.\n- Agent includes conversational filler or internal reasoning in the `FINISH` call.",
+        "tags": [
+          "lab",
+          "temporal",
+          "validation",
+          "ordering"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict validation of search results against temporal constraints and prohibit premature sentinel value returns.",
+        "content": "# Temporal Observation Filtering\n\n## Pattern Description\nWhen a task requires data within a specific temporal window (e.g., \"last 24 hours\"), you must not assume that an empty search result implies the data does not exist. You must first verify the search parameters and the returned resource timestamps against the current system time. If a search returns no results, you must explicitly confirm the absence of data by checking the `meta.lastUpdated` or `effectiveDateTime` fields of available records before concluding that no data exists. Never return a sentinel value (like -1 or a generic \"not found\" string) until you have verified that no records fall within the requested time window.\n\n## When to Use This Skill\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When a task specifies a time-bound constraint (e.g., \"within the last 24 hours\").\n- When you are tempted to return a sentinel value (e.g., -1, \"not found\") without verifying the temporal context of the patient's record.\n\n## Common Failure Patterns\n- Returning a sentinel value (e.g., `FINISH([-1])`) immediately after a single empty GET request.\n- Failing to account for the current system time when evaluating if a lab result is \"recent\".\n- Assuming a `total: 0` response is definitive without checking if the search parameters (e.g., date filters) were too restrictive.\n\n## Recommended Patterns\n\n**Pattern 1: Verification of Absence**\nIf a search returns no results, do not immediately conclude the data is missing. If the initial search was broad, verify if there are any records at all for the patient. If the search was narrow (e.g., date-filtered), consider if a broader search is needed to confirm the most recent value exists outside the window.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` of the retrieved observation against the current system time provided in the task context. If the difference exceeds the requested window (e.g., 24 hours), treat the result as \"not found within the requested window\" rather than \"no data exists\".\n\n**Pattern 3: Output Formatting**\nWhen no data is found within the specified window, provide a clear, descriptive string (e.g., \"No [Lab Name] recorded in the last 24 hours\") rather than a numeric sentinel like -1.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. Issue GET request for the observation.\n2. If the bundle is empty, do not return -1.\n3. Verify the current time (e.g., 2023-11-13T10:15:00).\n4. If no records exist, return a descriptive string confirming the absence within the 24-hour window.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`\nWRONG output: `FINISH([-1])`\n\n## Success Indicators\n- Agent performs a secondary check or confirms the temporal window before concluding data is missing.\n- Final output uses descriptive text instead of numeric sentinel values when data is absent.\n\n## Failure Indicators\n- Agent returns -1 or a generic \"not found\" message immediately after a single empty search result.",
+        "tags": [
+          "temporal",
+          "observation",
+          "validation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict string-based output formatting for FINISH, avoiding list/array types for final answers.",
+        "content": "## Skill Title\n\nStructured Output Formatting for FINISH\n\n## Pattern Description\n\nWhen providing a final answer to a user, you must ensure the output is a single, human-readable string. Avoid returning raw arrays or lists (e.g., `[\"value\"]`) as these are often misinterpreted by the system. If the task requires returning multiple pieces of information, concatenate them into a single descriptive sentence.\n\n## When to Use This Skill\n\n- When the task requires a final answer or summary.\n- When you have completed all necessary GET/POST actions and are ready to call FINISH.\n- Whenever the output involves multiple data points (e.g., a lab value and a date).\n\n## Common Failure Patterns\n\n- Returning `[\"5.4%\", \"2023-11-02\"]` instead of `\"The last HbA1C value was 5.4% recorded on 2023-11-02.\"`\n- Returning `[\"S6521727\"]` instead of `\"S6521727\"`\n- Returning `[\"Blood pressure 118/77 mmHg recorded for patient S6537563.\"]` instead of `\"Blood pressure 118/77 mmHg recorded for patient S6537563.\"`\n\n## Recommended Patterns\n\n**Pattern 1: Single String Output**\nAlways wrap your final response in a single string. If you have multiple data points, combine them into a coherent sentence.\n\nCORRECT: `FINISH(\"The last HbA1C value was 5.4% recorded on 2023-11-02.\")`\nWRONG:   `FINISH([\"5.4%\", \"2023-11-02\"])`\n\n**Pattern 2: Handling \"Not Found\" or Sentinel Values**\nIf a value is not found or a specific sentinel value is requested, return it as a plain string.\n\nCORRECT: `FINISH(\"Patient not found\")`\nWRONG:   `FINISH([\"Patient not found\"])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Perform GET request to retrieve the observation.\n2. Extract the value (e.g., \"5.4%\") and the date (e.g., \"2023-11-02\").\n3. Construct the final string: \"The last HbA1C value was 5.4% recorded on 2023-11-02.\"\n4. Call `FINISH(\"The last HbA1C value was 5.4% recorded on 2023-11-02.\")`\n\n## Success Indicators\n\n- The final output is a single string, not a list or array.\n- The answer is human-readable and contains all requested information.\n\n## Failure Indicators\n\n- The system logs an `answer_format_wrong_type` error.\n- The output is wrapped in square brackets `[]`.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "lab_result_temporal_validation_and_action",
+        "description": "Enforce strict temporal validation and prevent unnecessary orders when lab results are missing or stale.",
+        "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires checking a lab result within a specific timeframe (e.g., 24 hours or 1 year) and conditionally ordering a new test, you must first validate the existence and age of the most recent record. If no record exists or the record is outside the required timeframe, you must proceed with the order. If a valid record exists, you must not create a new order.\n\n## When to Use This Skill\n- When a task asks to check a lab result within a specific time window.\n- When the task specifies a conditional order (e.g., \"If no result in X time, order Y\").\n- When the task requires comparing the current system time against the `effectiveDateTime` or `issued` field of a retrieved Observation.\n\n## Common Failure Patterns\n- Ordering a new test when a valid, recent result already exists in the bundle.\n- Creating a ServiceRequest or MedicationRequest when the task explicitly states \"don't order anything\" if no data is found or if data is within the threshold.\n- Including internal reasoning, narrative text, or redundant confirmation messages in the `FINISH` output.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Retrieve the Observation bundle.\n2. If the bundle is empty (`total: 0`), proceed to the ordering step if the task allows, or report no data.\n3. If the bundle contains entries, extract the `effectiveDateTime` of the most recent entry.\n4. Calculate the time difference between the current system time and the `effectiveDateTime`.\n5. If the difference is within the threshold, do not order. If it exceeds the threshold, proceed to order.\n\n**Pattern 2: Output Formatting**\n- Your `FINISH` output must only contain the requested data (e.g., the value and date) or a simple status message. Do not include internal monologue, justifications, or narrative explanations of the logic used.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium. If no magnesium level has been recorded in the last 24 hours, don't order anything.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S1023381`.\n2. Inspect the `effectiveDateTime` of the most recent entry.\n3. If the date is > 24 hours old, do not order. If the bundle is empty, do not order.\n4. If no order is placed, `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- No unnecessary ServiceRequest or MedicationRequest resources are created.\n- `FINISH` output is concise and contains only the requested information.\n\n## Failure Indicators\n- Agent creates a request despite a valid, recent lab result being present.\n- Agent includes conversational filler or internal reasoning in the `FINISH` call.",
+        "tags": [
+          "lab",
+          "temporal",
+          "validation",
+          "ordering"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "lab_result_temporal_validation_and_action",
+          "description": "Enforce strict temporal validation and prevent unnecessary orders when lab results are missing or stale.",
+          "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires checking a lab result within a specific timeframe (e.g., 24 hours or 1 year) and conditionally ordering a new test, you must first validate the existence and age of the most recent record. If no record exists or the record is outside the required timeframe, you must proceed with the order. If a valid record exists, you must not create a new order.\n\n## When to Use This Skill\n- When a task asks to check a lab result within a specific time window.\n- When the task specifies a conditional order (e.g., \"If no result in X time, order Y\").\n- When the task requires comparing the current system time against the `effectiveDateTime` or `issued` field of a retrieved Observation.\n\n## Common Failure Patterns\n- Ordering a new test when a valid, recent result already exists in the bundle.\n- Creating a ServiceRequest or MedicationRequest when the task explicitly states \"don't order anything\" if no data is found or if data is within the threshold.\n- Including internal reasoning, narrative text, or redundant confirmation messages in the `FINISH` output.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Retrieve the Observation bundle.\n2. If the bundle is empty (`total: 0`), proceed to the ordering step if the task allows, or report no data.\n3. If the bundle contains entries, extract the `effectiveDateTime` of the most recent entry.\n4. Calculate the time difference between the current system time and the `effectiveDateTime`.\n5. If the difference is within the threshold, do not order. If it exceeds the threshold, proceed to order.\n\n**Pattern 2: Output Formatting**\n- Your `FINISH` output must only contain the requested data (e.g., the value and date) or a simple status message. Do not include internal monologue, justifications, or narrative explanations of the logic used.\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium. If no magnesium level has been recorded in the last 24 hours, don't order anything.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S1023381`.\n2. Inspect the `effectiveDateTime` of the most recent entry.\n3. If the date is > 24 hours old, do not order. If the bundle is empty, do not order.\n4. If no order is placed, `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- No unnecessary ServiceRequest or MedicationRequest resources are created.\n- `FINISH` output is concise and contains only the requested information.\n\n## Failure Indicators\n- Agent creates a request despite a valid, recent lab result being present.\n- Agent includes conversational filler or internal reasoning in the `FINISH` call.",
+          "tags": [
+            "lab",
+            "temporal",
+            "validation",
+            "ordering"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "temporal_observation_filtering",
+          "description": "Enforce strict validation of search results against temporal constraints and prohibit premature sentinel value returns.",
+          "content": "# Temporal Observation Filtering\n\n## Pattern Description\nWhen a task requires data within a specific temporal window (e.g., \"last 24 hours\"), you must not assume that an empty search result implies the data does not exist. You must first verify the search parameters and the returned resource timestamps against the current system time. If a search returns no results, you must explicitly confirm the absence of data by checking the `meta.lastUpdated` or `effectiveDateTime` fields of available records before concluding that no data exists. Never return a sentinel value (like -1 or a generic \"not found\" string) until you have verified that no records fall within the requested time window.\n\n## When to Use This Skill\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When a task specifies a time-bound constraint (e.g., \"within the last 24 hours\").\n- When you are tempted to return a sentinel value (e.g., -1, \"not found\") without verifying the temporal context of the patient's record.\n\n## Common Failure Patterns\n- Returning a sentinel value (e.g., `FINISH([-1])`) immediately after a single empty GET request.\n- Failing to account for the current system time when evaluating if a lab result is \"recent\".\n- Assuming a `total: 0` response is definitive without checking if the search parameters (e.g., date filters) were too restrictive.\n\n## Recommended Patterns\n\n**Pattern 1: Verification of Absence**\nIf a search returns no results, do not immediately conclude the data is missing. If the initial search was broad, verify if there are any records at all for the patient. If the search was narrow (e.g., date-filtered), consider if a broader search is needed to confirm the most recent value exists outside the window.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` of the retrieved observation against the current system time provided in the task context. If the difference exceeds the requested window (e.g., 24 hours), treat the result as \"not found within the requested window\" rather than \"no data exists\".\n\n**Pattern 3: Output Formatting**\nWhen no data is found within the specified window, provide a clear, descriptive string (e.g., \"No [Lab Name] recorded in the last 24 hours\") rather than a numeric sentinel like -1.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. Issue GET request for the observation.\n2. If the bundle is empty, do not return -1.\n3. Verify the current time (e.g., 2023-11-13T10:15:00).\n4. If no records exist, return a descriptive string confirming the absence within the 24-hour window.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`\nWRONG output: `FINISH([-1])`\n\n## Success Indicators\n- Agent performs a secondary check or confirms the temporal window before concluding data is missing.\n- Final output uses descriptive text instead of numeric sentinel values when data is absent.\n\n## Failure Indicators\n- Agent returns -1 or a generic \"not found\" message immediately after a single empty search result.",
+          "tags": [
+            "temporal",
+            "observation",
+            "validation"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -1,
+        "fixes": 1,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict string-based output formatting for FINISH, avoiding list/array types for final answers.",
+          "content": "## Skill Title\n\nStructured Output Formatting for FINISH\n\n## Pattern Description\n\nWhen providing a final answer to a user, you must ensure the output is a single, human-readable string. Avoid returning raw arrays or lists (e.g., `[\"value\"]`) as these are often misinterpreted by the system. If the task requires returning multiple pieces of information, concatenate them into a single descriptive sentence.\n\n## When to Use This Skill\n\n- When the task requires a final answer or summary.\n- When you have completed all necessary GET/POST actions and are ready to call FINISH.\n- Whenever the output involves multiple data points (e.g., a lab value and a date).\n\n## Common Failure Patterns\n\n- Returning `[\"5.4%\", \"2023-11-02\"]` instead of `\"The last HbA1C value was 5.4% recorded on 2023-11-02.\"`\n- Returning `[\"S6521727\"]` instead of `\"S6521727\"`\n- Returning `[\"Blood pressure 118/77 mmHg recorded for patient S6537563.\"]` instead of `\"Blood pressure 118/77 mmHg recorded for patient S6537563.\"`\n\n## Recommended Patterns\n\n**Pattern 1: Single String Output**\nAlways wrap your final response in a single string. If you have multiple data points, combine them into a coherent sentence.\n\nCORRECT: `FINISH(\"The last HbA1C value was 5.4% recorded on 2023-11-02.\")`\nWRONG:   `FINISH([\"5.4%\", \"2023-11-02\"])`\n\n**Pattern 2: Handling \"Not Found\" or Sentinel Values**\nIf a value is not found or a specific sentinel value is requested, return it as a plain string.\n\nCORRECT: `FINISH(\"Patient not found\")`\nWRONG:   `FINISH([\"Patient not found\"])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Perform GET request to retrieve the observation.\n2. Extract the value (e.g., \"5.4%\") and the date (e.g., \"2023-11-02\").\n3. Construct the final string: \"The last HbA1C value was 5.4% recorded on 2023-11-02.\"\n4. Call `FINISH(\"The last HbA1C value was 5.4% recorded on 2023-11-02.\")`\n\n## Success Indicators\n\n- The final output is a single string, not a list or array.\n- The answer is human-readable and contains all requested information.\n\n## Failure Indicators\n\n- The system logs an `answer_format_wrong_type` error.\n- The output is wrapped in square brackets `[]`.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": -12,
+        "score": -12,
+        "raw_score": -11,
+        "fixes": 0,
+        "regressions": 11,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 5,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 30,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce exhaustive search strategies when initial specific queries return no results.",
+        "content": "# Temporal Observation Filtering and Exhaustive Search\n\n## Pattern Description\nWhen searching for clinical observations, an initial query using a specific code may return no results due to variations in coding practices, system-specific mapping, or data entry errors. You must not conclude that data is missing based on a single failed query. If a primary search returns no results, you must perform a broader search or verify the existence of data using alternative identifiers or broader categories before concluding that no data exists.\n\n## When to Use This Skill\n- When a GET request for a specific lab code (e.g., LOINC) returns a `total` of 0 or an empty `entry` array.\n- When the task requires checking for a recent lab result and the initial search for the provided code yields no records.\n\n## Common Failure Patterns\n- Prematurely calling `FINISH` after a single failed GET request.\n- Assuming that a lack of results for a specific code implies the patient has no such data in the system.\n- Failing to check for alternative codes or broader search parameters when the primary code returns nothing.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf the initial search for a specific code returns no results, perform a secondary search using a broader category or a different known code for the same analyte. If the second search also returns no results, only then conclude that the data is missing.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` or `issued` field of retrieved observations against the current system time provided in the task context. Do not rely on the `meta.lastUpdated` field of the Bundle, as this reflects the record's last modification, not the observation's actual performance time.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=2823-3&patient=S6550473`.\n2. If `total` is 0, do not immediately finish. \n3. Perform a broader search or check if a different code (e.g., \"K\") is applicable.\n4. If no results are found after the secondary search, then conclude: `FINISH([\"No potassium level found, no replacement ordered.\"])`.\n\n## Success Indicators\n- Agent performs secondary searches when initial queries return empty bundles.\n- Agent correctly identifies missing data only after exhausting reasonable search variations.\n\n## Failure Indicators\n- Agent returns \"No data found\" after only one query attempt.\n- Agent ignores the possibility of alternative coding for the same clinical concept.",
+        "tags": [
+          "search",
+          "lab-results",
+          "temporal-logic"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict validation of clinical necessity before creating ServiceRequests, ensuring orders are only placed when explicit criteria are met.",
+        "content": "# Conditional Service Request Logic\n\n## Pattern Description\n\nWhen a task includes a conditional instruction (e.g., \"If X, then order Y\"), you must first verify the existence and clinical status of the prerequisite data. Do not assume that the presence of a task implies the necessity of an order. You must explicitly evaluate the condition against the retrieved data before initiating any POST request.\n\n## When to Use This Skill\n\n- When the user prompt contains a conditional \"If... then order...\" instruction.\n- When you have retrieved data (e.g., via GET) and must decide whether to proceed with a `ServiceRequest`.\n- When the absence of a prerequisite (e.g., no lab result found) makes an order inappropriate.\n\n## Common Failure Patterns\n\n- Creating a `ServiceRequest` automatically because the prompt mentions an order, ignoring the \"If\" condition.\n- Ordering a test when the retrieved data is missing or insufficient to justify the order.\n- Prioritizing the age of a result over the requirement that a result must exist to be evaluated.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Evaluation**\nBefore calling POST, explicitly check:\n1. Did the GET request return a valid resource?\n2. If no resource is found, do not create a `ServiceRequest`. Report that no measurement is available.\n3. If a resource is found, evaluate the specific condition (e.g., \"is it > 1 year old?\").\n4. Only if the condition is met, proceed to POST.\n\n**Pattern 2: Justification**\nIf you proceed with an order, include a `note` field in the `ServiceRequest` that explicitly states the clinical justification (e.g., \"Last result from [date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the Observation.\n2. If `total` is 0, FINISH([\"No measurement available\"]). Do not POST.\n3. If `total` > 0, check the `effectiveDateTime`.\n4. If the date is within 1 year, FINISH with the result. Do not POST.\n5. If the date is > 1 year, POST the `ServiceRequest` with a `note` explaining the age of the previous result.\n\n## Success Indicators\n\n- `ServiceRequest` is only created when the condition is explicitly satisfied.\n- No `ServiceRequest` is created when the prerequisite data is missing.\n\n## Failure Indicators\n\n- `ServiceRequest` created when no lab result was found.\n- `ServiceRequest` created despite the condition (e.g., date threshold) not being met.",
+        "tags": [
+          "service-request",
+          "conditional-logic",
+          "validation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict output formatting for FINISH, ensuring single-string summaries and preventing list-based outputs.",
+        "content": "## Skill Title\n\nStrict Output Formatting for FINISH\n\n## Pattern Description\n\nWhen providing a final answer via the `FINISH` function, you must ensure the output is a single, human-readable string. Do not return lists, arrays, or raw data structures. If the task requires reporting multiple pieces of information (e.g., a lab value and a date), concatenate them into a single descriptive sentence.\n\n## When to Use This Skill\n\n- When the task requires a final answer or summary.\n- When you have successfully retrieved data and need to present it to the user.\n- Whenever you are about to call `FINISH`.\n\n## Common Failure Patterns\n\n- Returning `[\"Value\", \"Date\"]` instead of a single string like `\"The value is 5.9% and it was recorded on 2023-11-12.\"`.\n- Returning `[86]` instead of `\"The patient's age is 86.\"`.\n- Including raw JSON or list brackets in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Single String Formatting**\nAlways wrap your final response in a single string. If you have multiple data points, combine them using natural language.\n\nCORRECT: `FINISH(\"The last HbA1C value is 5.9%, recorded on 2023-11-12.\")`\nWRONG: `FINISH([\"5.9%\", \"2023-11-12\"])`\n\n**Pattern 2: Handling Negative Results**\nIf no data is found, provide a clear, concise statement in a single string.\n\nCORRECT: `FINISH(\"No HbA1C value was found in the chart.\")`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the `valueQuantity.value` and `effectiveDateTime`.\n3. Format the final answer as a single string.\n4. Call `FINISH` with the formatted string.\n\nCORRECT output: `FINISH(\"The last HbA1C value is 5.9%, recorded on 2023-11-12.\")`\nWRONG output: `FINISH([\"5.9%\", \"2023-11-12\"])`\n\n## Success Indicators\n\n- The `FINISH` call contains a single string argument.\n- The output is human-readable and contains all requested information.\n\n## Failure Indicators\n\n- The `FINISH` call contains a list or array (e.g., `[...]`).\n- The output is missing context or is formatted as raw data.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "lab_result_temporal_validation_and_action",
+        "description": "Enforce strict date-based validation for lab results and conditional ordering logic.",
+        "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires checking a lab result within a specific timeframe (e.g., 'within the last 24 hours'), you must validate the `effectiveDateTime` or `issued` field of the retrieved FHIR Observation against the current system time provided in the task context. If the most recent result is older than the specified window, you must treat the result as non-existent for the purpose of the task.\n\n## When to Use This Skill\n- When a task specifies a time-bound condition for a lab result (e.g., 'within last 24 hours').\n- When you retrieve a list of observations and need to determine if any meet the temporal criteria before proceeding to an action (like ordering a medication).\n\n## Common Failure Patterns\n- Ignoring the `effectiveDateTime` of a retrieved observation and acting on stale data.\n- Assuming that any result returned by a FHIR search is 'recent' without checking the timestamp.\n- Failing to distinguish between 'no data found' and 'data found but outside the required time window'.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Retrieve the observation(s) using the appropriate FHIR search.\n2. Inspect the `effectiveDateTime` field of each returned resource.\n3. Calculate the difference between the current system time (provided in the task context) and the `effectiveDateTime`.\n4. If the difference exceeds the specified window (e.g., 24 hours), ignore that observation.\n\n**Pattern 2: Conditional Action**\n1. If no observations fall within the valid time window, conclude that no measurement is available for the task.\n2. If a valid observation exists, extract the `valueQuantity.value` and proceed with the logic (e.g., check if low, then order).\n3. If the task requires an order based on a low value, ensure the order is only placed if a valid, recent result confirms the deficiency.\n\n## Example Application\n\n**Task:** \"Check patient S6192632's last serum magnesium level within last 24 hours. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S6192632`.\n2. Observe the `effectiveDateTime` of the returned resource (e.g., '2023-11-12T08:39:00').\n3. Compare with current time '2023-11-13T10:15:00'.\n4. Determine the result is > 24 hours old.\n5. Conclude no valid measurement exists and do not place the order.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`\nWRONG output: `POST` a `ServiceRequest` based on the stale data.\n\n## Success Indicators\n- Agent correctly identifies that a result is too old and refuses to act on it.\n- Agent only places orders when a valid, recent result is present.\n\n## Failure Indicators\n- Agent places an order based on a result with a timestamp outside the required window.",
+        "tags": [
+          "lab",
+          "temporal",
+          "validation",
+          "fhir"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "temporal_observation_filtering",
+          "description": "Enforce exhaustive search strategies when initial specific queries return no results.",
+          "content": "# Temporal Observation Filtering and Exhaustive Search\n\n## Pattern Description\nWhen searching for clinical observations, an initial query using a specific code may return no results due to variations in coding practices, system-specific mapping, or data entry errors. You must not conclude that data is missing based on a single failed query. If a primary search returns no results, you must perform a broader search or verify the existence of data using alternative identifiers or broader categories before concluding that no data exists.\n\n## When to Use This Skill\n- When a GET request for a specific lab code (e.g., LOINC) returns a `total` of 0 or an empty `entry` array.\n- When the task requires checking for a recent lab result and the initial search for the provided code yields no records.\n\n## Common Failure Patterns\n- Prematurely calling `FINISH` after a single failed GET request.\n- Assuming that a lack of results for a specific code implies the patient has no such data in the system.\n- Failing to check for alternative codes or broader search parameters when the primary code returns nothing.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nIf the initial search for a specific code returns no results, perform a secondary search using a broader category or a different known code for the same analyte. If the second search also returns no results, only then conclude that the data is missing.\n\n**Pattern 2: Temporal Validation**\nAlways compare the `effectiveDateTime` or `issued` field of retrieved observations against the current system time provided in the task context. Do not rely on the `meta.lastUpdated` field of the Bundle, as this reflects the record's last modification, not the observation's actual performance time.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=2823-3&patient=S6550473`.\n2. If `total` is 0, do not immediately finish. \n3. Perform a broader search or check if a different code (e.g., \"K\") is applicable.\n4. If no results are found after the secondary search, then conclude: `FINISH([\"No potassium level found, no replacement ordered.\"])`.\n\n## Success Indicators\n- Agent performs secondary searches when initial queries return empty bundles.\n- Agent correctly identifies missing data only after exhausting reasonable search variations.\n\n## Failure Indicators\n- Agent returns \"No data found\" after only one query attempt.\n- Agent ignores the possibility of alternative coding for the same clinical concept.",
+          "tags": [
+            "search",
+            "lab-results",
+            "temporal-logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict validation of clinical necessity before creating ServiceRequests, ensuring orders are only placed when explicit criteria are met.",
+          "content": "# Conditional Service Request Logic\n\n## Pattern Description\n\nWhen a task includes a conditional instruction (e.g., \"If X, then order Y\"), you must first verify the existence and clinical status of the prerequisite data. Do not assume that the presence of a task implies the necessity of an order. You must explicitly evaluate the condition against the retrieved data before initiating any POST request.\n\n## When to Use This Skill\n\n- When the user prompt contains a conditional \"If... then order...\" instruction.\n- When you have retrieved data (e.g., via GET) and must decide whether to proceed with a `ServiceRequest`.\n- When the absence of a prerequisite (e.g., no lab result found) makes an order inappropriate.\n\n## Common Failure Patterns\n\n- Creating a `ServiceRequest` automatically because the prompt mentions an order, ignoring the \"If\" condition.\n- Ordering a test when the retrieved data is missing or insufficient to justify the order.\n- Prioritizing the age of a result over the requirement that a result must exist to be evaluated.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Evaluation**\nBefore calling POST, explicitly check:\n1. Did the GET request return a valid resource?\n2. If no resource is found, do not create a `ServiceRequest`. Report that no measurement is available.\n3. If a resource is found, evaluate the specific condition (e.g., \"is it > 1 year old?\").\n4. Only if the condition is met, proceed to POST.\n\n**Pattern 2: Justification**\nIf you proceed with an order, include a `note` field in the `ServiceRequest` that explicitly states the clinical justification (e.g., \"Last result from [date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the Observation.\n2. If `total` is 0, FINISH([\"No measurement available\"]). Do not POST.\n3. If `total` > 0, check the `effectiveDateTime`.\n4. If the date is within 1 year, FINISH with the result. Do not POST.\n5. If the date is > 1 year, POST the `ServiceRequest` with a `note` explaining the age of the previous result.\n\n## Success Indicators\n\n- `ServiceRequest` is only created when the condition is explicitly satisfied.\n- No `ServiceRequest` is created when the prerequisite data is missing.\n\n## Failure Indicators\n\n- `ServiceRequest` created when no lab result was found.\n- `ServiceRequest` created despite the condition (e.g., date threshold) not being met.",
+          "tags": [
+            "service-request",
+            "conditional-logic",
+            "validation"
+          ]
+        },
+        "net": -9,
+        "score": -9,
+        "raw_score": -9,
+        "fixes": 0,
+        "regressions": 9,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict output formatting for FINISH, ensuring single-string summaries and preventing list-based outputs.",
+          "content": "## Skill Title\n\nStrict Output Formatting for FINISH\n\n## Pattern Description\n\nWhen providing a final answer via the `FINISH` function, you must ensure the output is a single, human-readable string. Do not return lists, arrays, or raw data structures. If the task requires reporting multiple pieces of information (e.g., a lab value and a date), concatenate them into a single descriptive sentence.\n\n## When to Use This Skill\n\n- When the task requires a final answer or summary.\n- When you have successfully retrieved data and need to present it to the user.\n- Whenever you are about to call `FINISH`.\n\n## Common Failure Patterns\n\n- Returning `[\"Value\", \"Date\"]` instead of a single string like `\"The value is 5.9% and it was recorded on 2023-11-12.\"`.\n- Returning `[86]` instead of `\"The patient's age is 86.\"`.\n- Including raw JSON or list brackets in the `FINISH` argument.\n\n## Recommended Patterns\n\n**Pattern 1: Single String Formatting**\nAlways wrap your final response in a single string. If you have multiple data points, combine them using natural language.\n\nCORRECT: `FINISH(\"The last HbA1C value is 5.9%, recorded on 2023-11-12.\")`\nWRONG: `FINISH([\"5.9%\", \"2023-11-12\"])`\n\n**Pattern 2: Handling Negative Results**\nIf no data is found, provide a clear, concise statement in a single string.\n\nCORRECT: `FINISH(\"No HbA1C value was found in the chart.\")`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the `valueQuantity.value` and `effectiveDateTime`.\n3. Format the final answer as a single string.\n4. Call `FINISH` with the formatted string.\n\nCORRECT output: `FINISH(\"The last HbA1C value is 5.9%, recorded on 2023-11-12.\")`\nWRONG output: `FINISH([\"5.9%\", \"2023-11-12\"])`\n\n## Success Indicators\n\n- The `FINISH` call contains a single string argument.\n- The output is human-readable and contains all requested information.\n\n## Failure Indicators\n\n- The `FINISH` call contains a list or array (e.g., `[...]`).\n- The output is missing context or is formatted as raw data.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": -12,
+        "score": -12,
+        "raw_score": -12,
+        "fixes": 0,
+        "regressions": 12,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "lab_result_temporal_validation_and_action",
+          "description": "Enforce strict date-based validation for lab results and conditional ordering logic.",
+          "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires checking a lab result within a specific timeframe (e.g., 'within the last 24 hours'), you must validate the `effectiveDateTime` or `issued` field of the retrieved FHIR Observation against the current system time provided in the task context. If the most recent result is older than the specified window, you must treat the result as non-existent for the purpose of the task.\n\n## When to Use This Skill\n- When a task specifies a time-bound condition for a lab result (e.g., 'within last 24 hours').\n- When you retrieve a list of observations and need to determine if any meet the temporal criteria before proceeding to an action (like ordering a medication).\n\n## Common Failure Patterns\n- Ignoring the `effectiveDateTime` of a retrieved observation and acting on stale data.\n- Assuming that any result returned by a FHIR search is 'recent' without checking the timestamp.\n- Failing to distinguish between 'no data found' and 'data found but outside the required time window'.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Validation**\n1. Retrieve the observation(s) using the appropriate FHIR search.\n2. Inspect the `effectiveDateTime` field of each returned resource.\n3. Calculate the difference between the current system time (provided in the task context) and the `effectiveDateTime`.\n4. If the difference exceeds the specified window (e.g., 24 hours), ignore that observation.\n\n**Pattern 2: Conditional Action**\n1. If no observations fall within the valid time window, conclude that no measurement is available for the task.\n2. If a valid observation exists, extract the `valueQuantity.value` and proceed with the logic (e.g., check if low, then order).\n3. If the task requires an order based on a low value, ensure the order is only placed if a valid, recent result confirms the deficiency.\n\n## Example Application\n\n**Task:** \"Check patient S6192632's last serum magnesium level within last 24 hours. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S6192632`.\n2. Observe the `effectiveDateTime` of the returned resource (e.g., '2023-11-12T08:39:00').\n3. Compare with current time '2023-11-13T10:15:00'.\n4. Determine the result is > 24 hours old.\n5. Conclude no valid measurement exists and do not place the order.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`\nWRONG output: `POST` a `ServiceRequest` based on the stale data.\n\n## Success Indicators\n- Agent correctly identifies that a result is too old and refuses to act on it.\n- Agent only places orders when a valid, recent result is present.\n\n## Failure Indicators\n- Agent places an order based on a result with a timestamp outside the required window.",
+          "tags": [
+            "lab",
+            "temporal",
+            "validation",
+            "fhir"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 0,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

@@ -1,0 +1,404 @@
+[
+  {
+    "epoch": 3,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 125,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), retrieve the specific observation values, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply return the FHIR query URL; you must output the retrieved data points and the final calculated averages for each interval to demonstrate the task is complete."
+    ],
+    "memory_size": 126
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 3,
+    "sample_id": "task10_12",
+    "memory_version_before": 126,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must explicitly search the `Immunization` resource by patient ID and confirm the absence of records across all categories (Immunization, Procedure, and MedicationRequest) before concluding that no history exists. You must state the specific search parameters and the lack of results in the `Immunization` resource to justify the decision to order a booster, as \"no records found\" in a search does not automatically imply the last dose was more than 12 months ago if the records simply do not exist."
+    ],
+    "memory_size": 127
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 6,
+    "sample_id": "task3_14",
+    "memory_version_before": 127,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), retrieve the specific observation values and their timestamps, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply return the FHIR query URL or conclude data is missing without first confirming you have retrieved and parsed the observation values for the specified time frames. You must explicitly output the raw data points used for each calculation to demonstrate that the task is complete."
+    ],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 10,
+    "sample_id": "task2_6",
+    "memory_version_before": 128,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly call the `discontinue` function for any duplicate order IDs within your final response, as the task is only complete once the duplicates are removed and only the single newest order remains. You must not simply state that you have identified the duplicates or that you will perform the action; you must execute the necessary API calls to ensure exactly one active order persists."
+    ],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 12,
+    "sample_id": "task3_12",
+    "memory_version_before": 129,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), retrieve the specific observation values and their timestamps, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply state that no data was found; you must output the raw data points retrieved or explicitly confirm you have checked for both LOINC codes across the specified time windows to prove the search was exhaustive."
+    ],
+    "memory_size": 130
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 14,
+    "sample_id": "task1_23",
+    "memory_version_before": 130,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a comprehensive search across both the `ImagingStudy` and `Procedure` resources and explicitly state the dates of any findings to justify your 12-month calculation. If the search returns no records, you must confirm that you have searched both resources across the patient's entire history before concluding the record is absent and proceeding with a new order."
+    ],
+    "memory_size": 131
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 15,
+    "sample_id": "task8_26",
+    "memory_version_before": 131,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must broaden your search beyond common drug names by querying the \"Opioid\" therapeutic class or category, as many medications contain opioid components despite not having \"opioid\" in their name. If any active medication is identified as an opioid, you must explicitly confirm the presence of a naloxone order and create one if it is missing, rather than concluding that no opioids are present based solely on a manual review of a limited list of drug names."
+    ],
+    "memory_size": 132
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 20,
+    "sample_id": "task9_1",
+    "memory_version_before": 132,
+    "new_bullets": [
+      "when asked to determine the date of the last influenza vaccine, you must explicitly confirm that you have searched the `Immunization` resource using the patient ID, as this is the definitive source for vaccine history. If no records are found, you must state that you searched the `Immunization`, `Procedure`, and `MedicationRequest` resources for the patient's entire history before concluding that no record exists and proceeding with a new order."
+    ],
+    "memory_size": 133
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 23,
+    "sample_id": "task2_26",
+    "memory_version_before": 133,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search for all anticoagulant medications and explicitly list them by name and status. If multiple orders are found, you must identify the newest one based on the \"Authored\" date and immediately call the `discontinue` function for all older duplicate IDs in your response to ensure exactly one remains active, rather than creating a new order that results in redundant prophylaxis."
+    ],
+    "memory_size": 134
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 24,
+    "sample_id": "task4_28",
+    "memory_version_before": 134,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must perform a comprehensive search across the `Procedure`, `ServiceRequest`, `DeviceRequest`, and `Device` resources, as the catheter may be documented under any of these. If a record is found, you must calculate the duration from the placement timestamp to the current time and only create a removal request if the duration is strictly greater than 48 hours and no removal order is already active."
+    ],
+    "memory_size": 135
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 25,
+    "sample_id": "task4_11",
+    "memory_version_before": 135,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must perform a comprehensive search across the `Procedure`, `ServiceRequest`, `DeviceRequest`, and `Device` resources, as the catheter may be documented under any of these. If a record is found, you must calculate the duration from the placement timestamp to the current time and only create a removal request if the duration is strictly greater than 48 hours and no removal order is already active."
+    ],
+    "memory_size": 136
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 26,
+    "sample_id": "task3_7",
+    "memory_version_before": 136,
+    "new_bullets": [],
+    "memory_size": 136
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 27,
+    "sample_id": "task3_3",
+    "memory_version_before": 136,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and the standard LOINC codes (8867-4 and 7874-4), and if no data is found, you must explicitly confirm that you have searched both the `Observation` and `VitalSigns` categories across the specified time windows before concluding that no records exist. Do not rely on a single resource or search attempt; you must output the specific codes used and confirm an exhaustive search across all potential clinical data locations to ensure the evaluation function can verify your data retrieval process."
+    ],
+    "memory_size": 137
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 30,
+    "sample_id": "task3_17",
+    "memory_version_before": 137,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), retrieve the specific observation values and their timestamps, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply state that no data was found; you must output the raw data points retrieved or explicitly confirm you have searched across all clinical resources (including `Observation`, `VitalSigns`, and `Flowsheets`) for both codes to prove the search was exhaustive before concluding that no records exist."
+    ],
+    "memory_size": 138
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 33,
+    "sample_id": "task3_27",
+    "memory_version_before": 138,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4) while explicitly searching the `VitalSigns` and `Flowsheets` categories if the initial observation query returns no results. You must output the raw data points with their timestamps for the requested 6-hour and 12-hour windows to demonstrate that you have retrieved the data and performed the arithmetic correctly."
+    ],
+    "memory_size": 139
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 37,
+    "sample_id": "task2_25",
+    "memory_version_before": 139,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly call the `discontinue` function for any duplicate order IDs within your final response, as the task is only complete once the duplicates are removed and only the single newest order remains. You must not simply state that you have identified the duplicates or that you will perform the action; you must execute the necessary API calls to ensure exactly one active order persists."
+    ],
+    "memory_size": 140
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 44,
+    "sample_id": "task1_11",
+    "memory_version_before": 140,
+    "new_bullets": [],
+    "memory_size": 140
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 48,
+    "sample_id": "task2_1",
+    "memory_version_before": 140,
+    "new_bullets": [],
+    "memory_size": 140
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 49,
+    "sample_id": "task3_29",
+    "memory_version_before": 140,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), retrieve the specific observation values and their timestamps, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply return the FHIR query URL; you must output the raw data points retrieved and the final calculated averages for each interval to demonstrate the task is complete."
+    ],
+    "memory_size": 141
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 50,
+    "sample_id": "task4_21",
+    "memory_version_before": 141,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must use the `Patient` resource to confirm the current encounter context and search for the `Device` resource specifically, as catheters are often tracked as `Device` resources with a `status` of \"active.\" If you find a device, you must explicitly state the `manufactureDate` or `recordedDate` to calculate the duration, and only conclude that no catheter exists after confirming the absence of records across `Procedure`, `ServiceRequest`, `DeviceRequest`, and `Device` resources."
+    ],
+    "memory_size": 142
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 51,
+    "sample_id": "task2_15",
+    "memory_version_before": 142,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must ensure that you do not create a new order if an existing active order is already present. Instead, if you identify an existing active DVT prophylaxis order, you must retain that order and only discontinue any other duplicate orders found, rather than creating a new order which results in redundant prophylaxis."
+    ],
+    "memory_size": 143
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 52,
+    "sample_id": "task2_22",
+    "memory_version_before": 143,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search of all active medication orders and explicitly list them by name and ID to demonstrate the count. If you identify an active DVT prophylaxis order, you must not create a new one; instead, if multiple active orders are found, you must identify the newest one by \"Authored\" date and immediately call the `discontinue` function for all older duplicate IDs to ensure exactly one remains active."
+    ],
+    "memory_size": 144
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 54,
+    "sample_id": "task3_16",
+    "memory_version_before": 144,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must perform the API call to retrieve the observations, parse the returned JSON to extract the specific value and date/time for each entry, and then perform the arithmetic to calculate the average for the requested 6-hour and 12-hour windows. Do not stop at providing the FHIR query URL; you must explicitly output the raw data points used and the final calculated averages to prove the task is completed."
+    ],
+    "memory_size": 145
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 57,
+    "sample_id": "task3_30",
+    "memory_version_before": 145,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must perform the API call to retrieve the observations, parse the returned JSON to extract the specific value and date/time for each entry, and then perform the arithmetic to calculate the average for the requested 6-hour and 12-hour windows. Do not stop at providing the FHIR query URL; you must explicitly output the raw data points used and the final calculated averages to prove the task is completed."
+    ],
+    "memory_size": 146
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 60,
+    "sample_id": "task10_21",
+    "memory_version_before": 146,
+    "new_bullets": [],
+    "memory_size": 146
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 62,
+    "sample_id": "task4_23",
+    "memory_version_before": 146,
+    "new_bullets": [
+      "when asked to check if a patient has a urinary catheter in place for more than 48 hours, you must search for all active `Device` resources associated with the patient, as catheters are frequently tracked as devices rather than procedures or service requests. If a `Device` record is found with an \"active\" status, you must calculate the duration from the `recordedDate` to the current time and only create a removal service request if that duration exceeds 48 hours and no removal order is already pending."
+    ],
+    "memory_size": 147
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 63,
+    "sample_id": "task1_27",
+    "memory_version_before": 147,
+    "new_bullets": [
+      "when asked to find the most recent CT Abdomen procedure, you must perform a comprehensive search across both the `ImagingStudy` and `Procedure` resources and explicitly output the dates of all findings to demonstrate the 12-month calculation. If no records are found, you must confirm that you have searched both resources across the patient's entire history before concluding that no such procedure exists and proceeding with a new order."
+    ],
+    "memory_size": 148
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 64,
+    "sample_id": "task3_1",
+    "memory_version_before": 148,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must query the `Observation` resource using the patient ID and standard LOINC codes (8867-4 and 7874-4), and if no data is found, you must explicitly confirm that you have searched all available clinical resources (including `Observation`, `VitalSigns`, and `Flowsheets`) for both codes and all synonyms before concluding that no records exist. You must never rely on a single search or category, and if the search yields no results, you must explicitly list the patient ID and the specific search terms used to prove the search was exhaustive."
+    ],
+    "memory_size": 149
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 149,
+    "new_bullets": [
+      "when asked to determine the date of the last influenza vaccine, you must explicitly confirm that you have searched the `Immunization` resource using the patient ID, as this is the definitive source for vaccine history. If no records are found, you must state that you searched the `Immunization`, `Procedure`, and `MedicationRequest` resources for the patient's entire history before concluding that no record exists and proceeding with a new order."
+    ],
+    "memory_size": 150
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 71,
+    "sample_id": "task8_23",
+    "memory_version_before": 150,
+    "new_bullets": [],
+    "memory_size": 150
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 76,
+    "sample_id": "task8_19",
+    "memory_version_before": 150,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list all active medication orders by name and verify their therapeutic class or category, as common drug names alone are insufficient to identify all opioids. If any medication is identified as an opioid, you must check the active medication list for a corresponding naloxone order and create one if it is missing, rather than relying on a superficial review of the medication names to conclude no action is required."
+    ],
+    "memory_size": 151
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 78,
+    "sample_id": "task8_13",
+    "memory_version_before": 151,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must first retrieve and explicitly list all active medication orders by name and therapeutic class to ensure no opioids are missed. If an active opioid is identified, you must then check the list for a corresponding naloxone order; if one is missing, you must create it, and if one is present, you must explicitly confirm that the naloxone order is active before concluding the task."
+    ],
+    "memory_size": 152
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 79,
+    "sample_id": "task2_14",
+    "memory_version_before": 152,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search across the `MedicationRequest` resource for all anticoagulant medications and explicitly list them by name and ID. If zero orders are found, you must create one; if multiple orders are found, you must identify the newest one based on the \"Authored\" date and immediately call the `discontinue` function for all other duplicate IDs in your response to ensure exactly one remains active."
+    ],
+    "memory_size": 153
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 80,
+    "sample_id": "task2_16",
+    "memory_version_before": 153,
+    "new_bullets": [],
+    "memory_size": 153
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 82,
+    "sample_id": "task2_30",
+    "memory_version_before": 153,
+    "new_bullets": [
+      "when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive search across the `MedicationRequest` resource for all anticoagulant medications and explicitly list them by name, status, and ID. If zero orders are found, you must create one; if multiple orders are found, you must identify the newest one based on the \"Authored\" date and immediately call the `discontinue` function for all other duplicate IDs in your response to ensure exactly one remains active."
+    ],
+    "memory_size": 154
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 87,
+    "sample_id": "task8_5",
+    "memory_version_before": 154,
+    "new_bullets": [],
+    "memory_size": 154
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 88,
+    "sample_id": "task8_9",
+    "memory_version_before": 154,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list all active medication orders by name and verify their therapeutic class or category, as common drug names alone are insufficient to identify all opioids. If any medication is identified as an opioid, you must verify the existence of a corresponding naloxone order and create one if it is missing, rather than concluding that no naloxone is required based on an incomplete review of the patient's active medication list."
+    ],
+    "memory_size": 155
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 90,
+    "sample_id": "task8_29",
+    "memory_version_before": 155,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list all active medication orders by name and verify their therapeutic class or category, as common drug names alone are insufficient to identify all opioids. If any medication is identified as an opioid, you must verify the existence of a corresponding naloxone order and create one if it is missing, rather than concluding that no action is required based on a superficial review of the medication names."
+    ],
+    "memory_size": 156
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 91,
+    "sample_id": "task3_10",
+    "memory_version_before": 156,
+    "new_bullets": [
+      "when asked to calculate average heart rate, you must perform the API call to retrieve the observation data, parse the JSON to extract the specific heart rate values and their timestamps, and perform the arithmetic to calculate the average for both the 6-hour and 12-hour windows. Do not simply return the FHIR query URL; you must output the retrieved data points and the final calculated averages to demonstrate the task is complete."
+    ],
+    "memory_size": 157
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 93,
+    "sample_id": "task6_26",
+    "memory_version_before": 157,
+    "new_bullets": [
+      "when asked to retrieve lab values and take action according to a protocol, you must explicitly state the reference ranges used to evaluate the results and show the step-by-step comparison of the retrieved values against those thresholds. Do not simply summarize the values; you must justify your clinical decision (e.g., ordering a follow-up test or medication) by explicitly citing the specific protocol criteria that were met or not met."
+    ],
+    "memory_size": 158
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 94,
+    "sample_id": "task8_7",
+    "memory_version_before": 158,
+    "new_bullets": [],
+    "memory_size": 158
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 158,
+    "new_bullets": [],
+    "memory_size": 158
+  }
+]

@@ -1,0 +1,268 @@
+[
+  {
+    "epoch": 2,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "conditional_ordering_strategy",
+        "description": "Prevents unnecessary lab or medication orders by verifying task requirements and data thresholds.",
+        "content": "# Conditional Ordering Strategy\n\n## Pattern Description\nThis skill prevents the agent from performing unnecessary POST requests (orders) when the task does not explicitly require them or when the clinical data does not meet the specified threshold for intervention. The agent must first verify if the task instruction mandates an order (e.g., \"If X, then order Y\") and confirm that the condition (e.g., lab value is low or old) is met before initiating any POST action.\n\n## When to Use This Skill\n- When the task includes a conditional instruction (e.g., \"If X, then order Y\").\n- When the agent is about to perform a POST request for a lab test or medication.\n- When the agent has retrieved data and is evaluating whether to proceed with an order.\n\n## Common Failure Patterns\n- Ordering a test when the existing data is within the acceptable range or time threshold.\n- Ordering a test when the data is missing (e.g., returning -1) and the task does not explicitly state to order in the absence of data.\n- Proactively ordering tests when the task only asks for information retrieval.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Verification**\nBefore issuing a POST request, explicitly evaluate the condition:\n1. Check if the retrieved data meets the criteria (e.g., `value < 3.5` or `date > 1 year`).\n2. If the condition is not met, do not issue the POST request. Proceed directly to `FINISH`.\n3. If the data is missing (e.g., -1), do not assume an order is required unless the task explicitly says \"If no data, order a new test.\"\n\n**Pattern 2: Task Scope Check**\nReview the user instruction. If the instruction is \"What is the last value?\" and only mentions ordering as a conditional follow-up, ensure the condition is strictly satisfied before ordering.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the observation.\n2. Calculate the age of the result.\n3. If age <= 1 year, state: \"The result is recent, no order needed.\" and call `FINISH`.\n4. If age > 1 year, proceed with the POST request.\n\nCORRECT output: `FINISH([\"The value is 5.4%, recorded 2 months ago. No order needed.\"])`\nWRONG output: `POST(...)` (when the value is recent)\n\n## Success Indicators\n- Agent correctly identifies when no order is required based on data thresholds.\n- Agent avoids unnecessary POST requests.\n\n## Failure Indicators\n- Agent orders a test despite the data being within the acceptable range.\n- Agent orders a test when the data is missing and the task did not explicitly request it.",
+        "tags": [
+          "ordering",
+          "conditional-logic",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_query_optimization_strategy",
+        "description": "Prevents infinite loops and redundant searches by prioritizing specific code-based queries and stopping after data retrieval.",
+        "content": "## Skill Title\nFHIR Query Optimization Strategy\n\n## Pattern Description\nWhen searching for clinical data (Observations, Conditions, etc.), avoid broad, unconstrained queries that return large bundles or trigger pagination. Always prioritize specific queries using `code` and `patient` parameters. Once you have successfully retrieved the required data, stop searching immediately. Do not follow `next` or `previous` pagination links unless the initial query returns zero results and you have exhausted all specific search variations.\n\n## When to Use This Skill\n- When a task requires retrieving a specific lab value or clinical observation.\n- When you have already performed a successful search for a specific code and patient.\n- When you encounter a `Bundle` with a `next` link but you have already found the relevant data.\n\n## Common Failure Patterns\n- Following `next` pagination links when the target data is already present in the first page.\n- Performing broad category-based searches (e.g., `category=laboratory`) when a specific `code` is known.\n- Repeatedly querying the same resource with the same parameters after a successful retrieval.\n\n## Recommended Patterns\n\n**Pattern 1: Specificity First**\nAlways include `patient` and `code` in your initial GET request. \nExample: `GET /Observation?patient=S123&code=MG`\n\n**Pattern 2: Stop on Success**\nIf the response contains the requested data, do not follow `link` relations. Call `FINISH` immediately with the extracted value.\n\n**Pattern 3: Avoid Redundancy**\nIf a search returns a `total: 0` or an empty `entry` array, do not retry with broader parameters (like removing the `code`) unless you have a specific reason to believe the data is stored under a different code.\n\n## Example Application\n\n**Task:** \"Check patient S6547257's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET: `GET /Observation?patient=S6547257&code=2823-3`\n2. Inspect the response. If `entry` contains the potassium level, extract the value.\n3. Do not follow the `next` link in the bundle.\n4. Call `FINISH([value])`.\n\n## Success Indicators\n- The agent completes the task using 1–2 targeted GET requests.\n- No `_getpages` or pagination-related URLs appear in the action log.\n\n## Failure Indicators\n- The agent enters an infinite loop of GET requests.\n- The agent hits the task limit due to excessive pagination.",
+        "tags": [
+          "fhir",
+          "query",
+          "optimization"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "structured_data_output_strategy",
+        "description": "Enforce consistent, machine-readable output formats for data retrieval tasks to prevent type errors.",
+        "content": "# Structured Data Output Strategy\n\nWhen a task requires retrieving specific data points (like lab values or dates), you must return the data in a consistent, predictable format. Avoid returning raw lists or strings that mix units and values unless explicitly requested. If data is missing, use a standardized null indicator (e.g., -1 or \"N/A\") rather than arbitrary strings or empty lists.\n\n## When to Use This Skill\n\n- When a task asks for a specific value (e.g., \"What is the last HbA1C value?\").\n- When the task specifies a fallback value for missing data (e.g., \"return -1 if not available\").\n- When you are about to call `FINISH()` with extracted data.\n\n## Common Failure Patterns\n\n- Returning `[\"5.0%\", \"2023-11-09\"]` when the task expects a specific structured format.\n- Returning `[-1, \"N/A\"]` when the task expects a single numeric value or a specific null indicator.\n- Mixing units into the value (e.g., `\"5.0%\"`) when the task expects a raw number.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric component. If the measurement is missing, return the specific fallback value requested (e.g., -1).\n\nCORRECT: `FINISH([5.0])`\nWRONG:   `FINISH([\"5.0%\"])`\n\n**Pattern 2: Missing Data Handling**\nIf no data is found, do not invent a format. Use the exact fallback requested in the prompt.\n\nCORRECT: `FINISH([-1])`\nWRONG:   `FINISH([\"N/A\"])` (unless explicitly requested)\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value? If missing, return -1.\"\n\n**Step-by-step:**\n1. Perform the search.\n2. If the bundle is empty, immediately call `FINISH([-1])`.\n3. If the bundle contains data, extract the `valueQuantity.value` as a float.\n4. Call `FINISH([value])`.\n\n## Success Indicators\n\n- The `FINISH` call contains only the requested data types (e.g., numbers or specific strings).\n- No units or extra text are included in the final output list.\n\n## Failure Indicators\n\n- The `FINISH` call contains mixed types (e.g., `[number, string]`).\n- The `FINISH` call includes units (e.g., `\"%\"`, `\"mg/dL\"`) when a raw number was expected.",
+        "tags": [
+          "formatting",
+          "data-extraction",
+          "output-control"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "lab_value_interpretation_strategy",
+        "description": "Define clinical reference ranges for lab values to ensure accurate interpretation of 'low' or 'normal' status.",
+        "content": "## Lab Value Interpretation Strategy\n\nWhen a task requires you to evaluate whether a lab result is 'low' or 'normal', you must not rely on your internal knowledge or the presence of a single value. You must explicitly compare the extracted `valueQuantity.value` against the clinical reference range provided in the task instructions or the `referenceRange` field within the FHIR Observation resource.\n\n## When to Use This Skill\n\n- When a task asks you to determine if a lab value (e.g., Magnesium, Potassium) is 'low' or 'normal'.\n- When you need to decide whether to trigger a follow-up action (e.g., ordering replacement medication) based on a lab result.\n\n## Common Failure Patterns\n\n- Assuming a value is 'normal' without checking the specific reference range for that patient or lab test.\n- Failing to extract the numeric value from the `valueQuantity` field, leading to incorrect comparisons.\n- Using an arbitrary threshold (e.g., >= 2.0 mg/dL) when the specific clinical context or resource metadata might define a different range.\n\n## Recommended Patterns\n\n**Pattern 1: Extraction and Comparison**\n1. Extract the numeric value from `valueQuantity.value`.\n2. Inspect the `referenceRange` array in the Observation resource for the `low` and `high` bounds.\n3. If `referenceRange` is missing, look for explicit thresholds provided in the task prompt.\n4. Compare the extracted value against these bounds. Do not assume a value is 'normal' simply because it is a common number.\n\n**Pattern 2: Decision Logic**\n- If `value < low_bound`, proceed with the requested intervention (e.g., order replacement).\n- If `value >= low_bound`, do not order the intervention.\n\n## Example Application\n\n**Task:** \"Check patient S0636132's last serum magnesium level. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S0636132`.\n2. Extract `valueQuantity.value` (e.g., 2.0) and check `referenceRange` (e.g., low: 1.7, high: 2.2).\n3. Compare: 2.0 is not less than 1.7.\n4. Conclusion: Level is normal; do not order replacement.\n\n## Success Indicators\n\n- The agent correctly identifies 'low' vs 'normal' based on the provided reference range.\n- No unnecessary orders are placed when the lab value is within the normal range.\n\n## Failure Indicators\n\n- The agent orders medication when the lab value is within the normal range.\n- The agent fails to order medication when the lab value is clearly below the reference range.",
+        "tags": [
+          "lab",
+          "interpretation",
+          "clinical-logic"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_ordering_strategy",
+          "description": "Prevents unnecessary lab or medication orders by verifying task requirements and data thresholds.",
+          "content": "# Conditional Ordering Strategy\n\n## Pattern Description\nThis skill prevents the agent from performing unnecessary POST requests (orders) when the task does not explicitly require them or when the clinical data does not meet the specified threshold for intervention. The agent must first verify if the task instruction mandates an order (e.g., \"If X, then order Y\") and confirm that the condition (e.g., lab value is low or old) is met before initiating any POST action.\n\n## When to Use This Skill\n- When the task includes a conditional instruction (e.g., \"If X, then order Y\").\n- When the agent is about to perform a POST request for a lab test or medication.\n- When the agent has retrieved data and is evaluating whether to proceed with an order.\n\n## Common Failure Patterns\n- Ordering a test when the existing data is within the acceptable range or time threshold.\n- Ordering a test when the data is missing (e.g., returning -1) and the task does not explicitly state to order in the absence of data.\n- Proactively ordering tests when the task only asks for information retrieval.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Verification**\nBefore issuing a POST request, explicitly evaluate the condition:\n1. Check if the retrieved data meets the criteria (e.g., `value < 3.5` or `date > 1 year`).\n2. If the condition is not met, do not issue the POST request. Proceed directly to `FINISH`.\n3. If the data is missing (e.g., -1), do not assume an order is required unless the task explicitly says \"If no data, order a new test.\"\n\n**Pattern 2: Task Scope Check**\nReview the user instruction. If the instruction is \"What is the last value?\" and only mentions ordering as a conditional follow-up, ensure the condition is strictly satisfied before ordering.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET the observation.\n2. Calculate the age of the result.\n3. If age <= 1 year, state: \"The result is recent, no order needed.\" and call `FINISH`.\n4. If age > 1 year, proceed with the POST request.\n\nCORRECT output: `FINISH([\"The value is 5.4%, recorded 2 months ago. No order needed.\"])`\nWRONG output: `POST(...)` (when the value is recent)\n\n## Success Indicators\n- Agent correctly identifies when no order is required based on data thresholds.\n- Agent avoids unnecessary POST requests.\n\n## Failure Indicators\n- Agent orders a test despite the data being within the acceptable range.\n- Agent orders a test when the data is missing and the task did not explicitly request it.",
+          "tags": [
+            "ordering",
+            "conditional-logic",
+            "fhir"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_query_optimization_strategy",
+          "description": "Prevents infinite loops and redundant searches by prioritizing specific code-based queries and stopping after data retrieval.",
+          "content": "## Skill Title\nFHIR Query Optimization Strategy\n\n## Pattern Description\nWhen searching for clinical data (Observations, Conditions, etc.), avoid broad, unconstrained queries that return large bundles or trigger pagination. Always prioritize specific queries using `code` and `patient` parameters. Once you have successfully retrieved the required data, stop searching immediately. Do not follow `next` or `previous` pagination links unless the initial query returns zero results and you have exhausted all specific search variations.\n\n## When to Use This Skill\n- When a task requires retrieving a specific lab value or clinical observation.\n- When you have already performed a successful search for a specific code and patient.\n- When you encounter a `Bundle` with a `next` link but you have already found the relevant data.\n\n## Common Failure Patterns\n- Following `next` pagination links when the target data is already present in the first page.\n- Performing broad category-based searches (e.g., `category=laboratory`) when a specific `code` is known.\n- Repeatedly querying the same resource with the same parameters after a successful retrieval.\n\n## Recommended Patterns\n\n**Pattern 1: Specificity First**\nAlways include `patient` and `code` in your initial GET request. \nExample: `GET /Observation?patient=S123&code=MG`\n\n**Pattern 2: Stop on Success**\nIf the response contains the requested data, do not follow `link` relations. Call `FINISH` immediately with the extracted value.\n\n**Pattern 3: Avoid Redundancy**\nIf a search returns a `total: 0` or an empty `entry` array, do not retry with broader parameters (like removing the `code`) unless you have a specific reason to believe the data is stored under a different code.\n\n## Example Application\n\n**Task:** \"Check patient S6547257's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET: `GET /Observation?patient=S6547257&code=2823-3`\n2. Inspect the response. If `entry` contains the potassium level, extract the value.\n3. Do not follow the `next` link in the bundle.\n4. Call `FINISH([value])`.\n\n## Success Indicators\n- The agent completes the task using 1–2 targeted GET requests.\n- No `_getpages` or pagination-related URLs appear in the action log.\n\n## Failure Indicators\n- The agent enters an infinite loop of GET requests.\n- The agent hits the task limit due to excessive pagination.",
+          "tags": [
+            "fhir",
+            "query",
+            "optimization"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "structured_data_output_strategy",
+          "description": "Enforce consistent, machine-readable output formats for data retrieval tasks to prevent type errors.",
+          "content": "# Structured Data Output Strategy\n\nWhen a task requires retrieving specific data points (like lab values or dates), you must return the data in a consistent, predictable format. Avoid returning raw lists or strings that mix units and values unless explicitly requested. If data is missing, use a standardized null indicator (e.g., -1 or \"N/A\") rather than arbitrary strings or empty lists.\n\n## When to Use This Skill\n\n- When a task asks for a specific value (e.g., \"What is the last HbA1C value?\").\n- When the task specifies a fallback value for missing data (e.g., \"return -1 if not available\").\n- When you are about to call `FINISH()` with extracted data.\n\n## Common Failure Patterns\n\n- Returning `[\"5.0%\", \"2023-11-09\"]` when the task expects a specific structured format.\n- Returning `[-1, \"N/A\"]` when the task expects a single numeric value or a specific null indicator.\n- Mixing units into the value (e.g., `\"5.0%\"`) when the task expects a raw number.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Extraction**\nIf the task asks for a measurement, extract only the numeric component. If the measurement is missing, return the specific fallback value requested (e.g., -1).\n\nCORRECT: `FINISH([5.0])`\nWRONG:   `FINISH([\"5.0%\"])`\n\n**Pattern 2: Missing Data Handling**\nIf no data is found, do not invent a format. Use the exact fallback requested in the prompt.\n\nCORRECT: `FINISH([-1])`\nWRONG:   `FINISH([\"N/A\"])` (unless explicitly requested)\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value? If missing, return -1.\"\n\n**Step-by-step:**\n1. Perform the search.\n2. If the bundle is empty, immediately call `FINISH([-1])`.\n3. If the bundle contains data, extract the `valueQuantity.value` as a float.\n4. Call `FINISH([value])`.\n\n## Success Indicators\n\n- The `FINISH` call contains only the requested data types (e.g., numbers or specific strings).\n- No units or extra text are included in the final output list.\n\n## Failure Indicators\n\n- The `FINISH` call contains mixed types (e.g., `[number, string]`).\n- The `FINISH` call includes units (e.g., `\"%\"`, `\"mg/dL\"`) when a raw number was expected.",
+          "tags": [
+            "formatting",
+            "data-extraction",
+            "output-control"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_value_interpretation_strategy",
+          "description": "Define clinical reference ranges for lab values to ensure accurate interpretation of 'low' or 'normal' status.",
+          "content": "## Lab Value Interpretation Strategy\n\nWhen a task requires you to evaluate whether a lab result is 'low' or 'normal', you must not rely on your internal knowledge or the presence of a single value. You must explicitly compare the extracted `valueQuantity.value` against the clinical reference range provided in the task instructions or the `referenceRange` field within the FHIR Observation resource.\n\n## When to Use This Skill\n\n- When a task asks you to determine if a lab value (e.g., Magnesium, Potassium) is 'low' or 'normal'.\n- When you need to decide whether to trigger a follow-up action (e.g., ordering replacement medication) based on a lab result.\n\n## Common Failure Patterns\n\n- Assuming a value is 'normal' without checking the specific reference range for that patient or lab test.\n- Failing to extract the numeric value from the `valueQuantity` field, leading to incorrect comparisons.\n- Using an arbitrary threshold (e.g., >= 2.0 mg/dL) when the specific clinical context or resource metadata might define a different range.\n\n## Recommended Patterns\n\n**Pattern 1: Extraction and Comparison**\n1. Extract the numeric value from `valueQuantity.value`.\n2. Inspect the `referenceRange` array in the Observation resource for the `low` and `high` bounds.\n3. If `referenceRange` is missing, look for explicit thresholds provided in the task prompt.\n4. Compare the extracted value against these bounds. Do not assume a value is 'normal' simply because it is a common number.\n\n**Pattern 2: Decision Logic**\n- If `value < low_bound`, proceed with the requested intervention (e.g., order replacement).\n- If `value >= low_bound`, do not order the intervention.\n\n## Example Application\n\n**Task:** \"Check patient S0636132's last serum magnesium level. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S0636132`.\n2. Extract `valueQuantity.value` (e.g., 2.0) and check `referenceRange` (e.g., low: 1.7, high: 2.2).\n3. Compare: 2.0 is not less than 1.7.\n4. Conclusion: Level is normal; do not order replacement.\n\n## Success Indicators\n\n- The agent correctly identifies 'low' vs 'normal' based on the provided reference range.\n- No unnecessary orders are placed when the lab value is within the normal range.\n\n## Failure Indicators\n\n- The agent orders medication when the lab value is within the normal range.\n- The agent fails to order medication when the lab value is clearly below the reference range.",
+          "tags": [
+            "lab",
+            "interpretation",
+            "clinical-logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "lab_code_mapping_strategy",
+        "description": "Map common lab names to standardized LOINC codes to ensure accurate FHIR resource retrieval.",
+        "content": "# Lab Code Mapping Strategy\n\n## Pattern Description\nWhen a task requests a specific lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C'), do not rely on shorthand codes or abbreviations in your search queries. These often fail to match the standardized coding systems used in the FHIR server. Instead, map these common names to their corresponding LOINC codes to ensure successful resource retrieval.\n\n## When to Use This Skill\n- When the task specifies a lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C').\n- When a previous search using a shorthand code (e.g., 'MG', 'A1C') returned zero results or an empty bundle.\n\n## Common Failure Patterns\n- Using shorthand codes like `code=MG` or `code=A1C` which are not recognized by the FHIR server.\n- Assuming the server will perform fuzzy matching on display names.\n\n## Recommended Patterns\n\n**Pattern 1: Standardized Mapping**\nBefore issuing a GET request, map the common name to the required LOINC code:\n- Magnesium: `2160-0`\n- Potassium: `2823-3`\n- HbA1C: `4548-4`\n\n**Pattern 2: Search Execution**\nUse the mapped LOINC code in your query parameters:\n- CORRECT: `GET /Observation?code=2160-0&patient=S12345`\n- WRONG: `GET /Observation?code=MG&patient=S12345`\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S0674240?\"\n\n**Step-by-step:**\n1. Identify that 'magnesium' maps to LOINC code `2160-0`.\n2. Issue GET request: `GET http://localhost:8080/fhir/Observation?code=2160-0&patient=S0674240`.\n3. Extract the value from the returned bundle.\n4. Construct the final output.\n\n## Success Indicators\n- The FHIR server returns a bundle with `total > 0`.\n- The agent successfully retrieves the lab value instead of returning -1 or an error message.\n\n## Failure Indicators\n- The agent continues to use shorthand codes despite the mapping rule.\n- The agent fails to find the resource even after using the correct LOINC code (check for pagination or other search parameters).",
+        "tags": [
+          "lab",
+          "fhir",
+          "search"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_pagination_limit_strategy",
+        "description": "Prevent infinite loops by limiting FHIR search requests to a maximum of two pages.",
+        "content": "## Skill Title\nFHIR Search Pagination Limit Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the agent often encounters large datasets that require pagination. A common failure mode is the agent entering an infinite loop by repeatedly requesting the same `_getpages` URL or attempting to traverse pages indefinitely when the target data is not found. This skill enforces a strict limit on pagination to prevent resource exhaustion and task failure.\n\n## When to Use This Skill\n- When a GET request returns a `Bundle` with a `link` containing a `next` relation.\n- When the agent has already performed one follow-up GET request using a `_getpages` parameter.\n- When the agent is searching for a specific resource (e.g., Observation) and the initial search returns no results or the target data is not found in the first page.\n\n## Common Failure Patterns\n- Repeatedly calling the `next` link URL without finding the target resource.\n- Attempting to manually increment `_getpagesoffset` beyond the initial search results.\n- Ignoring the `total` field in the Bundle, which indicates if further searching is futile.\n\n## Recommended Patterns\n\n**Pattern 1: Single Page Limit**\nIf the initial search for a resource (e.g., `Observation?code=...`) returns a `total: 0` or an empty `entry` array, do not attempt to paginate. Stop searching and conclude the task.\n\n**Pattern 2: Pagination Cap**\nIf you must paginate, limit yourself to at most one `next` link follow-up. If the target data is not found in the first two pages, stop searching and report that the data is unavailable.\n\n**Pattern 3: URL Validation**\nBefore issuing a GET request, verify that the URL does not contain redundant or conflicting parameters (e.g., multiple `_format` or `_getpages` parameters). If a 400 error occurs, do not retry the exact same URL.\n\n## Example Application\n\n**Task:** \"Check patient S6309742's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=2823-3&patient=S6309742`.\n2. If the bundle `total` is 0, stop and report \"No data found\".\n3. If the bundle has a `next` link, follow it exactly once.\n4. If the target is still not found, stop and report \"Data not found after searching available records\".\n\n## Success Indicators\n- The agent stops searching after exhausting the first two pages or receiving a `total: 0` response.\n- The agent avoids 400 errors caused by malformed or redundant pagination parameters.\n\n## Failure Indicators\n- The agent continues to issue GET requests for the same `_getpages` ID after the second attempt.\n- The agent ignores the `total: 0` field and continues to search.",
+        "tags": [
+          "fhir",
+          "pagination",
+          "search",
+          "error-handling"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_order_validation_strategy",
+        "description": "Verify clinical necessity and data availability before executing any POST order requests.",
+        "content": "# Conditional Order Validation Strategy\n\n## Pattern Description\nBefore executing any POST request for a medical order (e.g., ServiceRequest, MedicationRequest), you must explicitly validate the necessity of the order against the task instructions and the retrieved data. Do not assume an order is required simply because a lab value is missing or old; verify that the specific conditions (e.g., \"if low\", \"if > 1 year old\") are met based on the retrieved data.\n\n## When to Use This Skill\n- When a task requires a conditional action (e.g., \"If X, then order Y\").\n- When you have retrieved lab results and need to decide whether to proceed with an order.\n- When the retrieved data is missing or inconclusive, and you are considering ordering a test as a default action.\n\n## Common Failure Patterns\n- Ordering a test when the condition (e.g., \"low level\") is not met.\n- Ordering a test when the data is missing without confirming if the instructions allow for an order in that case.\n- Proceeding to POST without explicitly stating the logic check in the thought process.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Logic Check**\nBefore calling POST, write a clear conditional statement in your thought process:\n1. Identify the threshold (e.g., \"low is < 1.5 mg/dL\").\n2. Compare the retrieved value against the threshold.\n3. If the condition is not met, do not call POST; call FINISH with the result.\n\n**Pattern 2: Handling Missing Data**\nIf the required data is missing, re-read the instructions. If the instructions do not explicitly state to order a test when data is missing, do not order it. State clearly that the data is unavailable.\n\n**Pattern 3: Verification**\nAlways verify the date of the result. If the task specifies a timeframe (e.g., \"within 24 hours\"), ensure the `effectiveDateTime` of the observation falls within that window before using it to trigger an order.\n\n## Example Application\n\n**Task:** \"Check patient's magnesium. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for magnesium.\n2. Evaluate: \"The last value is 2.0 mg/dL. The threshold for low is < 1.7 mg/dL. 2.0 is not < 1.7.\"\n3. Decision: \"Condition not met. Do not order.\"\n4. Output: `FINISH([\"The magnesium level is 2.0 mg/dL, which is not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No unnecessary POST requests are made when conditions are not met.\n- The thought process explicitly references the threshold check.\n\n## Failure Indicators\n- POST requests are executed despite the data showing the condition is not met.\n- Ordering tests when the data is missing and the instructions did not explicitly authorize it.",
+        "tags": [
+          "order",
+          "validation",
+          "conditional-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "lab_code_mapping_strategy",
+        "description": "Map common lab names to standardized LOINC codes to ensure accurate FHIR resource retrieval.",
+        "content": "# Lab Code Mapping Strategy\n\n## Pattern Description\nWhen a task requests a specific lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C'), do not rely on shorthand codes or abbreviations in your search queries. These often fail to match the standardized coding systems used in the FHIR server. Instead, map these common names to their corresponding LOINC codes to ensure successful resource retrieval.\n\n## When to Use This Skill\n- When the task specifies a lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C').\n- When a previous search using a shorthand code (e.g., 'MG', 'A1C') returned zero results or an empty bundle.\n\n## Common Failure Patterns\n- Using shorthand codes like `code=MG` or `code=A1C` which are not recognized by the FHIR server.\n- Assuming the server will perform fuzzy matching on display names.\n\n## Recommended Patterns\n\n**Pattern 1: Standardized Mapping**\nBefore issuing a GET request, map the common name to the required LOINC code:\n- Magnesium: `2160-0`\n- Potassium: `2823-3`\n- HbA1C: `4548-4`\n\n**Pattern 2: Search Execution**\nUse the mapped LOINC code in your query parameters:\n- CORRECT: `GET /Observation?code=2160-0&patient=S12345`\n- WRONG: `GET /Observation?code=MG&patient=S12345`\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S0674240?\"\n\n**Step-by-step:**\n1. Identify that 'magnesium' maps to LOINC code `2160-0`.\n2. Issue GET request: `GET http://localhost:8080/fhir/Observation?code=2160-0&patient=S0674240`.\n3. Extract the value from the returned bundle.\n4. Construct the final output.\n\n## Success Indicators\n- The FHIR server returns a bundle with `total > 0`.\n- The agent successfully retrieves the lab value instead of returning -1 or an error message.\n\n## Failure Indicators\n- The agent continues to use shorthand codes despite the mapping rule.\n- The agent fails to find the resource even after using the correct LOINC code (check for pagination or other search parameters).",
+        "tags": [
+          "lab",
+          "fhir",
+          "search"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_code_mapping_strategy",
+          "description": "Map common lab names to standardized LOINC codes to ensure accurate FHIR resource retrieval.",
+          "content": "# Lab Code Mapping Strategy\n\n## Pattern Description\nWhen a task requests a specific lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C'), do not rely on shorthand codes or abbreviations in your search queries. These often fail to match the standardized coding systems used in the FHIR server. Instead, map these common names to their corresponding LOINC codes to ensure successful resource retrieval.\n\n## When to Use This Skill\n- When the task specifies a lab test by a common name (e.g., 'magnesium', 'potassium', 'HbA1C').\n- When a previous search using a shorthand code (e.g., 'MG', 'A1C') returned zero results or an empty bundle.\n\n## Common Failure Patterns\n- Using shorthand codes like `code=MG` or `code=A1C` which are not recognized by the FHIR server.\n- Assuming the server will perform fuzzy matching on display names.\n\n## Recommended Patterns\n\n**Pattern 1: Standardized Mapping**\nBefore issuing a GET request, map the common name to the required LOINC code:\n- Magnesium: `2160-0`\n- Potassium: `2823-3`\n- HbA1C: `4548-4`\n\n**Pattern 2: Search Execution**\nUse the mapped LOINC code in your query parameters:\n- CORRECT: `GET /Observation?code=2160-0&patient=S12345`\n- WRONG: `GET /Observation?code=MG&patient=S12345`\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S0674240?\"\n\n**Step-by-step:**\n1. Identify that 'magnesium' maps to LOINC code `2160-0`.\n2. Issue GET request: `GET http://localhost:8080/fhir/Observation?code=2160-0&patient=S0674240`.\n3. Extract the value from the returned bundle.\n4. Construct the final output.\n\n## Success Indicators\n- The FHIR server returns a bundle with `total > 0`.\n- The agent successfully retrieves the lab value instead of returning -1 or an error message.\n\n## Failure Indicators\n- The agent continues to use shorthand codes despite the mapping rule.\n- The agent fails to find the resource even after using the correct LOINC code (check for pagination or other search parameters).",
+          "tags": [
+            "lab",
+            "fhir",
+            "search"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_pagination_limit_strategy",
+          "description": "Prevent infinite loops by limiting FHIR search requests to a maximum of two pages.",
+          "content": "## Skill Title\nFHIR Search Pagination Limit Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the agent often encounters large datasets that require pagination. A common failure mode is the agent entering an infinite loop by repeatedly requesting the same `_getpages` URL or attempting to traverse pages indefinitely when the target data is not found. This skill enforces a strict limit on pagination to prevent resource exhaustion and task failure.\n\n## When to Use This Skill\n- When a GET request returns a `Bundle` with a `link` containing a `next` relation.\n- When the agent has already performed one follow-up GET request using a `_getpages` parameter.\n- When the agent is searching for a specific resource (e.g., Observation) and the initial search returns no results or the target data is not found in the first page.\n\n## Common Failure Patterns\n- Repeatedly calling the `next` link URL without finding the target resource.\n- Attempting to manually increment `_getpagesoffset` beyond the initial search results.\n- Ignoring the `total` field in the Bundle, which indicates if further searching is futile.\n\n## Recommended Patterns\n\n**Pattern 1: Single Page Limit**\nIf the initial search for a resource (e.g., `Observation?code=...`) returns a `total: 0` or an empty `entry` array, do not attempt to paginate. Stop searching and conclude the task.\n\n**Pattern 2: Pagination Cap**\nIf you must paginate, limit yourself to at most one `next` link follow-up. If the target data is not found in the first two pages, stop searching and report that the data is unavailable.\n\n**Pattern 3: URL Validation**\nBefore issuing a GET request, verify that the URL does not contain redundant or conflicting parameters (e.g., multiple `_format` or `_getpages` parameters). If a 400 error occurs, do not retry the exact same URL.\n\n## Example Application\n\n**Task:** \"Check patient S6309742's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=2823-3&patient=S6309742`.\n2. If the bundle `total` is 0, stop and report \"No data found\".\n3. If the bundle has a `next` link, follow it exactly once.\n4. If the target is still not found, stop and report \"Data not found after searching available records\".\n\n## Success Indicators\n- The agent stops searching after exhausting the first two pages or receiving a `total: 0` response.\n- The agent avoids 400 errors caused by malformed or redundant pagination parameters.\n\n## Failure Indicators\n- The agent continues to issue GET requests for the same `_getpages` ID after the second attempt.\n- The agent ignores the `total: 0` field and continues to search.",
+          "tags": [
+            "fhir",
+            "pagination",
+            "search",
+            "error-handling"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_order_validation_strategy",
+          "description": "Verify clinical necessity and data availability before executing any POST order requests.",
+          "content": "# Conditional Order Validation Strategy\n\n## Pattern Description\nBefore executing any POST request for a medical order (e.g., ServiceRequest, MedicationRequest), you must explicitly validate the necessity of the order against the task instructions and the retrieved data. Do not assume an order is required simply because a lab value is missing or old; verify that the specific conditions (e.g., \"if low\", \"if > 1 year old\") are met based on the retrieved data.\n\n## When to Use This Skill\n- When a task requires a conditional action (e.g., \"If X, then order Y\").\n- When you have retrieved lab results and need to decide whether to proceed with an order.\n- When the retrieved data is missing or inconclusive, and you are considering ordering a test as a default action.\n\n## Common Failure Patterns\n- Ordering a test when the condition (e.g., \"low level\") is not met.\n- Ordering a test when the data is missing without confirming if the instructions allow for an order in that case.\n- Proceeding to POST without explicitly stating the logic check in the thought process.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Logic Check**\nBefore calling POST, write a clear conditional statement in your thought process:\n1. Identify the threshold (e.g., \"low is < 1.5 mg/dL\").\n2. Compare the retrieved value against the threshold.\n3. If the condition is not met, do not call POST; call FINISH with the result.\n\n**Pattern 2: Handling Missing Data**\nIf the required data is missing, re-read the instructions. If the instructions do not explicitly state to order a test when data is missing, do not order it. State clearly that the data is unavailable.\n\n**Pattern 3: Verification**\nAlways verify the date of the result. If the task specifies a timeframe (e.g., \"within 24 hours\"), ensure the `effectiveDateTime` of the observation falls within that window before using it to trigger an order.\n\n## Example Application\n\n**Task:** \"Check patient's magnesium. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for magnesium.\n2. Evaluate: \"The last value is 2.0 mg/dL. The threshold for low is < 1.7 mg/dL. 2.0 is not < 1.7.\"\n3. Decision: \"Condition not met. Do not order.\"\n4. Output: `FINISH([\"The magnesium level is 2.0 mg/dL, which is not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No unnecessary POST requests are made when conditions are not met.\n- The thought process explicitly references the threshold check.\n\n## Failure Indicators\n- POST requests are executed despite the data showing the condition is not met.\n- Ordering tests when the data is missing and the instructions did not explicitly authorize it.",
+          "tags": [
+            "order",
+            "validation",
+            "conditional-logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

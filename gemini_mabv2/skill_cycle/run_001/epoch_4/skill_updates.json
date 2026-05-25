@@ -1,0 +1,293 @@
+[
+  {
+    "epoch": 4,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "medication_order_verification_strategy",
+        "description": "Ensures precise verification of dosage, frequency, and clinical intent before creating or duplicating medication orders.",
+        "content": "## Medication Order Verification Strategy\n\nWhen a task requires verifying the existence of a specific medication order (e.g., DVT prophylaxis), you must not rely on a broad search or the presence of a drug class alone. You must inspect the `dosageInstruction` and `timing` fields of existing `MedicationRequest` resources to determine if they match the specific clinical requirements (e.g., q8h vs q12h).\n\n## When to Use This Skill\n\n- When the task requires verifying if a patient has a specific active medication order.\n- When you must decide whether to create a new order or discontinue existing ones.\n- When a broad search returns medications that are in the same class but do not meet the specific dosage or frequency criteria.\n\n## Common Failure Patterns\n\n- Assuming any order for a drug (e.g., Heparin) satisfies a specific prophylaxis protocol without checking the frequency (e.g., q8h).\n- Failing to inspect the `dosageInstruction` array, leading to the creation of duplicate orders for slightly different regimens.\n- Treating a search result as a match without verifying the `status` field is `active`.\n\n## Recommended Patterns\n\n**Pattern 1: Granular Inspection**\nWhen you retrieve a list of `MedicationRequest` resources, iterate through each one. For each resource, check:\n1. `status`: Must be `active`.\n2. `dosageInstruction[0].timing.code.text`: Must match the required frequency (e.g., 'q8h').\n3. `dosageInstruction[0].doseAndRate[0].doseQuantity.value`: Must match the required dose.\n\n**Pattern 2: Decision Logic**\n- If an exact match is found, do not create a new order.\n- If an order exists but the dosage or frequency is incorrect, you may need to discontinue the old order before creating the new one, depending on the task instructions.\n- If no exact match is found, proceed with creating the new order.\n\n## Example Application\n\n**Task:** \"Verify that patient S0581164 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S0581164`.\n2. Inspect the bundle. If you find a Heparin order, check `dosageInstruction[0].timing.code.text`.\n3. If the existing order is `q12h`, it is not a match for `q8h`.\n4. If no `q8h` order exists, POST the new `MedicationRequest` with the correct `dosageInstruction`.\n\n## Success Indicators\n\n- Agent correctly identifies that an existing order does not meet the specific criteria and creates the correct one.\n- No duplicate orders are created when a matching order already exists.\n\n## Failure Indicators\n\n- Agent creates a duplicate order because it failed to check the frequency or dose of the existing order.\n- Agent incorrectly assumes an existing order is a match when it is not.",
+        "tags": [
+          "medication",
+          "verification",
+          "fhir"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Ensures accurate time-based filtering and includes a fallback search when no observations are found within the window.",
+        "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 or 12 hours), you must anchor your search to the current system time provided in the task context. If a search within a specific time window returns no results, you must not assume the patient has no data; instead, you must perform a broader search to verify the existence of historical records.\n\n## When to Use This Skill\n- When a task requires calculating averages or trends over a specific time window (e.g., \"past 6 hours\").\n- When a GET /Observation request for a specific code returns an empty bundle or no entries within the requested time range.\n\n## Common Failure Patterns\n- Calculating time windows based on incorrect or hardcoded dates instead of the provided system time.\n- Failing to perform a secondary, broader search when the initial time-constrained search returns zero results.\n- Reporting \"no data\" when only the specific window was empty, rather than checking the full patient history.\n\n## Recommended Patterns\n\n**Pattern 1: Time Window Calculation**\nAlways calculate the start time by subtracting the window duration from the current system time. Use the ISO 8601 format for the `date` parameter in your GET request (e.g., `date=ge2023-11-07T16:47:00Z`).\n\n**Pattern 2: Fallback Search**\nIf the initial search returns zero entries, perform a second GET request without the date filter to check if any historical data exists for that code. This allows you to provide context (e.g., \"No data in the last 6 hours, but the most recent record is from [Date]\").\n\n**Pattern 3: Data Extraction**\nExtract only the numerical values from `valueQuantity.value`. Do not include units or strings in your calculation logic.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. Identify current time: 2023-11-07T22:47:00.\n2. Calculate start time: 2023-11-07T16:47:00.\n3. Issue GET: `.../Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`.\n4. If empty, issue GET: `.../Observation?patient=S123&code=HEARTRATE`.\n5. If data exists, calculate average; if not, report no data found.\n\n## Success Indicators\n- Agent performs a secondary search when the first returns empty.\n- Calculations use the correct system time as the anchor.\n\n## Failure Indicators\n- Agent reports \"no data\" without verifying historical records.\n- Agent uses incorrect dates for the window calculation.",
+        "tags": [
+          "observation",
+          "time-window",
+          "fallback"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_verification_strategy",
+        "description": "Ensures precise verification of dosage, frequency, and clinical intent before creating or duplicating medication orders.",
+        "content": "## Medication Order Verification Strategy\n\nWhen a task requires verifying the existence of a specific medication order (e.g., DVT prophylaxis), you must not rely on a broad search or the presence of a drug class alone. You must inspect the `dosageInstruction` and `timing` fields of existing `MedicationRequest` resources to determine if they match the specific clinical requirements (e.g., q8h vs q12h).\n\n## When to Use This Skill\n\n- When the task requires verifying if a patient has a specific active medication order.\n- When you must decide whether to create a new order or discontinue existing ones.\n- When a broad search returns medications that are in the same class but do not meet the specific dosage or frequency criteria.\n\n## Common Failure Patterns\n\n- Assuming any order for a drug (e.g., Heparin) satisfies a specific prophylaxis protocol without checking the frequency (e.g., q8h).\n- Failing to inspect the `dosageInstruction` array, leading to the creation of duplicate orders for slightly different regimens.\n- Treating a search result as a match without verifying the `status` field is `active`.\n\n## Recommended Patterns\n\n**Pattern 1: Granular Inspection**\nWhen you retrieve a list of `MedicationRequest` resources, iterate through each one. For each resource, check:\n1. `status`: Must be `active`.\n2. `dosageInstruction[0].timing.code.text`: Must match the required frequency (e.g., 'q8h').\n3. `dosageInstruction[0].doseAndRate[0].doseQuantity.value`: Must match the required dose.\n\n**Pattern 2: Decision Logic**\n- If an exact match is found, do not create a new order.\n- If an order exists but the dosage or frequency is incorrect, you may need to discontinue the old order before creating the new one, depending on the task instructions.\n- If no exact match is found, proceed with creating the new order.\n\n## Example Application\n\n**Task:** \"Verify that patient S0581164 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S0581164`.\n2. Inspect the bundle. If you find a Heparin order, check `dosageInstruction[0].timing.code.text`.\n3. If the existing order is `q12h`, it is not a match for `q8h`.\n4. If no `q8h` order exists, POST the new `MedicationRequest` with the correct `dosageInstruction`.\n\n## Success Indicators\n\n- Agent correctly identifies that an existing order does not meet the specific criteria and creates the correct one.\n- No duplicate orders are created when a matching order already exists.\n\n## Failure Indicators\n\n- Agent creates a duplicate order because it failed to check the frequency or dose of the existing order.\n- Agent incorrectly assumes an existing order is a match when it is not.",
+        "tags": [
+          "medication",
+          "verification",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_discontinuation_strategy",
+        "description": "Ensures active orders are explicitly discontinued via status update before creating new ones to prevent duplication.",
+        "content": "# Medication Order Discontinuation Strategy\n\n## Pattern Description\nWhen a task requires maintaining a specific number of active orders (e.g., \"exactly one active DVT prophylaxis order\"), you must not assume that creating a new order is sufficient. If you find existing active orders that conflict with the target state, you must explicitly discontinue them by updating their `status` to `stopped` before creating a new order.\n\n## When to Use This Skill\n- When the task instruction specifies maintaining a count of active orders (e.g., \"exactly one active order\").\n- When you identify multiple active orders for the same medication or clinical purpose.\n- When you need to replace an outdated or duplicate order with a new one.\n\n## Common Failure Patterns\n- Performing a `PUT` update on an existing resource to change its status to `stopped` but failing to create the new, correct order.\n- Creating a new order without checking for or discontinuing existing active duplicates, leading to multiple active orders.\n- Assuming that a `PUT` request on an existing resource is the only action required, ignoring the need to create a new, valid order if the existing one is incorrect.\n\n## Recommended Patterns\n\n**Pattern 1: Discontinuation and Replacement**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. If multiple active orders exist, identify the newest one to keep (if applicable) and mark all others as `status: \"stopped\"` using a `PUT` request.\n3. If the existing order is incorrect or needs replacement, `PUT` the existing resource with `status: \"stopped\"` and then `POST` a new `MedicationRequest` with the correct details.\n\n**Pattern 2: Verification**\n- Always verify the current state of the patient's `MedicationRequest` list after performing any `PUT` or `POST` operations to ensure the final state matches the instruction.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple orders, discontinue duplicates keeping only the newest.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6315806`.\n2. Identify all active orders for DVT prophylaxis.\n3. If two active orders exist, select the older one.\n4. PUT `MedicationRequest/[ID]` with `status: \"stopped\"`.\n5. If no active order remains, POST a new `MedicationRequest` with the correct dosage.\n\n## Success Indicators\n- The final state of the patient's records shows exactly one active order for the requested medication.\n- Duplicate or outdated orders are correctly marked as `stopped`.\n\n## Failure Indicators\n- Multiple active orders remain for the same clinical purpose.\n- The agent attempts to update an existing order but fails to create the necessary new order.",
+        "tags": [
+          "medication",
+          "discontinuation",
+          "fhir"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "observation_time_window_calculation_strategy",
+          "description": "Ensures accurate time-based filtering and includes a fallback search when no observations are found within the window.",
+          "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 or 12 hours), you must anchor your search to the current system time provided in the task context. If a search within a specific time window returns no results, you must not assume the patient has no data; instead, you must perform a broader search to verify the existence of historical records.\n\n## When to Use This Skill\n- When a task requires calculating averages or trends over a specific time window (e.g., \"past 6 hours\").\n- When a GET /Observation request for a specific code returns an empty bundle or no entries within the requested time range.\n\n## Common Failure Patterns\n- Calculating time windows based on incorrect or hardcoded dates instead of the provided system time.\n- Failing to perform a secondary, broader search when the initial time-constrained search returns zero results.\n- Reporting \"no data\" when only the specific window was empty, rather than checking the full patient history.\n\n## Recommended Patterns\n\n**Pattern 1: Time Window Calculation**\nAlways calculate the start time by subtracting the window duration from the current system time. Use the ISO 8601 format for the `date` parameter in your GET request (e.g., `date=ge2023-11-07T16:47:00Z`).\n\n**Pattern 2: Fallback Search**\nIf the initial search returns zero entries, perform a second GET request without the date filter to check if any historical data exists for that code. This allows you to provide context (e.g., \"No data in the last 6 hours, but the most recent record is from [Date]\").\n\n**Pattern 3: Data Extraction**\nExtract only the numerical values from `valueQuantity.value`. Do not include units or strings in your calculation logic.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. Identify current time: 2023-11-07T22:47:00.\n2. Calculate start time: 2023-11-07T16:47:00.\n3. Issue GET: `.../Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`.\n4. If empty, issue GET: `.../Observation?patient=S123&code=HEARTRATE`.\n5. If data exists, calculate average; if not, report no data found.\n\n## Success Indicators\n- Agent performs a secondary search when the first returns empty.\n- Calculations use the correct system time as the anchor.\n\n## Failure Indicators\n- Agent reports \"no data\" without verifying historical records.\n- Agent uses incorrect dates for the window calculation.",
+          "tags": [
+            "observation",
+            "time-window",
+            "fallback"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -3,
+        "fixes": 2,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 4,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_verification_strategy",
+          "description": "Ensures precise verification of dosage, frequency, and clinical intent before creating or duplicating medication orders.",
+          "content": "## Medication Order Verification Strategy\n\nWhen a task requires verifying the existence of a specific medication order (e.g., DVT prophylaxis), you must not rely on a broad search or the presence of a drug class alone. You must inspect the `dosageInstruction` and `timing` fields of existing `MedicationRequest` resources to determine if they match the specific clinical requirements (e.g., q8h vs q12h).\n\n## When to Use This Skill\n\n- When the task requires verifying if a patient has a specific active medication order.\n- When you must decide whether to create a new order or discontinue existing ones.\n- When a broad search returns medications that are in the same class but do not meet the specific dosage or frequency criteria.\n\n## Common Failure Patterns\n\n- Assuming any order for a drug (e.g., Heparin) satisfies a specific prophylaxis protocol without checking the frequency (e.g., q8h).\n- Failing to inspect the `dosageInstruction` array, leading to the creation of duplicate orders for slightly different regimens.\n- Treating a search result as a match without verifying the `status` field is `active`.\n\n## Recommended Patterns\n\n**Pattern 1: Granular Inspection**\nWhen you retrieve a list of `MedicationRequest` resources, iterate through each one. For each resource, check:\n1. `status`: Must be `active`.\n2. `dosageInstruction[0].timing.code.text`: Must match the required frequency (e.g., 'q8h').\n3. `dosageInstruction[0].doseAndRate[0].doseQuantity.value`: Must match the required dose.\n\n**Pattern 2: Decision Logic**\n- If an exact match is found, do not create a new order.\n- If an order exists but the dosage or frequency is incorrect, you may need to discontinue the old order before creating the new one, depending on the task instructions.\n- If no exact match is found, proceed with creating the new order.\n\n## Example Application\n\n**Task:** \"Verify that patient S0581164 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S0581164`.\n2. Inspect the bundle. If you find a Heparin order, check `dosageInstruction[0].timing.code.text`.\n3. If the existing order is `q12h`, it is not a match for `q8h`.\n4. If no `q8h` order exists, POST the new `MedicationRequest` with the correct `dosageInstruction`.\n\n## Success Indicators\n\n- Agent correctly identifies that an existing order does not meet the specific criteria and creates the correct one.\n- No duplicate orders are created when a matching order already exists.\n\n## Failure Indicators\n\n- Agent creates a duplicate order because it failed to check the frequency or dose of the existing order.\n- Agent incorrectly assumes an existing order is a match when it is not.",
+          "tags": [
+            "medication",
+            "verification",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 4,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_discontinuation_strategy",
+          "description": "Ensures active orders are explicitly discontinued via status update before creating new ones to prevent duplication.",
+          "content": "# Medication Order Discontinuation Strategy\n\n## Pattern Description\nWhen a task requires maintaining a specific number of active orders (e.g., \"exactly one active DVT prophylaxis order\"), you must not assume that creating a new order is sufficient. If you find existing active orders that conflict with the target state, you must explicitly discontinue them by updating their `status` to `stopped` before creating a new order.\n\n## When to Use This Skill\n- When the task instruction specifies maintaining a count of active orders (e.g., \"exactly one active order\").\n- When you identify multiple active orders for the same medication or clinical purpose.\n- When you need to replace an outdated or duplicate order with a new one.\n\n## Common Failure Patterns\n- Performing a `PUT` update on an existing resource to change its status to `stopped` but failing to create the new, correct order.\n- Creating a new order without checking for or discontinuing existing active duplicates, leading to multiple active orders.\n- Assuming that a `PUT` request on an existing resource is the only action required, ignoring the need to create a new, valid order if the existing one is incorrect.\n\n## Recommended Patterns\n\n**Pattern 1: Discontinuation and Replacement**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. If multiple active orders exist, identify the newest one to keep (if applicable) and mark all others as `status: \"stopped\"` using a `PUT` request.\n3. If the existing order is incorrect or needs replacement, `PUT` the existing resource with `status: \"stopped\"` and then `POST` a new `MedicationRequest` with the correct details.\n\n**Pattern 2: Verification**\n- Always verify the current state of the patient's `MedicationRequest` list after performing any `PUT` or `POST` operations to ensure the final state matches the instruction.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple orders, discontinue duplicates keeping only the newest.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6315806`.\n2. Identify all active orders for DVT prophylaxis.\n3. If two active orders exist, select the older one.\n4. PUT `MedicationRequest/[ID]` with `status: \"stopped\"`.\n5. If no active order remains, POST a new `MedicationRequest` with the correct dosage.\n\n## Success Indicators\n- The final state of the patient's records shows exactly one active order for the requested medication.\n- Duplicate or outdated orders are correctly marked as `stopped`.\n\n## Failure Indicators\n- Multiple active orders remain for the same clinical purpose.\n- The agent attempts to update an existing order but fails to create the necessary new order.",
+          "tags": [
+            "medication",
+            "discontinuation",
+            "fhir"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": -2,
+        "fixes": 3,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 4,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_verification_strategy",
+          "description": "Ensures precise verification of dosage, frequency, and clinical intent before creating or duplicating medication orders, while ensuring comprehensive search coverage.",
+          "content": "## Medication Order Verification Strategy\n\nWhen a task requires verifying the existence of a specific medication order, you must perform a thorough search and inspect the `dosageInstruction` and `timing` fields of existing `MedicationRequest` resources to determine if they match the specific clinical requirements.\n\n## When to Use This Skill\n\n- When the task requires verifying if a patient has a specific active medication order.\n- When you must decide whether to create a new order or discontinue existing ones.\n- When a broad search returns medications that are in the same class but do not meet the specific dosage or frequency criteria.\n\n## Critical Search Requirement\n\n**Do not assume a search is complete based on the first page of results.** If a search returns a `link` with `relation: next`, you must follow the pagination to ensure all active medications are reviewed. Failing to paginate leads to false negatives (e.g., missing active opioid orders that exist on subsequent pages).\n\n## Common Failure Patterns\n\n- **Pagination Failure:** Stopping after the first page of a search result, leading to the incorrect conclusion that no active orders exist.\n- **Over-generalization:** Assuming any order for a drug satisfies a specific protocol without checking the frequency or dose.\n- **Status Neglect:** Treating a search result as a match without verifying the `status` field is `active`.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\n1. GET `MedicationRequest?patient=[ID]`.\n2. If the bundle contains a `next` link, continue to GET the subsequent pages until all resources are retrieved.\n3. Filter the full list for `status: active` and the relevant medication names/classes.\n\n**Pattern 2: Granular Inspection**\nFor each active resource identified:\n1. Check `dosageInstruction[0].timing.code.text` against the required frequency.\n2. Check `dosageInstruction[0].doseAndRate[0].doseQuantity.value` against the required dose.\n\n**Pattern 3: Decision Logic**\n- If an exact match is found, do not create a new order.\n- If no exact match is found after checking all pages, proceed with creating the new order.\n\n## Success Indicators\n\n- Agent retrieves all pages of search results before concluding no orders exist.\n- Agent correctly identifies that an existing order does not meet specific criteria and creates the correct one.\n- No duplicate orders are created when a matching order already exists.",
+          "tags": [
+            "medication",
+            "fhir",
+            "verification",
+            "pagination"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "fixes": 1,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 2,
+        "baseline_regressions": 4,
+        "contrastive_revision": true
+      }
+    ]
+  },
+  {
+    "epoch": 4,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 34,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Refines time-window filtering by enforcing explicit date-range parameters and distinct calculation logic for multiple windows.",
+        "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 hours vs. 12 hours), you must apply distinct, non-overlapping or correctly bounded temporal filters to the FHIR search. Do not assume that a single search result set can be sliced by simple logic if the underlying data is not explicitly filtered by date.\n\nIf a search returns no results, you must perform a broader search (e.g., without the code filter or with a wider date range) before concluding that data is unavailable. If multiple windows are requested, calculate each window independently using the `date` parameter with `ge` (greater or equal) and `le` (less or equal) operators to ensure the data points fall strictly within the requested interval.\n\n## When to Use This Skill\n- When a task requires calculating metrics (averages, counts) over multiple distinct time windows (e.g., 6h and 12h).\n- When a search for a specific observation code returns an empty bundle, but the task requires historical data.\n- When you need to differentiate between data points belonging to different time-based cohorts.\n\n## Common Failure Patterns\n- Applying the same result set to multiple time windows, leading to identical output values.\n- Failing to use `date` parameters in the GET request, resulting in the retrieval of all historical data instead of window-specific data.\n- Returning 'N/A' after a single failed search without attempting a broader fallback query.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Temporal Filtering**\nFor each requested window, construct a specific GET request using the `date` parameter. \nExample: For a 6-hour window ending at `2023-11-07T22:47:00`, use `date=ge2023-11-07T16:47:00&date=le2023-11-07T22:47:00`.\n\n**Pattern 2: Fallback Strategy**\nIf the initial search with `code` and `date` returns `total: 0`, perform a secondary search using only the `patient` and `code` parameters to verify if any data exists at all, or broaden the date range to ensure no records were missed due to timezone offsets.\n\n**Pattern 3: Independent Calculation**\nProcess the bundles for each window separately. Do not reuse the same list of observations for different time-window calculations.\n\n## Example Application\n\n**Task:** \"Calculate average heart rate over 6h and 12h.\"\n\n**Step-by-step:**\n1. Calculate the start timestamps for 6h and 12h ago.\n2. Issue `GET .../Observation?patient=S123&code=HEARTRATE&date=ge[6h_ago]&date=le[now]`.\n3. If empty, issue `GET .../Observation?patient=S123&code=HEARTRATE` to check for any data.\n4. Extract `valueQuantity.value` from the filtered bundles.\n5. Compute the average for each window independently.\n\nCORRECT output: `FINISH([\"6h avg: 80 bpm\", \"12h avg: 75 bpm\"])`\nWRONG output: `FINISH([\"6h avg: 80 bpm\", \"12h avg: 80 bpm\"])`\n\n## Success Indicators\n- Distinct values for different time windows.\n- Successful retrieval of data after a broad fallback search when the initial search is empty.\n\n## Failure Indicators\n- Identical values for different time windows.\n- 'N/A' results when data is present in the patient record.",
+        "tags": [
+          "fhir",
+          "observation",
+          "time-window",
+          "calculation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "temporal_threshold_verification_strategy",
+        "description": "Enforces strict date-based comparison against current system time before determining if a new order is required.",
+        "content": "# Temporal Threshold Verification Strategy\n\n## Pattern Description\nWhen a task requires comparing a historical event date against a specific time threshold (e.g., 12 months, 365 days) to determine if a new order is indicated, you must perform a precise temporal calculation. Do not rely on relative descriptions; calculate the exact delta between the most recent event date and the current system date.\n\n## When to Use This Skill\n- When a task asks to check if a procedure or vaccination was performed \"more than X time ago\".\n- When the decision to create a new order depends on a specific temporal cutoff.\n\n## Common Failure Patterns\n- Assuming a date is \"within 12 months\" without calculating the exact day difference.\n- Failing to account for the current system date provided in the task context.\n- Treating a missing record as \"within the threshold\" instead of \"never performed\" (which usually triggers the order).\n\n## Recommended Patterns\n\n**Pattern 1: Date Extraction and Comparison**\n1. Identify the most recent date from the retrieved resource (e.g., `Procedure.performedDateTime` or `MedicationRequest.authoredOn`).\n2. Compare this date against the current system date provided in the task context.\n3. If the difference is > 365 days (or the specified threshold), proceed with the order.\n4. If no record is found, treat this as \"never performed\" and proceed with the order.\n\n**Pattern 2: Verification of Existing Orders**\nBefore creating a new order, always verify that a pending or active order for the same service does not already exist to prevent duplication.\n\n## Example Application\n\n**Task:** \"Find the date of the most recent CT Abdomen. If performed > 12 months ago, order a new one.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=CT_CODE`.\n2. Extract `performedDateTime` (e.g., \"2022-01-01\").\n3. Compare with current date (e.g., \"2023-11-07\").\n4. Calculate: 2023-11-07 minus 2022-01-01 = ~22 months.\n5. Since 22 > 12, POST `ServiceRequest`.\n\n## Success Indicators\n- Agent explicitly states the date of the last procedure and the calculated time difference.\n- Agent correctly identifies when to order and when to skip based on the threshold.\n\n## Failure Indicators\n- Agent skips ordering when the last procedure was clearly > 12 months ago.\n- Agent orders a duplicate despite a recent procedure being within the threshold.",
+        "tags": [
+          "temporal",
+          "verification",
+          "logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "active_order_verification_strategy",
+        "description": "Ensures existing active orders are verified before creating new ones to prevent duplication.",
+        "content": "# Active Order Verification Strategy\n\n## Pattern Description\nBefore creating any new order (ServiceRequest or MedicationRequest), you must verify if an active order for the same clinical intent already exists. Creating redundant orders can lead to clinical errors and system clutter. This strategy requires you to search for existing active resources and evaluate their status before proceeding with a POST request.\n\n## When to Use This Skill\n- When the task requires creating a new order (e.g., DVT prophylaxis, catheter removal, vaccination).\n- When you have already performed a search for existing orders and need to decide whether to proceed with a new creation.\n- When the task involves verifying that a specific order exists or is unique.\n\n## Common Failure Patterns\n- Assuming that a search returning 0 results for a specific code means no relevant order exists (always check for broader categories or active status).\n- Failing to check the `status` field of retrieved resources (e.g., treating a 'completed' or 'stopped' order as 'active').\n- Creating a new order without first checking if an identical active order is already present, leading to duplication.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-creation Verification**\n1. Search for existing resources of the target type (e.g., `ServiceRequest` or `MedicationRequest`) for the patient.\n2. Filter the results for `status=active`.\n3. If an active order with the same clinical intent exists, do not create a new one. Report the existing order instead.\n4. If no active order exists, proceed with the POST request.\n\n**Pattern 2: Handling Duplicates**\n1. If multiple active orders are found, identify the newest one based on `authoredOn`.\n2. If the task requires exactly one order, discontinue the older duplicates (if the API supports it) or report the conflict.\n\n## Example Application\n\n**Task:** \"Verify that patient S6415739 has exactly one active DVT prophylaxis order. If there are zero, create one.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6415739&status=active`.\n2. Inspect the bundle. If the bundle is empty or contains no relevant DVT prophylaxis orders, proceed to POST.\n3. If an order exists, compare the `medicationCodeableConcept` to the required order.\n4. If no match is found, POST the new `MedicationRequest`.\n\nCORRECT output: `FINISH([\"Active order found: ID 123. No new order required.\"])`\nWRONG output: `POST` (without checking existing orders)\n\n## Success Indicators\n- Agent performs a GET search for existing orders before any POST action.\n- Agent correctly identifies active vs. inactive orders.\n- No redundant orders are created when an active one already exists.\n\n## Failure Indicators\n- Agent creates a duplicate order despite an active one being present in the search results.\n- Agent fails to check the `status` field and acts on historical/completed orders.",
+        "tags": [
+          "order-management",
+          "fhir",
+          "verification"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_duplication_prevention_strategy",
+        "description": "Prevents duplicate medication orders by verifying active status and matching dosage/timing before creation.",
+        "content": "## Skill Title\nMedication Order Duplication Prevention Strategy\n\n## Pattern Description\nWhen tasked with verifying or creating a medication order, you must ensure that an identical active order does not already exist. Creating a duplicate order for the same medication, dosage, and frequency is a common clinical error. You must first retrieve all active `MedicationRequest` resources for the patient and compare the proposed order against existing ones before proceeding with a POST request.\n\n## When to Use This Skill\n- When the task requires verifying if a specific medication order exists.\n- When the task requires creating a new order if zero exist, or discontinuing duplicates if multiple exist.\n- Before executing any POST request for a `MedicationRequest`.\n\n## Common Failure Patterns\n- Assuming a search for a specific code or name is exhaustive without checking the full list of active orders.\n- Failing to compare `dosageInstruction` (dose, route, timing) when identifying duplicates.\n- Creating a new order when an identical active order is already present in the bundle.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a broad GET request for `MedicationRequest?patient=[ID]` to capture all active orders. Do not rely solely on specific code filters if they might miss existing orders.\n\n**Pattern 2: Duplicate Verification**\nIterate through the returned bundle. Compare the `medicationCodeableConcept.text` and `dosageInstruction` of the proposed order with each active resource. If an order with the same medication, dose, and frequency is found, do not create a new one.\n\n**Pattern 3: Discontinuation Logic**\nIf multiple active orders are found, identify the newest one by `authoredOn`. Discontinue the older ones by updating their `status` to `stopped` via a PUT request before creating or confirming the single active order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active heparin 5000 units SC q8h order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215`.\n2. Parse the bundle for any `MedicationRequest` where `status` is `active` and the medication matches \"heparin 5000 units\".\n3. If an identical order exists, FINISH with confirmation.\n4. If no order exists, POST the new `MedicationRequest`.\n5. If multiple exist, identify the latest, update others to `stopped`, and FINISH.\n\n## Success Indicators\n- Agent correctly identifies existing orders and avoids redundant POST requests.\n- Agent successfully discontinues older duplicates when multiple are found.\n\n## Failure Indicators\n- Agent creates a new order despite an identical one being present in the GET response.\n- Agent fails to find an existing order because it used an overly restrictive search filter.",
+        "tags": [
+          "medication",
+          "duplication",
+          "fhir",
+          "verification"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "observation_time_window_calculation_strategy",
+          "description": "Refines time-window filtering by enforcing explicit date-range parameters and distinct calculation logic for multiple windows.",
+          "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 hours vs. 12 hours), you must apply distinct, non-overlapping or correctly bounded temporal filters to the FHIR search. Do not assume that a single search result set can be sliced by simple logic if the underlying data is not explicitly filtered by date.\n\nIf a search returns no results, you must perform a broader search (e.g., without the code filter or with a wider date range) before concluding that data is unavailable. If multiple windows are requested, calculate each window independently using the `date` parameter with `ge` (greater or equal) and `le` (less or equal) operators to ensure the data points fall strictly within the requested interval.\n\n## When to Use This Skill\n- When a task requires calculating metrics (averages, counts) over multiple distinct time windows (e.g., 6h and 12h).\n- When a search for a specific observation code returns an empty bundle, but the task requires historical data.\n- When you need to differentiate between data points belonging to different time-based cohorts.\n\n## Common Failure Patterns\n- Applying the same result set to multiple time windows, leading to identical output values.\n- Failing to use `date` parameters in the GET request, resulting in the retrieval of all historical data instead of window-specific data.\n- Returning 'N/A' after a single failed search without attempting a broader fallback query.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Temporal Filtering**\nFor each requested window, construct a specific GET request using the `date` parameter. \nExample: For a 6-hour window ending at `2023-11-07T22:47:00`, use `date=ge2023-11-07T16:47:00&date=le2023-11-07T22:47:00`.\n\n**Pattern 2: Fallback Strategy**\nIf the initial search with `code` and `date` returns `total: 0`, perform a secondary search using only the `patient` and `code` parameters to verify if any data exists at all, or broaden the date range to ensure no records were missed due to timezone offsets.\n\n**Pattern 3: Independent Calculation**\nProcess the bundles for each window separately. Do not reuse the same list of observations for different time-window calculations.\n\n## Example Application\n\n**Task:** \"Calculate average heart rate over 6h and 12h.\"\n\n**Step-by-step:**\n1. Calculate the start timestamps for 6h and 12h ago.\n2. Issue `GET .../Observation?patient=S123&code=HEARTRATE&date=ge[6h_ago]&date=le[now]`.\n3. If empty, issue `GET .../Observation?patient=S123&code=HEARTRATE` to check for any data.\n4. Extract `valueQuantity.value` from the filtered bundles.\n5. Compute the average for each window independently.\n\nCORRECT output: `FINISH([\"6h avg: 80 bpm\", \"12h avg: 75 bpm\"])`\nWRONG output: `FINISH([\"6h avg: 80 bpm\", \"12h avg: 80 bpm\"])`\n\n## Success Indicators\n- Distinct values for different time windows.\n- Successful retrieval of data after a broad fallback search when the initial search is empty.\n\n## Failure Indicators\n- Identical values for different time windows.\n- 'N/A' results when data is present in the patient record.",
+          "tags": [
+            "fhir",
+            "observation",
+            "time-window",
+            "calculation"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "temporal_threshold_verification_strategy",
+          "description": "Enforces strict date-based comparison against current system time before determining if a new order is required.",
+          "content": "# Temporal Threshold Verification Strategy\n\n## Pattern Description\nWhen a task requires comparing a historical event date against a specific time threshold (e.g., 12 months, 365 days) to determine if a new order is indicated, you must perform a precise temporal calculation. Do not rely on relative descriptions; calculate the exact delta between the most recent event date and the current system date.\n\n## When to Use This Skill\n- When a task asks to check if a procedure or vaccination was performed \"more than X time ago\".\n- When the decision to create a new order depends on a specific temporal cutoff.\n\n## Common Failure Patterns\n- Assuming a date is \"within 12 months\" without calculating the exact day difference.\n- Failing to account for the current system date provided in the task context.\n- Treating a missing record as \"within the threshold\" instead of \"never performed\" (which usually triggers the order).\n\n## Recommended Patterns\n\n**Pattern 1: Date Extraction and Comparison**\n1. Identify the most recent date from the retrieved resource (e.g., `Procedure.performedDateTime` or `MedicationRequest.authoredOn`).\n2. Compare this date against the current system date provided in the task context.\n3. If the difference is > 365 days (or the specified threshold), proceed with the order.\n4. If no record is found, treat this as \"never performed\" and proceed with the order.\n\n**Pattern 2: Verification of Existing Orders**\nBefore creating a new order, always verify that a pending or active order for the same service does not already exist to prevent duplication.\n\n## Example Application\n\n**Task:** \"Find the date of the most recent CT Abdomen. If performed > 12 months ago, order a new one.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=CT_CODE`.\n2. Extract `performedDateTime` (e.g., \"2022-01-01\").\n3. Compare with current date (e.g., \"2023-11-07\").\n4. Calculate: 2023-11-07 minus 2022-01-01 = ~22 months.\n5. Since 22 > 12, POST `ServiceRequest`.\n\n## Success Indicators\n- Agent explicitly states the date of the last procedure and the calculated time difference.\n- Agent correctly identifies when to order and when to skip based on the threshold.\n\n## Failure Indicators\n- Agent skips ordering when the last procedure was clearly > 12 months ago.\n- Agent orders a duplicate despite a recent procedure being within the threshold.",
+          "tags": [
+            "temporal",
+            "verification",
+            "logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 2,
+        "fixes": 2,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "active_order_verification_strategy",
+          "description": "Ensures existing active orders are verified before creating new ones to prevent duplication.",
+          "content": "# Active Order Verification Strategy\n\n## Pattern Description\nBefore creating any new order (ServiceRequest or MedicationRequest), you must verify if an active order for the same clinical intent already exists. Creating redundant orders can lead to clinical errors and system clutter. This strategy requires you to search for existing active resources and evaluate their status before proceeding with a POST request.\n\n## When to Use This Skill\n- When the task requires creating a new order (e.g., DVT prophylaxis, catheter removal, vaccination).\n- When you have already performed a search for existing orders and need to decide whether to proceed with a new creation.\n- When the task involves verifying that a specific order exists or is unique.\n\n## Common Failure Patterns\n- Assuming that a search returning 0 results for a specific code means no relevant order exists (always check for broader categories or active status).\n- Failing to check the `status` field of retrieved resources (e.g., treating a 'completed' or 'stopped' order as 'active').\n- Creating a new order without first checking if an identical active order is already present, leading to duplication.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-creation Verification**\n1. Search for existing resources of the target type (e.g., `ServiceRequest` or `MedicationRequest`) for the patient.\n2. Filter the results for `status=active`.\n3. If an active order with the same clinical intent exists, do not create a new one. Report the existing order instead.\n4. If no active order exists, proceed with the POST request.\n\n**Pattern 2: Handling Duplicates**\n1. If multiple active orders are found, identify the newest one based on `authoredOn`.\n2. If the task requires exactly one order, discontinue the older duplicates (if the API supports it) or report the conflict.\n\n## Example Application\n\n**Task:** \"Verify that patient S6415739 has exactly one active DVT prophylaxis order. If there are zero, create one.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6415739&status=active`.\n2. Inspect the bundle. If the bundle is empty or contains no relevant DVT prophylaxis orders, proceed to POST.\n3. If an order exists, compare the `medicationCodeableConcept` to the required order.\n4. If no match is found, POST the new `MedicationRequest`.\n\nCORRECT output: `FINISH([\"Active order found: ID 123. No new order required.\"])`\nWRONG output: `POST` (without checking existing orders)\n\n## Success Indicators\n- Agent performs a GET search for existing orders before any POST action.\n- Agent correctly identifies active vs. inactive orders.\n- No redundant orders are created when an active one already exists.\n\n## Failure Indicators\n- Agent creates a duplicate order despite an active one being present in the search results.\n- Agent fails to check the `status` field and acts on historical/completed orders.",
+          "tags": [
+            "order-management",
+            "fhir",
+            "verification"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_duplication_prevention_strategy",
+          "description": "Prevents duplicate medication orders by verifying active status and matching dosage/timing before creation.",
+          "content": "## Skill Title\nMedication Order Duplication Prevention Strategy\n\n## Pattern Description\nWhen tasked with verifying or creating a medication order, you must ensure that an identical active order does not already exist. Creating a duplicate order for the same medication, dosage, and frequency is a common clinical error. You must first retrieve all active `MedicationRequest` resources for the patient and compare the proposed order against existing ones before proceeding with a POST request.\n\n## When to Use This Skill\n- When the task requires verifying if a specific medication order exists.\n- When the task requires creating a new order if zero exist, or discontinuing duplicates if multiple exist.\n- Before executing any POST request for a `MedicationRequest`.\n\n## Common Failure Patterns\n- Assuming a search for a specific code or name is exhaustive without checking the full list of active orders.\n- Failing to compare `dosageInstruction` (dose, route, timing) when identifying duplicates.\n- Creating a new order when an identical active order is already present in the bundle.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a broad GET request for `MedicationRequest?patient=[ID]` to capture all active orders. Do not rely solely on specific code filters if they might miss existing orders.\n\n**Pattern 2: Duplicate Verification**\nIterate through the returned bundle. Compare the `medicationCodeableConcept.text` and `dosageInstruction` of the proposed order with each active resource. If an order with the same medication, dose, and frequency is found, do not create a new one.\n\n**Pattern 3: Discontinuation Logic**\nIf multiple active orders are found, identify the newest one by `authoredOn`. Discontinue the older ones by updating their `status` to `stopped` via a PUT request before creating or confirming the single active order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active heparin 5000 units SC q8h order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215`.\n2. Parse the bundle for any `MedicationRequest` where `status` is `active` and the medication matches \"heparin 5000 units\".\n3. If an identical order exists, FINISH with confirmation.\n4. If no order exists, POST the new `MedicationRequest`.\n5. If multiple exist, identify the latest, update others to `stopped`, and FINISH.\n\n## Success Indicators\n- Agent correctly identifies existing orders and avoids redundant POST requests.\n- Agent successfully discontinues older duplicates when multiple are found.\n\n## Failure Indicators\n- Agent creates a new order despite an identical one being present in the GET response.\n- Agent fails to find an existing order because it used an overly restrictive search filter.",
+          "tags": [
+            "medication",
+            "duplication",
+            "fhir",
+            "verification"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 2,
+        "fixes": 2,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

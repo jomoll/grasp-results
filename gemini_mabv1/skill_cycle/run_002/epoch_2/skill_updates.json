@@ -1,0 +1,282 @@
+[
+  {
+    "epoch": 2,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 22,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict pre-condition checks and logical necessity rules before creating ServiceRequests.",
+        "content": "## Skill Title\nConditional ServiceRequest Logic and Pre-condition Verification\n\n## Pattern Description\nThis skill enforces strict logical gates before creating a `ServiceRequest`. You must verify that the clinical necessity for an order is met by checking existing data against defined thresholds or time-based criteria. Never proceed with an order if the current data is already sufficient (e.g., recent lab result within a valid window) or if the clinical criteria (e.g., 'low' threshold) are not met.\n\n## When to Use This Skill\n- When a task requires checking a lab value before ordering a follow-up test or medication.\n- When a task specifies a time-based condition (e.g., 'within the last 24 hours' or 'older than 1 year').\n- When the task implies a conditional action (e.g., 'If low, then order...').\n\n## Common Failure Patterns\n- Ordering a test when the existing result is already current (e.g., < 1 year old for HbA1C).\n- Ordering a replacement medication when the lab value is within the normal range.\n- Failing to check the lab value before issuing a `POST` request.\n- Assuming an order is required without explicitly verifying the threshold condition.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-condition Verification**\nBefore issuing a `POST` for a `ServiceRequest`, you must:\n1. Retrieve the most recent relevant `Observation`.\n2. Compare the `effectiveDateTime` or `issued` date against the task's time constraint.\n3. If the data is current (e.g., < 1 year old), stop and report the existing value. Do not order.\n\n**Pattern 2: Threshold Logic**\n1. Identify the 'low' or 'abnormal' threshold specified in the task (e.g., < 3.5 mmol/L for Potassium).\n2. Compare the retrieved `valueQuantity.value` against this threshold.\n3. If the value is within the normal range, do not order. Report the current value and state that no action is required.\n\n**Pattern 3: Logical Necessity**\n- If the task asks to 'pair' an order with a follow-up, only create the follow-up order if the primary condition (e.g., low lab value) is met. If the primary condition is not met, do not create the follow-up order.\n\n## Example Application\n**Task:** \"Check patient's potassium. If low (< 3.5), order replacement. Also order follow-up.\"\n\n**Step-by-step:**\n1. GET `Observation?code=K&patient=...`\n2. Check value: If 3.9, it is not low.\n3. Decision: Do not POST `ServiceRequest` for replacement or follow-up.\n4. FINISH: \"The potassium level is 3.9 mmol/L. No replacement or follow-up is required.\"\n\n## Success Indicators\n- No `ServiceRequest` is created when lab values are normal or data is current.\n- Agent correctly identifies when to skip orders based on threshold checks.\n\n## Failure Indicators\n- `ServiceRequest` created despite normal lab values.\n- `ServiceRequest` created when existing data is within the required time window.",
+        "tags": [
+          "service-request",
+          "logic",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_answer_unit_enforcement",
+        "description": "Mandate inclusion of units (e.g., 'mg/dL', 'years') in FINISH outputs for quantitative clinical results.",
+        "content": "# Clinical Answer Unit Enforcement\n\n## Pattern Description\nWhen providing quantitative answers to clinical queries (such as lab results or patient age), you must always include the appropriate unit of measurement in the final output. Providing a raw number without context is clinically ambiguous and fails to meet the reporting requirements for medical data.\n\n## When to Use This Skill\n- When the task asks for a lab value (e.g., magnesium, HbA1c, potassium).\n- When the task asks for patient age.\n- Whenever the final answer is a numerical value derived from a FHIR resource.\n\n## Common Failure Patterns\n- Returning `[\"1.6\"]` instead of `[\"1.6 mg/dL\"]`.\n- Returning `[\"51\"]` instead of `[\"51 years\"]`.\n- Omitting units when the prompt explicitly requests a specific unit (e.g., \"converted to a unit of mg/dL\").\n\n## Recommended Patterns\n\n**Pattern 1: Lab Result Formatting**\nAlways append the unit specified in the prompt or the standard clinical unit to the numerical value.\n\nCORRECT: `FINISH([\"1.6 mg/dL\"])\nWRONG:   `FINISH([\"1.6\"])\n\n**Pattern 2: Age Formatting**\nAlways append \"years\" to the integer age.\n\nCORRECT: `FINISH([\"51 years\"])\nWRONG:   `FINISH([\"51\"])\n\n## Example Application\n\n**Task:** \"What’s the most recent magnesium level of the patient S1876702 within last 24 hours?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Extract the `valueQuantity.value` (e.g., 1.6).\n3. Identify the required unit (mg/dL).\n4. Format the output as a string containing both the value and the unit.\n\nCORRECT output: `FINISH([\"1.6 mg/dL\"])\nWRONG output:   `FINISH([\"1.6\"])\n\n## Success Indicators\n- The final output string contains both the numerical value and the correct clinical unit.\n\n## Failure Indicators\n- The final output contains only a raw number without units.",
+        "tags": [
+          "formatting",
+          "clinical-accuracy"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "answer_format_standardization",
+        "description": "Enforce natural language sentence structure for final answers instead of raw data lists.",
+        "content": "## Skill Title\nAnswer Format Standardization\n\n## Pattern Description\nWhen providing a final answer to a user, you must communicate the result in a clear, complete, and professional sentence. Avoid returning raw data structures, lists, or isolated values unless explicitly requested in a machine-readable format. This ensures the user receives context along with the requested information.\n\n## When to Use This Skill\n- When the task asks for a specific value (e.g., lab result, MRN, age) and you have successfully retrieved it.\n- When you are concluding a task that involved searching for data or performing a conditional check.\n- When the current output format is a list of raw strings or numbers (e.g., `[\"5.0%\", \"2023-11-09\"]`).\n\n## Common Failure Patterns\n- Returning `[\"5.0%\", \"2023-11-09\"]` instead of \"The last HbA1C value was 5.0%, recorded on 2023-11-09.\"\n- Returning `[\"S6521727\"]` instead of \"The MRN for the patient is S6521727.\"\n- Returning raw numbers like `[1.8]` instead of \"The most recent magnesium level is 1.8 mg/dL.\"\n\n## Recommended Patterns\n**Pattern 1: Natural Language Construction**\nAlways wrap your final answer in a single, coherent sentence that directly addresses the user's prompt.\n\n**Pattern 2: Contextual Inclusion**\nInclude relevant metadata (like dates or units) in the sentence to provide a complete answer.\n\n**Example Application**\n**Task:** \"What’s the last HbA1C value for patient S2823623 and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the value (5.0%) and the date (2023-11-09).\n3. Construct the sentence: \"The last HbA1C value for patient S2823623 is 5.0%, recorded on 2023-11-09.\"\n4. Output: `FINISH([\"The last HbA1C value for patient S2823623 is 5.0%, recorded on 2023-11-09.\"])\n\nCORRECT output: `FINISH([\"The last HbA1C value is 5.0%, recorded on 2023-11-09.\"])`\nWRONG output: `FINISH([\"5.0%\", \"2023-11-09\"])`\n\n## Success Indicators\n- The final output is a human-readable sentence.\n- The answer contains all necessary context (units, dates, patient identifiers).\n\n## Failure Indicators\n- The output remains a raw list or array of data points.\n- The output lacks units or context, making it ambiguous.",
+        "tags": [
+          "formatting",
+          "communication"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict pre-condition checks and logical necessity rules before creating ServiceRequests.",
+          "content": "## Skill Title\nConditional ServiceRequest Logic and Pre-condition Verification\n\n## Pattern Description\nThis skill enforces strict logical gates before creating a `ServiceRequest`. You must verify that the clinical necessity for an order is met by checking existing data against defined thresholds or time-based criteria. Never proceed with an order if the current data is already sufficient (e.g., recent lab result within a valid window) or if the clinical criteria (e.g., 'low' threshold) are not met.\n\n## When to Use This Skill\n- When a task requires checking a lab value before ordering a follow-up test or medication.\n- When a task specifies a time-based condition (e.g., 'within the last 24 hours' or 'older than 1 year').\n- When the task implies a conditional action (e.g., 'If low, then order...').\n\n## Common Failure Patterns\n- Ordering a test when the existing result is already current (e.g., < 1 year old for HbA1C).\n- Ordering a replacement medication when the lab value is within the normal range.\n- Failing to check the lab value before issuing a `POST` request.\n- Assuming an order is required without explicitly verifying the threshold condition.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-condition Verification**\nBefore issuing a `POST` for a `ServiceRequest`, you must:\n1. Retrieve the most recent relevant `Observation`.\n2. Compare the `effectiveDateTime` or `issued` date against the task's time constraint.\n3. If the data is current (e.g., < 1 year old), stop and report the existing value. Do not order.\n\n**Pattern 2: Threshold Logic**\n1. Identify the 'low' or 'abnormal' threshold specified in the task (e.g., < 3.5 mmol/L for Potassium).\n2. Compare the retrieved `valueQuantity.value` against this threshold.\n3. If the value is within the normal range, do not order. Report the current value and state that no action is required.\n\n**Pattern 3: Logical Necessity**\n- If the task asks to 'pair' an order with a follow-up, only create the follow-up order if the primary condition (e.g., low lab value) is met. If the primary condition is not met, do not create the follow-up order.\n\n## Example Application\n**Task:** \"Check patient's potassium. If low (< 3.5), order replacement. Also order follow-up.\"\n\n**Step-by-step:**\n1. GET `Observation?code=K&patient=...`\n2. Check value: If 3.9, it is not low.\n3. Decision: Do not POST `ServiceRequest` for replacement or follow-up.\n4. FINISH: \"The potassium level is 3.9 mmol/L. No replacement or follow-up is required.\"\n\n## Success Indicators\n- No `ServiceRequest` is created when lab values are normal or data is current.\n- Agent correctly identifies when to skip orders based on threshold checks.\n\n## Failure Indicators\n- `ServiceRequest` created despite normal lab values.\n- `ServiceRequest` created when existing data is within the required time window.",
+          "tags": [
+            "service-request",
+            "logic",
+            "fhir"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_answer_unit_enforcement",
+          "description": "Mandate inclusion of units (e.g., 'mg/dL', 'years') in FINISH outputs for quantitative clinical results.",
+          "content": "# Clinical Answer Unit Enforcement\n\n## Pattern Description\nWhen providing quantitative answers to clinical queries (such as lab results or patient age), you must always include the appropriate unit of measurement in the final output. Providing a raw number without context is clinically ambiguous and fails to meet the reporting requirements for medical data.\n\n## When to Use This Skill\n- When the task asks for a lab value (e.g., magnesium, HbA1c, potassium).\n- When the task asks for patient age.\n- Whenever the final answer is a numerical value derived from a FHIR resource.\n\n## Common Failure Patterns\n- Returning `[\"1.6\"]` instead of `[\"1.6 mg/dL\"]`.\n- Returning `[\"51\"]` instead of `[\"51 years\"]`.\n- Omitting units when the prompt explicitly requests a specific unit (e.g., \"converted to a unit of mg/dL\").\n\n## Recommended Patterns\n\n**Pattern 1: Lab Result Formatting**\nAlways append the unit specified in the prompt or the standard clinical unit to the numerical value.\n\nCORRECT: `FINISH([\"1.6 mg/dL\"])\nWRONG:   `FINISH([\"1.6\"])\n\n**Pattern 2: Age Formatting**\nAlways append \"years\" to the integer age.\n\nCORRECT: `FINISH([\"51 years\"])\nWRONG:   `FINISH([\"51\"])\n\n## Example Application\n\n**Task:** \"What’s the most recent magnesium level of the patient S1876702 within last 24 hours?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Extract the `valueQuantity.value` (e.g., 1.6).\n3. Identify the required unit (mg/dL).\n4. Format the output as a string containing both the value and the unit.\n\nCORRECT output: `FINISH([\"1.6 mg/dL\"])\nWRONG output:   `FINISH([\"1.6\"])\n\n## Success Indicators\n- The final output string contains both the numerical value and the correct clinical unit.\n\n## Failure Indicators\n- The final output contains only a raw number without units.",
+          "tags": [
+            "formatting",
+            "clinical-accuracy"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 0,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "answer_format_standardization",
+          "description": "Enforce natural language sentence structure for final answers instead of raw data lists.",
+          "content": "## Skill Title\nAnswer Format Standardization\n\n## Pattern Description\nWhen providing a final answer to a user, you must communicate the result in a clear, complete, and professional sentence. Avoid returning raw data structures, lists, or isolated values unless explicitly requested in a machine-readable format. This ensures the user receives context along with the requested information.\n\n## When to Use This Skill\n- When the task asks for a specific value (e.g., lab result, MRN, age) and you have successfully retrieved it.\n- When you are concluding a task that involved searching for data or performing a conditional check.\n- When the current output format is a list of raw strings or numbers (e.g., `[\"5.0%\", \"2023-11-09\"]`).\n\n## Common Failure Patterns\n- Returning `[\"5.0%\", \"2023-11-09\"]` instead of \"The last HbA1C value was 5.0%, recorded on 2023-11-09.\"\n- Returning `[\"S6521727\"]` instead of \"The MRN for the patient is S6521727.\"\n- Returning raw numbers like `[1.8]` instead of \"The most recent magnesium level is 1.8 mg/dL.\"\n\n## Recommended Patterns\n**Pattern 1: Natural Language Construction**\nAlways wrap your final answer in a single, coherent sentence that directly addresses the user's prompt.\n\n**Pattern 2: Contextual Inclusion**\nInclude relevant metadata (like dates or units) in the sentence to provide a complete answer.\n\n**Example Application**\n**Task:** \"What’s the last HbA1C value for patient S2823623 and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation data.\n2. Extract the value (5.0%) and the date (2023-11-09).\n3. Construct the sentence: \"The last HbA1C value for patient S2823623 is 5.0%, recorded on 2023-11-09.\"\n4. Output: `FINISH([\"The last HbA1C value for patient S2823623 is 5.0%, recorded on 2023-11-09.\"])\n\nCORRECT output: `FINISH([\"The last HbA1C value is 5.0%, recorded on 2023-11-09.\"])`\nWRONG output: `FINISH([\"5.0%\", \"2023-11-09\"])`\n\n## Success Indicators\n- The final output is a human-readable sentence.\n- The answer contains all necessary context (units, dates, patient identifiers).\n\n## Failure Indicators\n- The output remains a raw list or array of data points.\n- The output lacks units or context, making it ambiguous.",
+          "tags": [
+            "formatting",
+            "communication"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -5,
+        "fixes": 0,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 28,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict time-based filtering for lab results, ensuring search results are validated against the current system time before concluding no data exists.",
+        "content": "## Temporal Observation Filtering\n\nWhen a task requires checking for a lab result within a specific timeframe, you must explicitly compare the `effectiveDateTime` or `issued` field of the retrieved Observation against the current system time provided in the task context.\n\n## When to Use This Skill\n\n- When a task specifies a time-bound condition for a lab result (e.g., \"within 24 hours\", \"within 1 year\").\n- When you need to decide whether to order a new test based on the age of the most recent result.\n\n## Critical Guard Clause: Handling Empty Search Results\n\nIf a FHIR search returns a `total: 0` or an empty bundle, do not assume the data is missing without verifying the search parameters. However, if the search is correctly formed and returns no results, you must conclude that no measurement is available (e.g., return -1) rather than assuming a hidden record exists. \n\n**Crucially**, do not use this filtering logic to discard valid search results that are within the window. Ensure that if a search returns results, you parse the timestamps of *all* returned entries before deciding if a valid record exists.\n\n## Recommended Patterns\n\n**Pattern 1: Timestamp Validation**\n1. Retrieve the list of Observations.\n2. If the bundle is empty, return the \"not found\" value (e.g., -1).\n3. For each entry, extract the `effectiveDateTime`.\n4. Calculate the difference between the current time and the `effectiveDateTime`.\n5. Filter out any observations where the difference exceeds the task's time limit.\n\n**Pattern 2: Decision Logic**\n- If no observations remain after filtering, treat the result as \"not found\".\n- If multiple observations remain, select the one with the most recent `effectiveDateTime`.\n\n## Example Application\n\n**Task:** \"Check patient S123's last HbA1C within 1 year.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. If the bundle is empty, report \"not found\".\n3. If results exist, parse `effectiveDateTime` for all entries.\n4. Compare each date to the current date. If the most recent valid result is > 1 year old, report \"not found\".",
+        "tags": [
+          "FHIR",
+          "temporal-logic",
+          "data-validation"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "patient_age_unit_enforcement",
+        "description": "Mandate the inclusion of 'years' when reporting patient age to ensure clinical clarity.",
+        "content": "## Skill Title\nPatient Age Unit Enforcement\n\n## Pattern Description\nWhen a task requires reporting a patient's age, the agent must provide the numerical value followed by the unit 'years'. Providing only a raw integer is clinically ambiguous and fails to meet the requirement for clear, human-readable communication. This skill ensures that all age-related answers are formatted with appropriate units.\n\n## When to Use This Skill\n- When the task asks for the age of a patient.\n- When the agent has calculated or retrieved the patient's age from the `birthDate` field in a Patient resource.\n\n## Common Failure Patterns\n- Returning a raw integer (e.g., `FINISH([\"76\"])`) instead of a descriptive string (e.g., `FINISH([\"76 years\"])`).\n- Assuming the user understands the unit without explicit declaration.\n\n## Recommended Patterns\n\n**Pattern 1: Unit Inclusion**\nAlways append the word \"years\" to the numerical age value in the final output.\n\nCORRECT: `FINISH([\"76 years\"])\nWRONG:   `FINISH([\"76\"])\n\n**Pattern 2: Calculation Verification**\nIf calculating age from `birthDate`, ensure the calculation is rounded down to the nearest integer before appending the unit.\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S0611496?\"\n\n**Step-by-step:**\n1. Retrieve the Patient resource using the MRN.\n2. Extract the `birthDate` (e.g., \"1947-05-13\").\n3. Calculate the age based on the current date (2023-11-13), resulting in 76.\n4. Format the final answer as a string including the unit.\n\nCORRECT output: `FINISH([\"76 years\"])\nWRONG output:   `FINISH([\"76\"])\n\n## Success Indicators\n- The final output contains the numerical age followed by the word 'years'.\n\n## Failure Indicators\n- The final output is a bare number without units.",
+        "tags": [
+          "formatting",
+          "patient-data"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "human_readable_data_absence_reporting",
+        "description": "Replace technical sentinel values with clear, human-readable explanations when data is missing.",
+        "content": "## Skill Title\nHuman-Readable Data Absence Reporting\n\n## Pattern Description\nWhen a data retrieval task (e.g., searching for a lab result) returns no results or an empty set, you must avoid returning technical sentinel values like '-1', 'null', or '[]'. Instead, provide a clear, natural-language explanation that the requested information is unavailable. This ensures the final output is actionable for the user and avoids confusion caused by raw error codes.\n\n## When to Use This Skill\n- When a GET request returns an empty `entry` array or `total: 0`.\n- When the task instructions specify a sentinel value (e.g., '-1') for missing data, but you are providing a final answer to a user.\n- When you cannot find a specific record (e.g., lab result, patient, or condition) required to complete the task.\n\n## Common Failure Patterns\n- Returning `[-1]` or `[\"[-1]\"]` as the final answer.\n- Returning raw error strings like `\"No data found\"` without context.\n- Including technical identifiers in the final response when the user expects a clinical answer.\n\n## Recommended Patterns\n\n**Pattern 1: Contextualizing Absence**\nIf a search returns no results, state clearly what was searched for and why it is missing.\n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1311412; therefore, the value is unavailable.\"])\nWRONG:   `FINISH([-1])`\n\n**Pattern 2: Handling Conditional Logic**\nIf the task requires an action based on a value (e.g., 'if low, order X'), and the value is missing, explain that the condition could not be evaluated.\n\nCORRECT: `FINISH([\"No recent potassium level found for patient S6547257; unable to determine if replacement is required.\"])\nWRONG:   `FINISH([\"Replacement not ordered.\"])\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S1311412 within the last 24 hours?\"\n\n**Step-by-step:**\n1. Issue GET request for the observation.\n2. Observe `total: 0` in the response bundle.\n3. Recognize that no data exists to fulfill the request.\n4. Construct a human-readable sentence explaining the absence.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1311412.\"])\nWRONG output:   `FINISH([-1])`\n\n## Success Indicators\n- Final output contains a descriptive sentence rather than a numeric sentinel.\n- The user receives a clear explanation of why a task (like ordering a medication) was not performed.\n\n## Failure Indicators\n- Agent returns '-1' or other non-human-readable codes in the final answer.\n- Agent provides an ambiguous error message that does not reference the specific patient or data type.",
+        "tags": [
+          "data-handling",
+          "communication",
+          "error-handling"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict time-based filtering for lab results to prevent stale data usage.",
+        "content": "## Temporal Observation Filtering\n\nWhen a task requires checking for a lab result within a specific timeframe (e.g., \"within the last 24 hours\" or \"within 1 year\"), you must explicitly compare the `effectiveDateTime` or `issued` field of the retrieved Observation against the current system time provided in the task context.\n\nDo not assume that the most recent record in a search result is within the required timeframe. You must parse the timestamp of each relevant observation and discard any that fall outside the specified window before making a clinical decision.\n\n## When to Use This Skill\n\n- When a task specifies a time-bound condition for a lab result (e.g., \"within 24 hours\", \"within 1 year\").\n- When you need to decide whether to order a new test based on the age of the most recent result.\n\n## Common Failure Patterns\n\n- Assuming the first result in a FHIR Bundle is the most recent or within the time window without checking the timestamp.\n- Failing to account for the current time provided in the prompt when calculating the age of a result.\n- Ordering a new test when a valid, recent result already exists because the agent failed to filter the search results correctly.\n\n## Recommended Patterns\n\n**Pattern 1: Timestamp Validation**\n1. Retrieve the list of Observations.\n2. For each entry, extract the `effectiveDateTime`.\n3. Calculate the difference between the current time and the `effectiveDateTime`.\n4. Filter out any observations where the difference exceeds the task's time limit.\n\n**Pattern 2: Decision Logic**\n- If no observations remain after filtering, treat the result as \"not found\" or \"no record in the last X time\".\n- If multiple observations remain, select the one with the most recent `effectiveDateTime`.\n\n## Example Application\n\n**Task:** \"Check patient S123's last HbA1C within 1 year. If older than 1 year, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Parse `effectiveDateTime` for all entries.\n3. Compare each date to the current date (e.g., 2023-11-13).\n4. If the most recent valid result is from 2022-10-01, it is > 1 year old. Proceed to POST a new `ServiceRequest`.\n\n## Success Indicators\n\n- The agent explicitly mentions the date of the last result and confirms it is within or outside the required window.\n- No unnecessary orders are placed when a valid, recent result exists.\n\n## Failure Indicators\n\n- The agent orders a test despite a recent result being present in the search bundle.\n- The agent incorrectly identifies a result as \"old\" or \"new\" due to poor timestamp parsing.",
+        "tags": [
+          "fhir",
+          "observation",
+          "temporal-logic"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "conditional_service_request_logic",
+        "description": "Enforce strict conditional logic for ServiceRequest creation, including date-based threshold validation.",
+        "content": "## Skill Title\nConditional ServiceRequest Logic and Threshold Validation\n\n## Pattern Description\nWhen a task requires creating a ServiceRequest based on a conditional trigger (e.g., \"if the last result is older than X\"), you must first retrieve the relevant historical data, parse the date, and perform a explicit comparison against the current date before deciding to proceed with the POST request.\n\nDo not assume that a request is required simply because the task mentions it. You must verify the condition (e.g., time elapsed, value threshold) and only proceed if the condition is met. If the condition is not met, you must report the findings and explain why no action was taken.\n\n## When to Use This Skill\n- When the task instruction contains a conditional clause (e.g., \"If the lab value result date is greater than 1 year old, order a new test\").\n- When the task involves checking historical data before deciding to create a new resource.\n\n## Common Failure Patterns\n- Ordering a test automatically without checking if the existing result meets the criteria (e.g., ordering a new HbA1C when the last one was within 1 year).\n- Failing to parse the `effectiveDateTime` or `issued` field of the existing observation to calculate the time difference.\n- Ignoring the \"If... then...\" structure and performing the action regardless of the condition.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Condition Check**\n1. Perform a GET request to fetch the relevant observations.\n2. Identify the most recent observation and extract its date (`effectiveDateTime` or `issued`).\n3. Compare the observation date with the current date provided in the context.\n4. If the condition for ordering (e.g., > 1 year) is NOT met, stop and report the result. Do not POST a ServiceRequest.\n\n**Pattern 2: Conditional Execution**\n1. Only if the condition is met, proceed to construct the ServiceRequest POST body.\n2. Include a `note` field in the ServiceRequest that explicitly states the justification (e.g., \"Last HbA1C was 5.8% on 2022-09-09, which is older than 1 year. Ordering new test.\").\n\n## Example Application\n\n**Task:** \"If the last HbA1C is older than 1 year, order a new one.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S6521727`.\n2. Parse the date from the most recent entry. If it is 2022-09-09 and today is 2023-11-13, the difference is > 1 year.\n3. Proceed to POST the ServiceRequest.\n4. If the date was 2023-07-07, do NOT POST. Call `FINISH` with the explanation.\n\n## Success Indicators\n- The agent correctly identifies when to skip a POST request based on the data.\n- The `note` field in the ServiceRequest (if created) accurately reflects the logic used.\n\n## Failure Indicators\n- A ServiceRequest is created when the condition (e.g., time threshold) is not met.\n- The agent fails to perform the date calculation and proceeds with the order by default.",
+        "tags": [
+          "service-request",
+          "conditional-logic",
+          "fhir"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "patient_age_unit_enforcement",
+          "description": "Mandate the inclusion of 'years' when reporting patient age to ensure clinical clarity.",
+          "content": "## Skill Title\nPatient Age Unit Enforcement\n\n## Pattern Description\nWhen a task requires reporting a patient's age, the agent must provide the numerical value followed by the unit 'years'. Providing only a raw integer is clinically ambiguous and fails to meet the requirement for clear, human-readable communication. This skill ensures that all age-related answers are formatted with appropriate units.\n\n## When to Use This Skill\n- When the task asks for the age of a patient.\n- When the agent has calculated or retrieved the patient's age from the `birthDate` field in a Patient resource.\n\n## Common Failure Patterns\n- Returning a raw integer (e.g., `FINISH([\"76\"])`) instead of a descriptive string (e.g., `FINISH([\"76 years\"])`).\n- Assuming the user understands the unit without explicit declaration.\n\n## Recommended Patterns\n\n**Pattern 1: Unit Inclusion**\nAlways append the word \"years\" to the numerical age value in the final output.\n\nCORRECT: `FINISH([\"76 years\"])\nWRONG:   `FINISH([\"76\"])\n\n**Pattern 2: Calculation Verification**\nIf calculating age from `birthDate`, ensure the calculation is rounded down to the nearest integer before appending the unit.\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S0611496?\"\n\n**Step-by-step:**\n1. Retrieve the Patient resource using the MRN.\n2. Extract the `birthDate` (e.g., \"1947-05-13\").\n3. Calculate the age based on the current date (2023-11-13), resulting in 76.\n4. Format the final answer as a string including the unit.\n\nCORRECT output: `FINISH([\"76 years\"])\nWRONG output:   `FINISH([\"76\"])\n\n## Success Indicators\n- The final output contains the numerical age followed by the word 'years'.\n\n## Failure Indicators\n- The final output is a bare number without units.",
+          "tags": [
+            "formatting",
+            "patient-data"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -5,
+        "fixes": 0,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "human_readable_data_absence_reporting",
+          "description": "Replace technical sentinel values with clear, human-readable explanations when data is missing.",
+          "content": "## Skill Title\nHuman-Readable Data Absence Reporting\n\n## Pattern Description\nWhen a data retrieval task (e.g., searching for a lab result) returns no results or an empty set, you must avoid returning technical sentinel values like '-1', 'null', or '[]'. Instead, provide a clear, natural-language explanation that the requested information is unavailable. This ensures the final output is actionable for the user and avoids confusion caused by raw error codes.\n\n## When to Use This Skill\n- When a GET request returns an empty `entry` array or `total: 0`.\n- When the task instructions specify a sentinel value (e.g., '-1') for missing data, but you are providing a final answer to a user.\n- When you cannot find a specific record (e.g., lab result, patient, or condition) required to complete the task.\n\n## Common Failure Patterns\n- Returning `[-1]` or `[\"[-1]\"]` as the final answer.\n- Returning raw error strings like `\"No data found\"` without context.\n- Including technical identifiers in the final response when the user expects a clinical answer.\n\n## Recommended Patterns\n\n**Pattern 1: Contextualizing Absence**\nIf a search returns no results, state clearly what was searched for and why it is missing.\n\nCORRECT: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1311412; therefore, the value is unavailable.\"])\nWRONG:   `FINISH([-1])`\n\n**Pattern 2: Handling Conditional Logic**\nIf the task requires an action based on a value (e.g., 'if low, order X'), and the value is missing, explain that the condition could not be evaluated.\n\nCORRECT: `FINISH([\"No recent potassium level found for patient S6547257; unable to determine if replacement is required.\"])\nWRONG:   `FINISH([\"Replacement not ordered.\"])\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S1311412 within the last 24 hours?\"\n\n**Step-by-step:**\n1. Issue GET request for the observation.\n2. Observe `total: 0` in the response bundle.\n3. Recognize that no data exists to fulfill the request.\n4. Construct a human-readable sentence explaining the absence.\n\nCORRECT output: `FINISH([\"No magnesium level has been recorded in the last 24 hours for patient S1311412.\"])\nWRONG output:   `FINISH([-1])`\n\n## Success Indicators\n- Final output contains a descriptive sentence rather than a numeric sentinel.\n- The user receives a clear explanation of why a task (like ordering a medication) was not performed.\n\n## Failure Indicators\n- Agent returns '-1' or other non-human-readable codes in the final answer.\n- Agent provides an ambiguous error message that does not reference the specific patient or data type.",
+          "tags": [
+            "data-handling",
+            "communication",
+            "error-handling"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -7,
+        "fixes": 0,
+        "regressions": 7,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "temporal_observation_filtering",
+          "description": "Enforce strict time-based filtering for lab results to prevent stale data usage.",
+          "content": "## Temporal Observation Filtering\n\nWhen a task requires checking for a lab result within a specific timeframe (e.g., \"within the last 24 hours\" or \"within 1 year\"), you must explicitly compare the `effectiveDateTime` or `issued` field of the retrieved Observation against the current system time provided in the task context.\n\nDo not assume that the most recent record in a search result is within the required timeframe. You must parse the timestamp of each relevant observation and discard any that fall outside the specified window before making a clinical decision.\n\n## When to Use This Skill\n\n- When a task specifies a time-bound condition for a lab result (e.g., \"within 24 hours\", \"within 1 year\").\n- When you need to decide whether to order a new test based on the age of the most recent result.\n\n## Common Failure Patterns\n\n- Assuming the first result in a FHIR Bundle is the most recent or within the time window without checking the timestamp.\n- Failing to account for the current time provided in the prompt when calculating the age of a result.\n- Ordering a new test when a valid, recent result already exists because the agent failed to filter the search results correctly.\n\n## Recommended Patterns\n\n**Pattern 1: Timestamp Validation**\n1. Retrieve the list of Observations.\n2. For each entry, extract the `effectiveDateTime`.\n3. Calculate the difference between the current time and the `effectiveDateTime`.\n4. Filter out any observations where the difference exceeds the task's time limit.\n\n**Pattern 2: Decision Logic**\n- If no observations remain after filtering, treat the result as \"not found\" or \"no record in the last X time\".\n- If multiple observations remain, select the one with the most recent `effectiveDateTime`.\n\n## Example Application\n\n**Task:** \"Check patient S123's last HbA1C within 1 year. If older than 1 year, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Parse `effectiveDateTime` for all entries.\n3. Compare each date to the current date (e.g., 2023-11-13).\n4. If the most recent valid result is from 2022-10-01, it is > 1 year old. Proceed to POST a new `ServiceRequest`.\n\n## Success Indicators\n\n- The agent explicitly mentions the date of the last result and confirms it is within or outside the required window.\n- No unnecessary orders are placed when a valid, recent result exists.\n\n## Failure Indicators\n\n- The agent orders a test despite a recent result being present in the search bundle.\n- The agent incorrectly identifies a result as \"old\" or \"new\" due to poor timestamp parsing.",
+          "tags": [
+            "fhir",
+            "observation",
+            "temporal-logic"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "conditional_service_request_logic",
+          "description": "Enforce strict conditional logic for ServiceRequest creation, including date-based threshold validation.",
+          "content": "## Skill Title\nConditional ServiceRequest Logic and Threshold Validation\n\n## Pattern Description\nWhen a task requires creating a ServiceRequest based on a conditional trigger (e.g., \"if the last result is older than X\"), you must first retrieve the relevant historical data, parse the date, and perform a explicit comparison against the current date before deciding to proceed with the POST request.\n\nDo not assume that a request is required simply because the task mentions it. You must verify the condition (e.g., time elapsed, value threshold) and only proceed if the condition is met. If the condition is not met, you must report the findings and explain why no action was taken.\n\n## When to Use This Skill\n- When the task instruction contains a conditional clause (e.g., \"If the lab value result date is greater than 1 year old, order a new test\").\n- When the task involves checking historical data before deciding to create a new resource.\n\n## Common Failure Patterns\n- Ordering a test automatically without checking if the existing result meets the criteria (e.g., ordering a new HbA1C when the last one was within 1 year).\n- Failing to parse the `effectiveDateTime` or `issued` field of the existing observation to calculate the time difference.\n- Ignoring the \"If... then...\" structure and performing the action regardless of the condition.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Condition Check**\n1. Perform a GET request to fetch the relevant observations.\n2. Identify the most recent observation and extract its date (`effectiveDateTime` or `issued`).\n3. Compare the observation date with the current date provided in the context.\n4. If the condition for ordering (e.g., > 1 year) is NOT met, stop and report the result. Do not POST a ServiceRequest.\n\n**Pattern 2: Conditional Execution**\n1. Only if the condition is met, proceed to construct the ServiceRequest POST body.\n2. Include a `note` field in the ServiceRequest that explicitly states the justification (e.g., \"Last HbA1C was 5.8% on 2022-09-09, which is older than 1 year. Ordering new test.\").\n\n## Example Application\n\n**Task:** \"If the last HbA1C is older than 1 year, order a new one.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S6521727`.\n2. Parse the date from the most recent entry. If it is 2022-09-09 and today is 2023-11-13, the difference is > 1 year.\n3. Proceed to POST the ServiceRequest.\n4. If the date was 2023-07-07, do NOT POST. Call `FINISH` with the explanation.\n\n## Success Indicators\n- The agent correctly identifies when to skip a POST request based on the data.\n- The `note` field in the ServiceRequest (if created) accurately reflects the logic used.\n\n## Failure Indicators\n- A ServiceRequest is created when the condition (e.g., time threshold) is not met.\n- The agent fails to perform the date calculation and proceeds with the order by default.",
+          "tags": [
+            "service-request",
+            "conditional-logic",
+            "fhir"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -4,
+        "fixes": 0,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "temporal_observation_filtering",
+          "description": "Enforce strict time-based filtering for lab results, ensuring search results are validated against the current system time before concluding no data exists.",
+          "content": "## Temporal Observation Filtering\n\nWhen a task requires checking for a lab result within a specific timeframe, you must explicitly compare the `effectiveDateTime` or `issued` field of the retrieved Observation against the current system time provided in the task context.\n\n## When to Use This Skill\n\n- When a task specifies a time-bound condition for a lab result (e.g., \"within 24 hours\", \"within 1 year\").\n- When you need to decide whether to order a new test based on the age of the most recent result.\n\n## Critical Guard Clause: Handling Empty Search Results\n\nIf a FHIR search returns a `total: 0` or an empty bundle, do not assume the data is missing without verifying the search parameters. However, if the search is correctly formed and returns no results, you must conclude that no measurement is available (e.g., return -1) rather than assuming a hidden record exists. \n\n**Crucially**, do not use this filtering logic to discard valid search results that are within the window. Ensure that if a search returns results, you parse the timestamps of *all* returned entries before deciding if a valid record exists.\n\n## Recommended Patterns\n\n**Pattern 1: Timestamp Validation**\n1. Retrieve the list of Observations.\n2. If the bundle is empty, return the \"not found\" value (e.g., -1).\n3. For each entry, extract the `effectiveDateTime`.\n4. Calculate the difference between the current time and the `effectiveDateTime`.\n5. Filter out any observations where the difference exceeds the task's time limit.\n\n**Pattern 2: Decision Logic**\n- If no observations remain after filtering, treat the result as \"not found\".\n- If multiple observations remain, select the one with the most recent `effectiveDateTime`.\n\n## Example Application\n\n**Task:** \"Check patient S123's last HbA1C within 1 year.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. If the bundle is empty, report \"not found\".\n3. If results exist, parse `effectiveDateTime` for all entries.\n4. Compare each date to the current date. If the most recent valid result is > 1 year old, report \"not found\".",
+          "tags": [
+            "FHIR",
+            "temporal-logic",
+            "data-validation"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "contrastive_revision": true
+      }
+    ]
+  }
+]

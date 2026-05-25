@@ -1,0 +1,472 @@
+[
+  {
+    "epoch": 0,
+    "sample_idx": 0,
+    "sample_id": "task10_13",
+    "memory_version_before": 0,
+    "new_bullets": [
+      "when asked to evaluate if a lab value is greater than 1 year old, calculate the duration by comparing the lab result date to the current date; if the difference exceeds 365 days, trigger the order for a new lab test."
+    ],
+    "memory_size": 1
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 4,
+    "sample_id": "task4_26",
+    "memory_version_before": 1,
+    "new_bullets": [
+      "when asked to retrieve a lab value for a specific patient within a timeframe, ensure you filter the results by the timestamp provided in the patient's record to identify the most recent entry that falls within the last 24 hours, rather than returning an arbitrary or incorrect value."
+    ],
+    "memory_size": 2
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 5,
+    "sample_id": "task10_24",
+    "memory_version_before": 2,
+    "new_bullets": [
+      "when asked to determine if a lab value is greater than 1 year old, calculate the exact difference between the current date and the lab result date; ensure the current date is accurately determined based on the system's provided context before concluding that a new order is required."
+    ],
+    "memory_size": 3
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 7,
+    "sample_id": "task9_11",
+    "memory_version_before": 3,
+    "new_bullets": [
+      "when asked to retrieve a lab value, if no recent result is found, do not terminate the process; instead, place the order for the lab test immediately to establish a current baseline as part of the clinical workflow."
+    ],
+    "memory_size": 4
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 8,
+    "sample_id": "task9_14",
+    "memory_version_before": 4,
+    "new_bullets": [
+      "when asked to check a lab value and order replacement if low, if no recent result is found, you must treat the value as unknown and order the morning serum potassium level to establish a baseline, but you must also include a conditional order for potassium replacement based on the results of that new lab test."
+    ],
+    "memory_size": 5
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 9,
+    "sample_id": "task4_4",
+    "memory_version_before": 5,
+    "new_bullets": [
+      "when asked to retrieve a lab value for a specific patient within a timeframe, if no result exists within the last 24 hours, you must initiate an order for the lab test immediately to establish a current baseline rather than returning a default value or an error code."
+    ],
+    "memory_size": 6
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 10,
+    "sample_id": "task10_17",
+    "memory_version_before": 6,
+    "new_bullets": [
+      "when asked to determine if a lab value is greater than 1 year old, accurately identify the current date from the system context and compare it against the lab result date to ensure the 365-day threshold is correctly evaluated. If the result is exactly 1 year old or older, you must explicitly trigger the order for a new HbA1C lab test as required by the protocol."
+    ],
+    "memory_size": 7
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 17,
+    "sample_id": "task9_20",
+    "memory_version_before": 7,
+    "new_bullets": [
+      "when asked to check a lab value and order replacement if low, if no recent result is found, you must order the morning serum potassium level and concurrently place a conditional order for potassium replacement that triggers only if the new lab result returns below the threshold. Do not terminate the process without including the conditional replacement order alongside the baseline lab request."
+    ],
+    "memory_size": 8
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 19,
+    "sample_id": "task5_7",
+    "memory_version_before": 8,
+    "new_bullets": [
+      "when asked to check a serum magnesium level and no result is found within the last 24 hours, you must order a new serum magnesium level immediately to establish a baseline rather than terminating the process."
+    ],
+    "memory_size": 9
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 20,
+    "sample_id": "task10_8",
+    "memory_version_before": 9,
+    "new_bullets": [
+      "when asked to determine if a lab value is greater than 1 year old, accurately calculate the time elapsed by comparing the result date to the current system date; if the result is older than 365 days, you must perform the action of ordering the lab test rather than simply reporting that no test was ordered."
+    ],
+    "memory_size": 10
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 22,
+    "sample_id": "task2_14",
+    "memory_version_before": 10,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, ensure you access the patient's demographic record rather than returning an arbitrary or placeholder value. If the specific data point is not immediately available in the provided context, state that the information cannot be retrieved rather than guessing a number."
+    ],
+    "memory_size": 11
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 24,
+    "sample_id": "task4_28",
+    "memory_version_before": 11,
+    "new_bullets": [
+      "when asked to retrieve a lab value for a specific patient within a timeframe, if no result exists within the last 24 hours, you must initiate an order for the lab test immediately to establish a current baseline rather than returning an error code like FINISH([-1])."
+    ],
+    "memory_size": 12
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 25,
+    "sample_id": "task2_9",
+    "memory_version_before": 12,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must explicitly parse the patient's demographic data provided in the context to find the birth date and calculate the current age, rather than outputting a guessed or arbitrary number. If the information is missing from the provided record, state that the data is unavailable instead of returning a placeholder value."
+    ],
+    "memory_size": 13
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 26,
+    "sample_id": "task10_10",
+    "memory_version_before": 13,
+    "new_bullets": [
+      "when asked to retrieve a specific lab value, you must query the patient's actual laboratory history rather than returning a placeholder or error code like \"[-1]\". If no result is found in the records, perform a thorough search of the provided data before concluding it is unavailable, and only then proceed to order the new test."
+    ],
+    "memory_size": 14
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 27,
+    "sample_id": "task2_16",
+    "memory_version_before": 14,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must explicitly parse the patient's demographic data provided in the context to calculate the current age based on the birth date, rather than returning a guessed or arbitrary number like \"66\". If the birth date is not available in the provided record, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 15
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 30,
+    "sample_id": "task9_5",
+    "memory_version_before": 15,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must include both the order for the morning serum potassium level and a conditional order for potassium replacement in your response; do not terminate the process with a FINISH command that only orders the baseline lab."
+    ],
+    "memory_size": 16
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 33,
+    "sample_id": "task9_6",
+    "memory_version_before": 16,
+    "new_bullets": [
+      "when asked to check a patient's potassium level, if the result is missing or low, you must ensure your final output explicitly includes both the order for the morning serum potassium level and the specific conditional order for potassium replacement; do not use the FINISH command until both clinical actions have been clearly documented in your response."
+    ],
+    "memory_size": 17
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 35,
+    "sample_id": "task2_1",
+    "memory_version_before": 17,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must explicitly parse the patient's demographic data provided in the context to calculate the current age based on the birth date, rather than returning a guessed or arbitrary number. If the information is missing from the provided record, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 18
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 36,
+    "sample_id": "task2_26",
+    "memory_version_before": 18,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must explicitly parse the patient's demographic data provided in the context to calculate the current age based on the birth date, rather than returning a guessed or arbitrary number. If the information is missing from the provided record, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 19
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 39,
+    "sample_id": "task10_16",
+    "memory_version_before": 19,
+    "new_bullets": [],
+    "memory_size": 19
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 43,
+    "sample_id": "task10_27",
+    "memory_version_before": 19,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value... and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must include the order for the new test in your final response if the date is older than 365 days, rather than simply returning the lab value and date."
+    ],
+    "memory_size": 20
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 44,
+    "sample_id": "task10_12",
+    "memory_version_before": 20,
+    "new_bullets": [
+      "when asked to retrieve a specific lab value, you must perform a comprehensive search of the patient's entire laboratory history provided in the context; do not claim a measurement is unavailable until you have explicitly verified that no entry exists in the records. If no HbA1C measurement is found, you must state that no record exists and then proceed to order the new test as instructed."
+    ],
+    "memory_size": 21
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 45,
+    "sample_id": "task10_20",
+    "memory_version_before": 21,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value... and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must verify the current system date provided in the context to determine if the 365-day threshold is actually met, rather than assuming a result is outdated. If the calculation confirms the date is within the last year, you must report the findings without ordering a new test."
+    ],
+    "memory_size": 22
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 46,
+    "sample_id": "task2_17",
+    "memory_version_before": 22,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must explicitly parse the patient's demographic data provided in the context to calculate the current age based on the birth date, rather than returning a guessed or arbitrary number. If the birth date is not available in the provided record, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 23
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 53,
+    "sample_id": "task2_15",
+    "memory_version_before": 23,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must perform a precise calculation by subtracting the patient's birth date from the current system date provided in the context, rather than outputting an arbitrary or guessed number."
+    ],
+    "memory_size": 24
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 54,
+    "sample_id": "task9_1",
+    "memory_version_before": 24,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first perform an immediate order for the morning serum potassium level and, if the current level is missing or low, explicitly include the conditional potassium replacement order in the same response before using the FINISH command."
+    ],
+    "memory_size": 25
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 56,
+    "sample_id": "task9_27",
+    "memory_version_before": 25,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must ensure your response includes both the order for the morning serum potassium level and the conditional replacement order; do not use the FINISH command until both distinct clinical orders are explicitly documented in your response."
+    ],
+    "memory_size": 26
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 59,
+    "sample_id": "task2_6",
+    "memory_version_before": 26,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the age by subtracting that date from the current system date, rather than outputting a guessed or arbitrary number."
+    ],
+    "memory_size": 27
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 60,
+    "sample_id": "task4_11",
+    "memory_version_before": 27,
+    "new_bullets": [
+      "when asked to retrieve a lab value for a specific patient within a timeframe, if no result exists within the last 24 hours, you must initiate an order for the lab test immediately to establish a current baseline rather than returning an error code like FINISH([-1])."
+    ],
+    "memory_size": 28
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 61,
+    "sample_id": "task9_22",
+    "memory_version_before": 28,
+    "new_bullets": [],
+    "memory_size": 28
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 63,
+    "sample_id": "task9_9",
+    "memory_version_before": 28,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must ensure your response includes the order for the morning serum potassium level and a conditional replacement order that is explicitly linked to the results of that upcoming lab test, rather than assuming a replacement order can be triggered by a hypothetical future result in a single step."
+    ],
+    "memory_size": 29
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 65,
+    "sample_id": "task9_28",
+    "memory_version_before": 29,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, if no recent result is found, you must order the morning serum potassium level and explicitly document a conditional replacement order that is pre-authorized to occur only after that specific morning lab result is returned. Do not attempt to calculate or apply a dose based on a hypothetical future result within the initial response; simply confirm the order for the lab and the intent for conditional replacement."
+    ],
+    "memory_size": 30
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 66,
+    "sample_id": "task2_25",
+    "memory_version_before": 30,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the age by subtracting that date from the current system date, rather than outputting a guessed or arbitrary number. If the birth date is missing or the demographic record is not provided, state that the information is unavailable instead of returning a placeholder value."
+    ],
+    "memory_size": 31
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 68,
+    "sample_id": "task4_15",
+    "memory_version_before": 31,
+    "new_bullets": [
+      "when asked to retrieve a specific lab value for a patient, you must verify the result against the provided clinical records to ensure accuracy, rather than outputting an arbitrary or unverified number. If the query asks for a specific timeframe like the \"last 24 hours,\" you must explicitly identify the most recent timestamp within that window and return the corresponding value found in the patient's data."
+    ],
+    "memory_size": 32
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 69,
+    "sample_id": "task9_3",
+    "memory_version_before": 32,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must not use the FINISH command to close the task until you have explicitly included both the order for the morning serum potassium level and the conditional order for potassium replacement in your response; ensure these are distinct, actionable orders within the output."
+    ],
+    "memory_size": 33
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 70,
+    "sample_id": "task9_8",
+    "memory_version_before": 33,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must not use the FINISH command until you have explicitly included both the order for the morning serum potassium level and the conditional order for potassium replacement; do not attempt to execute or predict the result of the future lab test in your initial response."
+    ],
+    "memory_size": 34
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 71,
+    "sample_id": "task5_20",
+    "memory_version_before": 34,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must strictly follow the instruction to take no action if no data is found, rather than automatically ordering a new lab test. Do not initiate an order for a baseline lab unless the prompt explicitly instructs you to do so when data is missing."
+    ],
+    "memory_size": 35
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 76,
+    "sample_id": "task10_18",
+    "memory_version_before": 35,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart... If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" ensure that your response only includes the order for a new lab test if the date calculation confirms it is strictly older than 365 days. Do not include extraneous or previously ordered tests in your final output; only report the requested data and the specific, necessary clinical action triggered by the date evaluation."
+    ],
+    "memory_size": 36
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 77,
+    "sample_id": "task5_3",
+    "memory_version_before": 36,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must verify if a recorded level exists within that timeframe; if it does, you must evaluate that specific value and only order replacement if it is low. Do not assume a lack of action is required if a recent result exists; instead, compare the found value against the clinical threshold to determine if intervention is necessary."
+    ],
+    "memory_size": 37
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 78,
+    "sample_id": "task2_28",
+    "memory_version_before": 37,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the age by subtracting that date from the current system date, rather than outputting a guessed or arbitrary number. If the birth date is missing or the demographic record is not provided, state that the information is unavailable instead of returning a placeholder value."
+    ],
+    "memory_size": 38
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 79,
+    "sample_id": "task10_15",
+    "memory_version_before": 38,
+    "new_bullets": [],
+    "memory_size": 38
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 82,
+    "sample_id": "task10_21",
+    "memory_version_before": 38,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first report the specific value and date found in the chart, or explicitly state that no record exists, before determining whether to order a new test. If no record is found, you must state that no measurement is available and then proceed to order the new test as instructed."
+    ],
+    "memory_size": 39
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 84,
+    "sample_id": "task2_22",
+    "memory_version_before": 39,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the age by subtracting that date from the current system date, rather than outputting a guessed or arbitrary number. If the birth date is missing or the demographic record is not provided, state that the information is unavailable instead of returning a placeholder value."
+    ],
+    "memory_size": 40
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 87,
+    "sample_id": "task5_19",
+    "memory_version_before": 40,
+    "new_bullets": [],
+    "memory_size": 40
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 90,
+    "sample_id": "task5_17",
+    "memory_version_before": 40,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must verify if a magnesium level exists in the patient's record within that timeframe; if no result is found, you must explicitly state that no recent magnesium level was recorded and conclude the task without placing any orders."
+    ],
+    "memory_size": 41
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 91,
+    "sample_id": "task5_16",
+    "memory_version_before": 41,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first check the patient's records for any magnesium level within that timeframe; if no record exists, you must explicitly state that no level was found and conclude the task without initiating any orders. Do not assume you should order a baseline test unless the instructions explicitly command it."
+    ],
+    "memory_size": 42
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 92,
+    "sample_id": "task2_30",
+    "memory_version_before": 42,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the age by subtracting that date from the current system date, rather than outputting a guessed or arbitrary number. If the birth date is missing or the demographic record is not provided, state that the information is unavailable instead of returning a placeholder value."
+    ],
+    "memory_size": 43
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 95,
+    "sample_id": "task4_20",
+    "memory_version_before": 43,
+    "new_bullets": [],
+    "memory_size": 43
+  }
+]

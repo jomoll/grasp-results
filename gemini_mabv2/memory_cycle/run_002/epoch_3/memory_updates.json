@@ -1,0 +1,494 @@
+[
+  {
+    "epoch": 3,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 120,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must calculate the exact start timestamps for the 6-hour and 12-hour windows and perform separate FHIR search queries for each window using the `date=ge[timestamp]` parameter, ensuring the query includes both the patient ID and the specific LOINC codes (8867-4 or 78564-0)."
+    ],
+    "memory_size": 121
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 1,
+    "sample_id": "task9_8",
+    "memory_version_before": 121,
+    "new_bullets": [
+      "when asked to determine the date of a previous influenza vaccine, you must search for \"Immunization\" resources filtered by patient ID and specifically verify the `vaccineCode` using standard CVX codes (e.g., 141, 150, 153, 155, 158, 160, 161, 171, 185, 186, 197), as searching only for the text \"influenza\" or assuming no records exist without reviewing the full immunization history often leads to false negatives. You must execute this search and review the returned records to confirm the date of the most recent vaccine before deciding to place a new order."
+    ],
+    "memory_size": 122
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 6,
+    "sample_id": "task3_14",
+    "memory_version_before": 122,
+    "new_bullets": [],
+    "memory_size": 122
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 9,
+    "sample_id": "task1_26",
+    "memory_version_before": 122,
+    "new_bullets": [
+      "when asked to find the most recent procedure, you must perform a search for \"Procedure\" resources using the patient ID and broaden your search terms (e.g., searching by code, category, or description) if specific CPT codes return no results, rather than assuming no records exist. You must ensure the search is executed and the results are thoroughly analyzed for any relevant procedure date before concluding that no records exist or placing a new order."
+    ],
+    "memory_size": 123
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 12,
+    "sample_id": "task3_12",
+    "memory_version_before": 123,
+    "new_bullets": [],
+    "memory_size": 123
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 15,
+    "sample_id": "task8_26",
+    "memory_version_before": 123,
+    "new_bullets": [
+      "when asked to verify the presence of opioid analgesic orders, you must perform a search for all `MedicationRequest` resources for the patient, as a search filtered by `status=active` may be too restrictive or return an empty list; you must then manually inspect the `medicationCodeableConcept` or `text` fields of every returned record for opioid-related terms before concluding that no opioid orders exist."
+    ],
+    "memory_size": 124
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 20,
+    "sample_id": "task9_1",
+    "memory_version_before": 124,
+    "new_bullets": [],
+    "memory_size": 124
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 23,
+    "sample_id": "task2_26",
+    "memory_version_before": 124,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must execute tool calls to discontinue all duplicate orders (e.g., using `update` to set `status=stopped`) within the same turn as your analysis, rather than creating a new order while leaving existing duplicates active. You must ensure the final state of the patient's records contains exactly one active DVT prophylaxis order."
+    ],
+    "memory_size": 125
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 24,
+    "sample_id": "task4_28",
+    "memory_version_before": 125,
+    "new_bullets": [
+      "when asked to check if a urinary catheter has been in place for more than 48 hours, you must first execute a search for \"ServiceRequest\" resources filtered by the patient ID to confirm whether an active removal order already exists, as you must not create a duplicate request if one is already pending. Only after confirming no active removal order exists and verifying the catheter's duration exceeds 48 hours should you proceed to create a new service request."
+    ],
+    "memory_size": 126
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 26,
+    "sample_id": "task3_7",
+    "memory_version_before": 126,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must calculate the exact start timestamps for the 6-hour and 12-hour windows and perform separate FHIR search queries for each, using the `date=ge[timestamp]` parameter to capture only the relevant observations for each window. Do not include multiple codes in a single query if it causes errors, and always ensure the `date` parameter is correctly formatted to represent the point in time exactly 6 or 12 hours ago."
+    ],
+    "memory_size": 127
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 27,
+    "sample_id": "task3_3",
+    "memory_version_before": 127,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must calculate the exact start timestamps for the 6-hour and 12-hour windows and perform separate FHIR search queries for each, using the `date=ge[timestamp]` parameter to capture only the relevant observations for each window. Do not include multiple codes in a single query if it causes errors, and always ensure the `date` parameter is correctly formatted to represent the point in time exactly 6 or 12 hours ago."
+    ],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 30,
+    "sample_id": "task3_17",
+    "memory_version_before": 128,
+    "new_bullets": [],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 33,
+    "sample_id": "task3_27",
+    "memory_version_before": 128,
+    "new_bullets": [],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 36,
+    "sample_id": "task2_28",
+    "memory_version_before": 128,
+    "new_bullets": [],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 37,
+    "sample_id": "task2_25",
+    "memory_version_before": 128,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources for the patient, identify all orders that are currently \"active,\" and then use an update tool to discontinue any duplicates (keeping only the newest) or create a new order only if zero active orders are found. You must perform these actions using tool calls within the same turn to ensure the final state of the patient's records contains exactly one active DVT prophylaxis order."
+    ],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 38,
+    "sample_id": "task6_13",
+    "memory_version_before": 129,
+    "new_bullets": [],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 40,
+    "sample_id": "task9_9",
+    "memory_version_before": 129,
+    "new_bullets": [],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 41,
+    "sample_id": "task10_24",
+    "memory_version_before": 129,
+    "new_bullets": [],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 42,
+    "sample_id": "task2_17",
+    "memory_version_before": 129,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first perform a search for all \"MedicationRequest\" resources for the patient to identify all existing orders and their statuses, rather than assuming no orders exist based on an initial search. If you find multiple active DVT prophylaxis orders, you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn to ensure exactly one active order remains."
+    ],
+    "memory_size": 130
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 46,
+    "sample_id": "task10_13",
+    "memory_version_before": 130,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must perform a search for \"Immunization\" resources filtered by the patient ID and specifically iterate through the returned records to check for COVID-19 CVX codes (e.g., 207, 208, 210, 211, 212), as simply searching for a \"COVID-19\" tag will fail to identify records. You must execute this search, identify the most recent dose date, and verify if it exceeds 12 months before concluding whether a booster order is required."
+    ],
+    "memory_size": 131
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 47,
+    "sample_id": "task6_2",
+    "memory_version_before": 131,
+    "new_bullets": [
+      "when asked to retrieve lab results like TSH and free T4, you must perform a search for \"Observation\" resources using the specific LOINC codes (e.g., 24356-8 for TSH and 3024-7 for free T4) filtered by the patient ID, rather than executing a generic search without codes. You must await the tool output to retrieve the actual values and their dates before taking any action based on the protocol."
+    ],
+    "memory_size": 132
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 49,
+    "sample_id": "task3_29",
+    "memory_version_before": 132,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must perform an initial broad search for \"Observation\" resources using the patient ID and the LOINC codes (8867-4 or 78564-0) without a date filter to ensure you capture existing records, rather than concluding no data exists based on a failed filtered search. Only after confirming the existence of records through a broad search should you filter the results manually or proceed with time-based calculations."
+    ],
+    "memory_size": 133
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 50,
+    "sample_id": "task4_21",
+    "memory_version_before": 133,
+    "new_bullets": [
+      "when asked to check if a urinary catheter has been in place for more than 48 hours, you must perform a comprehensive search for \"Device\" and \"Procedure\" resources to find the insertion date, and search for \"ServiceRequest\" resources to ensure no removal order is already active. Do not conclude that no catheter exists or that an order is needed until you have searched for these specific resources and verified the insertion date against the current time."
+    ],
+    "memory_size": 134
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 51,
+    "sample_id": "task2_15",
+    "memory_version_before": 134,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources for the patient to retrieve all records, and then explicitly filter the list to identify active DVT prophylaxis orders (e.g., heparin, enoxaparin) before concluding zero exist. If your search reveals multiple active DVT prophylaxis orders, you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn to ensure exactly one active order remains."
+    ],
+    "memory_size": 135
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 52,
+    "sample_id": "task2_22",
+    "memory_version_before": 135,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must execute a search for \"MedicationRequest\" resources to retrieve all orders for the patient and analyze their status and medication details before deciding to create a new one. If your search reveals multiple active DVT prophylaxis orders, you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn to ensure exactly one active order remains."
+    ],
+    "memory_size": 136
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 53,
+    "sample_id": "task9_28",
+    "memory_version_before": 136,
+    "new_bullets": [
+      "when asked to determine the date of a previous influenza vaccine, you must perform a search for \"Immunization\" resources filtered by patient ID and specifically verify the `vaccineCode` using standard CVX codes (e.g., 141, 150, 153, 155, 158, 160, 161, 171, 185, 186, 197), as searching only for the text \"influenza\" often fails to identify records. You must execute this search and review the full list of returned immunization records before concluding that no previous vaccination exists, as the agent previously failed to identify existing records by not performing a sufficiently broad search of immunization codes."
+    ],
+    "memory_size": 137
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 54,
+    "sample_id": "task3_16",
+    "memory_version_before": 137,
+    "new_bullets": [
+      "when asked to calculate the average heart rate over a specific timeframe, you must perform separate FHIR search queries for each window (6 hours and 12 hours) using the `date=ge[timestamp]` parameter and the specific LOINC code (8867-4 or 78564-0). Do not include multiple codes in a single query if it causes server errors; execute clean, individual searches for each code and timeframe to ensure you retrieve and can accurately average the data."
+    ],
+    "memory_size": 138
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 57,
+    "sample_id": "task3_30",
+    "memory_version_before": 138,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must first perform a broad search for \"Observation\" resources using the patient ID and relevant LOINC codes (8867-4 or 78564-0) without an initial restrictive date filter to ensure you capture all available data. Only after confirming the existence of records through this search should you filter the results manually or proceed with time-based calculations to determine the averages for the 6-hour and 12-hour windows."
+    ],
+    "memory_size": 139
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 58,
+    "sample_id": "task6_23",
+    "memory_version_before": 139,
+    "new_bullets": [
+      "when asked to retrieve lab results like TSH and free T4, you must perform a search for \"Observation\" resources using the specific LOINC codes (e.g., 24356-8 for TSH and 3024-7 for free T4) filtered by the patient ID, rather than executing a generic search without codes or failing to use the correct parameter syntax. You must await the tool output to retrieve the actual values and their dates before taking any action based on the protocol."
+    ],
+    "memory_size": 140
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 59,
+    "sample_id": "task9_6",
+    "memory_version_before": 140,
+    "new_bullets": [
+      "when asked to determine the date of a previous influenza vaccine, you must search for \"Immunization\" resources filtered by the patient ID and specifically verify the `vaccineCode` using standard CVX codes (e.g., 141, 150, 153, 155, 158, 160, 161, 171, 185, 186, 197), as searching only for the text \"influenza\" often fails to identify records. You must execute this search and review the full list of returned immunization records before concluding that no previous vaccination exists, as the agent previously failed to identify existing records by not performing a sufficiently broad search of immunization codes."
+    ],
+    "memory_size": 141
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 60,
+    "sample_id": "task10_21",
+    "memory_version_before": 141,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must perform a search for \"Immunization\" resources filtered by the patient ID and iterate through the returned list to identify any records matching COVID-19 CVX codes (e.g., 207, 208, 210, 211, 212), rather than concluding that no records exist without first executing and reviewing the search results. If no vaccination records are found after a thorough search of these codes, you must explicitly state that no vaccination history exists and proceed to order the vaccine as the primary dose, rather than assuming a \"booster\" is inapplicable."
+    ],
+    "memory_size": 142
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 62,
+    "sample_id": "task4_23",
+    "memory_version_before": 142,
+    "new_bullets": [
+      "when asked to check if a urinary catheter has been in place for more than 48 hours, you must perform a search for \"Device\" resources to identify the catheter's presence and its insertion date, as relying solely on \"Procedure\" or \"ServiceRequest\" resources may lead to false negatives. You must verify the insertion date against the current time and ensure no \"ServiceRequest\" with `intent=order` and `status=active` exists for removal before concluding whether a new service request is required."
+    ],
+    "memory_size": 143
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 64,
+    "sample_id": "task3_1",
+    "memory_version_before": 143,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must calculate the exact start timestamps for the 6-hour and 12-hour windows and perform separate FHIR search queries for each window using the `date=ge[timestamp]` parameter, ensuring the query includes both the patient ID and the specific LOINC code (8867-4 or 78564-0). Do not use comma-separated codes in a single query if it causes server errors; execute clean, individual searches for each code and timeframe to ensure you retrieve and can accurately average the data."
+    ],
+    "memory_size": 144
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 66,
+    "sample_id": "task10_27",
+    "memory_version_before": 144,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must perform a search for \"Immunization\" resources filtered by the patient ID and iterate through the returned list to identify any records matching COVID-19 CVX codes (e.g., 207, 208, 210, 211, 212), rather than concluding that no records exist without first executing and reviewing the search results. If records are found, you must identify the most recent dose and compare its date to the current date to determine if more than 12 months have elapsed before deciding to place a new order."
+    ],
+    "memory_size": 145
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 145,
+    "new_bullets": [],
+    "memory_size": 145
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 68,
+    "sample_id": "task9_20",
+    "memory_version_before": 145,
+    "new_bullets": [
+      "when asked to determine the date of a previous influenza vaccine, you must search for \"Immunization\" resources filtered by patient ID and verify the `vaccineCode` using the full range of standard CVX codes for influenza (e.g., 140-141, 150, 153, 155, 158, 160-161, 171, 185-186, 197, 205), as the agent failed to identify an existing record by not searching for these specific codes. You must execute this search and verify the `occurrenceDateTime` of any found records before concluding that no vaccine was administered or that a new one is required."
+    ],
+    "memory_size": 146
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 71,
+    "sample_id": "task8_23",
+    "memory_version_before": 146,
+    "new_bullets": [],
+    "memory_size": 146
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 75,
+    "sample_id": "task8_14",
+    "memory_version_before": 146,
+    "new_bullets": [
+      "when asked to verify the presence of opioid analgesic orders, you must perform a search for all `MedicationRequest` resources for the patient, as a search filtered by `status=active` may be too restrictive or return an empty list. You must then manually inspect the `medicationCodeableConcept` or `text` fields of every returned record for opioid-related terms before concluding that no opioid orders exist; the agent previously failed to identify active orders by relying on an incomplete or incorrectly filtered search."
+    ],
+    "memory_size": 147
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 76,
+    "sample_id": "task8_19",
+    "memory_version_before": 147,
+    "new_bullets": [
+      "when asked to verify the presence of opioid analgesic orders, you must perform a search for all `MedicationRequest` resources for the patient, as a search filtered by `status=active` may be too restrictive or return an empty list. You must then manually inspect the `medicationCodeableConcept` or `text` fields of every returned record for opioid-related terms before concluding that no opioid orders exist; the agent previously failed to identify active orders by relying on an incomplete or incorrectly filtered search."
+    ],
+    "memory_size": 148
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 78,
+    "sample_id": "task8_13",
+    "memory_version_before": 148,
+    "new_bullets": [],
+    "memory_size": 148
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 79,
+    "sample_id": "task2_14",
+    "memory_version_before": 148,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources to identify all existing orders and their statuses, and you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn if multiple active orders are found. The agent previously failed by discontinuing an order without verifying the current state or properly managing the duplicate set, so you must ensure the final state of the patient's records contains exactly one active DVT prophylaxis order."
+    ],
+    "memory_size": 149
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 80,
+    "sample_id": "task2_16",
+    "memory_version_before": 149,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources for the patient to identify all existing orders and their statuses, rather than assuming no orders exist based on a partial search. If you find multiple active DVT prophylaxis orders, you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn to ensure exactly one active order remains, as the agent previously failed to identify existing orders and incorrectly created a new one."
+    ],
+    "memory_size": 150
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 81,
+    "sample_id": "task6_5",
+    "memory_version_before": 150,
+    "new_bullets": [
+      "when asked to retrieve lab results like TSH and free T4, you must perform a search for \"Observation\" resources using the specific LOINC codes (e.g., 24356-8 for TSH, 3024-7 for free T4) with the `code` parameter formatted as a comma-separated list (e.g., `code=24356-8,3024-7`) and ensure the patient ID is correctly provided. You must then await the tool output to retrieve the actual values and their dates before applying the clinical protocol to determine the appropriate follow-up action."
+    ],
+    "memory_size": 151
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 82,
+    "sample_id": "task2_30",
+    "memory_version_before": 151,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources for the patient to identify all existing orders and their statuses, rather than assuming no orders exist based on a partial search. If you find multiple active DVT prophylaxis orders, you must use an update tool to set the status of all but the newest order to \"stopped\" within the same turn to ensure exactly one active order remains, as the agent previously failed to identify existing orders and incorrectly created a new one."
+    ],
+    "memory_size": 152
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 85,
+    "sample_id": "task9_5",
+    "memory_version_before": 152,
+    "new_bullets": [],
+    "memory_size": 152
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 87,
+    "sample_id": "task8_5",
+    "memory_version_before": 152,
+    "new_bullets": [
+      "when asked to verify the presence of opioid analgesic orders, you must perform a search for all `MedicationRequest` resources for the patient, as a search filtered by `status=active` may be too restrictive or return an empty list; you must then manually inspect the `medicationCodeableConcept` or `text` fields of every returned record for opioid-related terms before concluding that no opioid orders exist. The agent previously failed to identify existing active opioid orders by prematurely concluding that no records were present based on an incomplete initial search."
+    ],
+    "memory_size": 153
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 89,
+    "sample_id": "task6_20",
+    "memory_version_before": 153,
+    "new_bullets": [
+      "when asked to retrieve lab results like TSH and free T4, you must perform a search for \"Observation\" resources using the specific LOINC codes (e.g., 24356-8 for TSH, 3024-7 for free T4) with the `code` parameter formatted as a comma-separated list and ensure the `patient` filter is correctly applied. You must await the tool output to retrieve the actual values and their dates before applying the clinical protocol, as the agent previously failed to retrieve the data by using an incorrect request format."
+    ],
+    "memory_size": 154
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 90,
+    "sample_id": "task8_29",
+    "memory_version_before": 154,
+    "new_bullets": [
+      "when asked to verify the presence of opioid analgesic orders and their corresponding naloxone prescriptions, you must perform a search for all `MedicationRequest` resources for the patient, as a search filtered by `status=active` may be too restrictive or return an empty list; you must then manually inspect the `medicationCodeableConcept` or `text` fields of every returned record for opioid-related terms before concluding that no opioid orders exist. The agent previously failed to identify existing active opioid orders by prematurely concluding that no records were present based on an incomplete initial search."
+    ],
+    "memory_size": 155
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 91,
+    "sample_id": "task3_10",
+    "memory_version_before": 155,
+    "new_bullets": [
+      "when asked to calculate average heart rate over a specific timeframe, you must calculate the exact start timestamps for the 6-hour and 12-hour windows and perform separate FHIR search queries for each window using the `date=ge[timestamp]` parameter, ensuring the query includes both the patient ID and only one specific LOINC code at a time to avoid server errors. Do not rely on a single, broad query; execute clean, individual searches for each code and timeframe to ensure you retrieve and can accurately average the data."
+    ],
+    "memory_size": 156
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 93,
+    "sample_id": "task6_26",
+    "memory_version_before": 156,
+    "new_bullets": [
+      "when asked to retrieve lab results like TSH and free T4, you must perform a search for \"Observation\" resources using the specific LOINC codes (e.g., 24356-8 for TSH, 3024-7 for free T4) with the `code` parameter formatted as a comma-separated list and ensure the `patient` filter is correctly applied. You must await the tool output to retrieve the actual values and their dates before applying the clinical protocol, as the agent previously failed to retrieve the data by using an incorrect request format."
+    ],
+    "memory_size": 157
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 94,
+    "sample_id": "task8_7",
+    "memory_version_before": 157,
+    "new_bullets": [],
+    "memory_size": 157
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 157,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first execute a search for \"MedicationRequest\" resources for the patient, identify all orders that are currently \"active,\" and then use an update tool to discontinue any duplicates (keeping only the newest) or create a new order only if zero active orders are found. The agent previously failed by failing to recognize existing active orders that were already present in the system, so you must ensure you process the full search results before deciding to create a new order."
+    ],
+    "memory_size": 158
+  }
+]

@@ -1,0 +1,292 @@
+[
+  {
+    "epoch": 1,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 21,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "observation_code_discovery_strategy",
+        "description": "Perform a discovery search for all available Observation codes when a specific code search returns no results.",
+        "content": "## Skill Title\nObservation Code Discovery Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., 'HEARTRATE', 'TSH'), the agent often fails because the local system uses a different coding system or terminology than the one provided in the instruction. Instead of assuming the data is missing, you must perform a discovery search to identify the correct local code by retrieving a sample of the patient's observations.\n\n## When to Use This Skill\n- When a GET /Observation request filtered by a specific `code` returns a `total` of 0.\n- When the task requires a specific observation value but the initial search for that code yields no results.\n\n## Common Failure Patterns\n- Assuming the absence of a specific code in the search results means the data does not exist.\n- Repeatedly searching for the same code without attempting to broaden the search to identify available codes.\n- Failing to inspect the `code.coding` field of existing observations to find the correct local terminology.\n\n## Recommended Patterns\n\n**Pattern 1: Discovery Search**\nIf the initial search for a specific code returns no results, perform a broad search for the patient's observations without a code filter to see what is available.\n- GET /Observation?patient={patient_id}\n- Inspect the returned bundle to identify the `code.coding` values present for the desired category.\n\n**Pattern 2: Code Verification**\nOnce you have a list of available codes from the discovery search, identify the correct code that matches the clinical intent (e.g., look for 'Heart Rate' or 'TSH' in the `display` field of the coding).\n\n**Pattern 3: Re-query**\nUse the newly identified code to perform the specific search required by the task.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6549951.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=HEARTRATE&patient=S6549951` -> Returns 0 results.\n2. Issue `GET /Observation?patient=S6549951` -> Returns a bundle containing observations with `code.coding` like `{'code': '1234-5', 'display': 'Heart Rate'}`.\n3. Identify '1234-5' as the correct local code.\n4. Issue `GET /Observation?code=1234-5&patient=S6549951` to get the required data.\n\n## Success Indicators\n- The agent successfully identifies the correct local code after an initial failure.\n- The agent retrieves the required data and completes the calculation.\n\n## Failure Indicators\n- The agent continues to search for the original, incorrect code.\n- The agent gives up after the first failed search.",
+        "tags": [
+          "observation",
+          "search",
+          "discovery"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include active order verification and clinical equivalence checks to prevent duplicate or unnecessary orders.",
+        "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\n\nWhen tasked with verifying, creating, or managing clinical orders (e.g., vaccinations, DVT prophylaxis, catheter removal), you must perform an exhaustive search across all relevant FHIR resources (Immunization, Procedure, MedicationRequest, ServiceRequest) to establish the current clinical state. Before creating any new order, you must verify that no active, equivalent order already exists to avoid duplication.\n\n## When to Use This Skill\n\n- When the task requires verifying the existence of an order or procedure.\n- When the task requires creating a new order if one does not exist.\n- When the task requires managing duplicates (e.g., discontinue duplicates, keep the newest).\n- When the task involves checking clinical protocols (e.g., vaccination intervals, catheter duration).\n\n## Common Failure Patterns\n\n- Creating a new order without checking for existing active orders in the same or related resources.\n- Failing to compare the dosage, frequency, or clinical intent of an existing order against the required protocol (e.g., q12h vs q8h).\n- Assuming a search on one resource (e.g., MedicationRequest) is sufficient when the order might exist as a ServiceRequest.\n- Ignoring the `status` field, leading to the consideration of discontinued or completed orders as active.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive State Verification**\nBefore taking action, perform GET requests for all relevant resources. If the task is DVT prophylaxis, check both `MedicationRequest` and `ServiceRequest` with `status=active`.\n\n**Pattern 2: Clinical Equivalence Check**\nIf an order is found, compare its details (dosage, frequency, route) against the required protocol. Do not assume an existing order is sufficient if it does not match the required clinical parameters.\n\n**Pattern 3: Guard Clause for Creation**\nOnly proceed to POST a new order if:\n1. No active order exists.\n2. Existing orders do not meet the clinical requirements (e.g., wrong frequency).\n3. You have explicitly confirmed the absence of a matching active order in all relevant resource types.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215&status=active`.\n2. Inspect the bundle. If an order exists, check the `dosageInstruction` for frequency (e.g., q8h).\n3. If the existing order is q12h, it is not equivalent. Proceed to create the correct q8h order.\n4. If no order exists, POST the new `MedicationRequest`.\n\n## Success Indicators\n\n- Agent performs multiple searches across relevant resource types before deciding to POST.\n- Agent identifies and ignores inactive or non-equivalent orders.\n- No duplicate orders are created when an active, equivalent order already exists.\n\n## Failure Indicators\n\n- Agent creates a duplicate order despite an active one being present in the search results.\n- Agent fails to identify that an existing order is clinically insufficient (e.g., wrong frequency).",
+        "tags": [
+          "order-management",
+          "fhir-search",
+          "clinical-protocol"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include ServiceRequest verification to prevent duplicate orders and ensure historical accuracy.",
+        "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen tasked with checking for existing procedures or orders, you must perform a multi-resource search to ensure a complete history. Relying on a single resource type (e.g., Procedure) often leads to false negatives. Furthermore, before creating any new order, you must verify that an active, pending, or duplicate ServiceRequest does not already exist to prevent redundant clinical actions.\n\n## When to Use This Skill\n- When checking for the existence of a procedure, vaccination, or clinical order.\n- Before creating a new ServiceRequest or MedicationRequest.\n- When a search for a specific code returns zero results, but the task implies a potential historical record.\n\n## Common Failure Patterns\n- Searching only `Procedure` and ignoring `ServiceRequest` or `Immunization` resources.\n- Creating a new order without checking if an identical `active` ServiceRequest already exists for the patient.\n- Using overly restrictive date filters that exclude relevant historical records.\n- Failing to verify the status of existing orders (e.g., assuming an order is complete when it is still active).\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nAlways query `Procedure`, `Immunization`, and `ServiceRequest` resources for the patient. If the initial search is empty, perform a broader search without date filters to ensure no historical records were missed.\n\n**Pattern 2: Duplicate Prevention**\nBefore executing a POST request for a new order, perform a GET request on `ServiceRequest` (or `MedicationRequest`) filtered by `patient` and the specific `code` or `status=active`. If an active order for the same procedure exists, do not create a new one; report the existing order instead.\n\n**Pattern 3: Verification**\nIf a POST request is successful, verify the resource was created by checking the response or performing a follow-up GET. If the system returns a warning or the resource is not found, do not assume the order was successfully placed.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none found in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=CODE` (all history).\n2. GET `ServiceRequest?patient=ID&code=CODE&status=active`.\n3. If both are empty, proceed to POST the new order.\n4. If an active `ServiceRequest` is found, report the existing order and do not POST.\n\n## Success Indicators\n- Agent identifies existing active orders and avoids duplicate POST requests.\n- Agent searches across multiple resource types (Procedure, Immunization, ServiceRequest).\n\n## Failure Indicators\n- Agent creates a duplicate order when an active one already exists.\n- Agent reports \"no record found\" despite an active order being present in the system.",
+        "tags": [
+          "search",
+          "verification",
+          "duplicate-prevention"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_pagination_handling_strategy",
+        "description": "Ensures complete data retrieval by following 'next' links in FHIR bundles before concluding a search is empty.",
+        "content": "## Skill Title\nFHIR Pagination Handling Strategy\n\n## Pattern Description\nWhen searching FHIR resources, the server may return a paginated bundle. If the initial search returns an empty `entry` array or a partial list, you must check the `link` array for a relation named `next`. If a `next` link exists, you must follow it to retrieve subsequent pages until all results are exhausted or the target resource is found.\n\nDo not conclude that a resource does not exist or that a search is empty until you have traversed all available pages. Failing to do so leads to false negatives, especially when searching for active orders or lab results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with a `link` array containing a `next` relation.\n- When a search for a specific resource (e.g., MedicationRequest, Observation) returns an empty `entry` array, but you suspect data might exist.\n- When you need to verify the absence of a record across a patient's entire history.\n\n## Common Failure Patterns\n- Concluding a search is empty after only checking the first page of results.\n- Attempting to manually construct or guess the `_getpages` URL instead of using the provided `url` in the `next` link.\n- Ignoring the `next` link and returning a result based on incomplete data.\n\n## Recommended Patterns\n\n**Pattern 1: Iterative Page Traversal**\n1. Perform the initial GET request.\n2. Inspect the `link` array in the response bundle.\n3. If `link` contains `{\"relation\": \"next\", \"url\": \"...\"}`, extract the `url`.\n4. Issue a new GET request using that exact `url`.\n5. Repeat until no `next` link is present in the bundle.\n\n**Pattern 2: Verification**\n- Only after the final page is processed and no matching resource is found, conclude that the record does not exist.\n\n## Example Application\n\n**Task:** \"Verify if patient has active opioid orders.\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S123&status=active`\n2. Response contains `link: [{relation: 'next', url: 'http://.../fhir?_getpages=abc'}]`.\n3. GET `http://.../fhir?_getpages=abc`\n4. Process the new bundle. If empty, repeat or finish.\n\nCORRECT: Follow the `next` link provided in the bundle.\nWRONG: Assume the first page is the complete set of results.\n\n## Success Indicators\n- Agent successfully retrieves all records across multiple pages.\n- Agent correctly identifies records that were not on the first page.\n\n## Failure Indicators\n- Agent returns \"No records found\" when records exist on subsequent pages.\n- Agent enters an infinite loop by requesting the same page repeatedly.",
+        "tags": [
+          "fhir",
+          "pagination",
+          "search"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_code_discovery_strategy",
+          "description": "Perform a discovery search for all available Observation codes when a specific code search returns no results.",
+          "content": "## Skill Title\nObservation Code Discovery Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (e.g., 'HEARTRATE', 'TSH'), the agent often fails because the local system uses a different coding system or terminology than the one provided in the instruction. Instead of assuming the data is missing, you must perform a discovery search to identify the correct local code by retrieving a sample of the patient's observations.\n\n## When to Use This Skill\n- When a GET /Observation request filtered by a specific `code` returns a `total` of 0.\n- When the task requires a specific observation value but the initial search for that code yields no results.\n\n## Common Failure Patterns\n- Assuming the absence of a specific code in the search results means the data does not exist.\n- Repeatedly searching for the same code without attempting to broaden the search to identify available codes.\n- Failing to inspect the `code.coding` field of existing observations to find the correct local terminology.\n\n## Recommended Patterns\n\n**Pattern 1: Discovery Search**\nIf the initial search for a specific code returns no results, perform a broad search for the patient's observations without a code filter to see what is available.\n- GET /Observation?patient={patient_id}\n- Inspect the returned bundle to identify the `code.coding` values present for the desired category.\n\n**Pattern 2: Code Verification**\nOnce you have a list of available codes from the discovery search, identify the correct code that matches the clinical intent (e.g., look for 'Heart Rate' or 'TSH' in the `display` field of the coding).\n\n**Pattern 3: Re-query**\nUse the newly identified code to perform the specific search required by the task.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6549951.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=HEARTRATE&patient=S6549951` -> Returns 0 results.\n2. Issue `GET /Observation?patient=S6549951` -> Returns a bundle containing observations with `code.coding` like `{'code': '1234-5', 'display': 'Heart Rate'}`.\n3. Identify '1234-5' as the correct local code.\n4. Issue `GET /Observation?code=1234-5&patient=S6549951` to get the required data.\n\n## Success Indicators\n- The agent successfully identifies the correct local code after an initial failure.\n- The agent retrieves the required data and completes the calculation.\n\n## Failure Indicators\n- The agent continues to search for the original, incorrect code.\n- The agent gives up after the first failed search.",
+          "tags": [
+            "observation",
+            "search",
+            "discovery"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 1,
+        "fixes": 6,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include active order verification and clinical equivalence checks to prevent duplicate or unnecessary orders.",
+          "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\n\nWhen tasked with verifying, creating, or managing clinical orders (e.g., vaccinations, DVT prophylaxis, catheter removal), you must perform an exhaustive search across all relevant FHIR resources (Immunization, Procedure, MedicationRequest, ServiceRequest) to establish the current clinical state. Before creating any new order, you must verify that no active, equivalent order already exists to avoid duplication.\n\n## When to Use This Skill\n\n- When the task requires verifying the existence of an order or procedure.\n- When the task requires creating a new order if one does not exist.\n- When the task requires managing duplicates (e.g., discontinue duplicates, keep the newest).\n- When the task involves checking clinical protocols (e.g., vaccination intervals, catheter duration).\n\n## Common Failure Patterns\n\n- Creating a new order without checking for existing active orders in the same or related resources.\n- Failing to compare the dosage, frequency, or clinical intent of an existing order against the required protocol (e.g., q12h vs q8h).\n- Assuming a search on one resource (e.g., MedicationRequest) is sufficient when the order might exist as a ServiceRequest.\n- Ignoring the `status` field, leading to the consideration of discontinued or completed orders as active.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive State Verification**\nBefore taking action, perform GET requests for all relevant resources. If the task is DVT prophylaxis, check both `MedicationRequest` and `ServiceRequest` with `status=active`.\n\n**Pattern 2: Clinical Equivalence Check**\nIf an order is found, compare its details (dosage, frequency, route) against the required protocol. Do not assume an existing order is sufficient if it does not match the required clinical parameters.\n\n**Pattern 3: Guard Clause for Creation**\nOnly proceed to POST a new order if:\n1. No active order exists.\n2. Existing orders do not meet the clinical requirements (e.g., wrong frequency).\n3. You have explicitly confirmed the absence of a matching active order in all relevant resource types.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215&status=active`.\n2. Inspect the bundle. If an order exists, check the `dosageInstruction` for frequency (e.g., q8h).\n3. If the existing order is q12h, it is not equivalent. Proceed to create the correct q8h order.\n4. If no order exists, POST the new `MedicationRequest`.\n\n## Success Indicators\n\n- Agent performs multiple searches across relevant resource types before deciding to POST.\n- Agent identifies and ignores inactive or non-equivalent orders.\n- No duplicate orders are created when an active, equivalent order already exists.\n\n## Failure Indicators\n\n- Agent creates a duplicate order despite an active one being present in the search results.\n- Agent fails to identify that an existing order is clinically insufficient (e.g., wrong frequency).",
+          "tags": [
+            "order-management",
+            "fhir-search",
+            "clinical-protocol"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -2,
+        "fixes": 3,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include ServiceRequest verification to prevent duplicate orders and ensure historical accuracy.",
+          "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen tasked with checking for existing procedures or orders, you must perform a multi-resource search to ensure a complete history. Relying on a single resource type (e.g., Procedure) often leads to false negatives. Furthermore, before creating any new order, you must verify that an active, pending, or duplicate ServiceRequest does not already exist to prevent redundant clinical actions.\n\n## When to Use This Skill\n- When checking for the existence of a procedure, vaccination, or clinical order.\n- Before creating a new ServiceRequest or MedicationRequest.\n- When a search for a specific code returns zero results, but the task implies a potential historical record.\n\n## Common Failure Patterns\n- Searching only `Procedure` and ignoring `ServiceRequest` or `Immunization` resources.\n- Creating a new order without checking if an identical `active` ServiceRequest already exists for the patient.\n- Using overly restrictive date filters that exclude relevant historical records.\n- Failing to verify the status of existing orders (e.g., assuming an order is complete when it is still active).\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nAlways query `Procedure`, `Immunization`, and `ServiceRequest` resources for the patient. If the initial search is empty, perform a broader search without date filters to ensure no historical records were missed.\n\n**Pattern 2: Duplicate Prevention**\nBefore executing a POST request for a new order, perform a GET request on `ServiceRequest` (or `MedicationRequest`) filtered by `patient` and the specific `code` or `status=active`. If an active order for the same procedure exists, do not create a new one; report the existing order instead.\n\n**Pattern 3: Verification**\nIf a POST request is successful, verify the resource was created by checking the response or performing a follow-up GET. If the system returns a warning or the resource is not found, do not assume the order was successfully placed.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none found in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=CODE` (all history).\n2. GET `ServiceRequest?patient=ID&code=CODE&status=active`.\n3. If both are empty, proceed to POST the new order.\n4. If an active `ServiceRequest` is found, report the existing order and do not POST.\n\n## Success Indicators\n- Agent identifies existing active orders and avoids duplicate POST requests.\n- Agent searches across multiple resource types (Procedure, Immunization, ServiceRequest).\n\n## Failure Indicators\n- Agent creates a duplicate order when an active one already exists.\n- Agent reports \"no record found\" despite an active order being present in the system.",
+          "tags": [
+            "search",
+            "verification",
+            "duplicate-prevention"
+          ]
+        },
+        "net": -6,
+        "score": -6,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_pagination_handling_strategy",
+          "description": "Ensures complete data retrieval by following 'next' links in FHIR bundles before concluding a search is empty.",
+          "content": "## Skill Title\nFHIR Pagination Handling Strategy\n\n## Pattern Description\nWhen searching FHIR resources, the server may return a paginated bundle. If the initial search returns an empty `entry` array or a partial list, you must check the `link` array for a relation named `next`. If a `next` link exists, you must follow it to retrieve subsequent pages until all results are exhausted or the target resource is found.\n\nDo not conclude that a resource does not exist or that a search is empty until you have traversed all available pages. Failing to do so leads to false negatives, especially when searching for active orders or lab results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with a `link` array containing a `next` relation.\n- When a search for a specific resource (e.g., MedicationRequest, Observation) returns an empty `entry` array, but you suspect data might exist.\n- When you need to verify the absence of a record across a patient's entire history.\n\n## Common Failure Patterns\n- Concluding a search is empty after only checking the first page of results.\n- Attempting to manually construct or guess the `_getpages` URL instead of using the provided `url` in the `next` link.\n- Ignoring the `next` link and returning a result based on incomplete data.\n\n## Recommended Patterns\n\n**Pattern 1: Iterative Page Traversal**\n1. Perform the initial GET request.\n2. Inspect the `link` array in the response bundle.\n3. If `link` contains `{\"relation\": \"next\", \"url\": \"...\"}`, extract the `url`.\n4. Issue a new GET request using that exact `url`.\n5. Repeat until no `next` link is present in the bundle.\n\n**Pattern 2: Verification**\n- Only after the final page is processed and no matching resource is found, conclude that the record does not exist.\n\n## Example Application\n\n**Task:** \"Verify if patient has active opioid orders.\"\n\n**Step-by-step:**\n1. GET `.../MedicationRequest?patient=S123&status=active`\n2. Response contains `link: [{relation: 'next', url: 'http://.../fhir?_getpages=abc'}]`.\n3. GET `http://.../fhir?_getpages=abc`\n4. Process the new bundle. If empty, repeat or finish.\n\nCORRECT: Follow the `next` link provided in the bundle.\nWRONG: Assume the first page is the complete set of results.\n\n## Success Indicators\n- Agent successfully retrieves all records across multiple pages.\n- Agent correctly identifies records that were not on the first page.\n\n## Failure Indicators\n- Agent returns \"No records found\" when records exist on subsequent pages.\n- Agent enters an infinite loop by requesting the same page repeatedly.",
+          "tags": [
+            "fhir",
+            "pagination",
+            "search"
+          ]
+        },
+        "net": -9,
+        "score": -9,
+        "raw_score": -6,
+        "fixes": 3,
+        "regressions": 9,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 6,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 1,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 26,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include active ServiceRequest verification to prevent duplicate orders and ensure accurate history.",
+        "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\nWhen evaluating a patient's history for a procedure or vaccination, you must not rely solely on `Procedure` resources. You must also check for `ServiceRequest` resources to identify pending or active orders that may not yet be marked as completed procedures. This prevents the creation of duplicate orders and ensures you have a complete picture of the patient's clinical status.\n\n## When to Use This Skill\n- When the task requires checking if a procedure or vaccination has been performed.\n- When the task requires ordering a new procedure or medication if a previous one is missing or outdated.\n- When you find zero results in `Procedure` or `Immunization` resources and are about to place a new order.\n\n## Common Failure Patterns\n- Searching only `Procedure` or `Immunization` and ignoring `ServiceRequest`.\n- Failing to check for `status=active` or `status=on-hold` in `ServiceRequest` before creating a new order.\n- Assuming a lack of `Procedure` records means the patient has never had the service, without checking for pending requests.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways query `Procedure`, `Immunization` (if applicable), and `ServiceRequest` for the patient. Use the `patient` and `code` parameters to narrow results.\n\n**Pattern 2: Pre-Order Verification**\nBefore executing a `POST` for a new order, you must perform a `GET` on `ServiceRequest` with the relevant `code` and `patient` ID. If any `active` or `on-hold` requests exist, you must report these to the user and ask for confirmation before creating a duplicate.\n\n**Pattern 3: Date Filtering**\nWhen checking for \"recent\" procedures, use the `date` parameter (e.g., `date=ge2022-11-07`) to filter results server-side rather than fetching all records and filtering manually.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none found in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=74177&date=ge2022-11-07`\n2. GET `ServiceRequest?patient=S123&code=74177&status=active`\n3. If both return `total: 0`, proceed to `POST` the new `ServiceRequest`.\n4. If either returns a result, report the existing record and do not create a duplicate.\n\n## Success Indicators\n- Agent identifies existing `ServiceRequest` records before creating new ones.\n- Agent avoids duplicate orders for the same procedure code.\n\n## Failure Indicators\n- Agent creates a new `ServiceRequest` when an `active` one already exists.\n- Agent reports \"no record found\" when an `active` `ServiceRequest` is present.",
+        "tags": [
+          "search",
+          "verification",
+          "duplicate-prevention"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include Immunization, Procedure, and MedicationRequest, with mandatory verification of existing orders.",
+        "content": "# Comprehensive Procedure and Vaccination Search Strategy\n\n## Pattern Description\nWhen evaluating a patient's history for a specific procedure or vaccination, you must perform an exhaustive search across multiple FHIR resources. Relying on a single resource type (e.g., only `Immunization`) often leads to false negatives. You must check `Immunization`, `Procedure`, and `MedicationRequest` (or `ServiceRequest`) to ensure no prior record or pending order exists.\n\n## When to Use This Skill\n- When the task requires determining the date of a last vaccine or procedure.\n- When the task requires checking for existing orders before creating a new one.\n- When a search for a specific code returns an empty bundle.\n\n## Common Failure Patterns\n- Searching only one resource type (e.g., `Immunization`) and assuming absence means no record exists.\n- Failing to check for active `ServiceRequest` or `MedicationRequest` resources, leading to duplicate orders.\n- Using only one coding system (e.g., CPT) when others (e.g., CVX, local codes) might be present.\n- Failing to handle case-insensitive searches or partial matches in `code` or `text` fields.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf a search in one resource returns no results, you must query the others. \n- Query `Immunization?patient={id}`\n- Query `Procedure?patient={id}&code={code}`\n- Query `MedicationRequest?patient={id}`\n- Query `ServiceRequest?patient={id}`\n\n**Pattern 2: Verification of Existing Orders**\nBefore creating a new order, you must verify that no active order for the same procedure or vaccine already exists. If a `ServiceRequest` or `MedicationRequest` with `status=active` is found, do not create a duplicate.\n\n**Pattern 3: Handling Empty Results**\nIf all searches return empty bundles, explicitly state this in your final response. Do not assume a record exists if it is not found after checking all three resource types.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 days ago, order a new influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Immunization?patient=S2090974`\n2. GET `Procedure?patient=S2090974&code=90686`\n3. GET `ServiceRequest?patient=S2090974`\n4. If all return empty, verify no active `ServiceRequest` exists.\n5. If no record found, POST new `ServiceRequest`.\n\nCORRECT output: `FINISH([\"No record found in Immunization, Procedure, or ServiceRequest. Order placed.\"])`\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types before concluding a record is missing.\n- Agent identifies existing active orders and avoids duplicate POST requests.\n\n## Failure Indicators\n- Agent concludes a record is missing after only one search.\n- Agent creates a duplicate order when an active one already exists.",
+        "tags": [
+          "search",
+          "verification",
+          "immunization",
+          "procedure"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_pagination_and_case_insensitive_search_strategy",
+        "description": "Handle FHIR bundle pagination and ensure case-insensitive code searches to prevent false negatives.",
+        "content": "## Skill Title\nFHIR Pagination and Case-Insensitive Search Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the agent often fails to retrieve complete datasets because it ignores pagination links (`link` array with `relation: \"next\"`) and assumes exact case matching for codes. This skill mandates that you always check for pagination links in the bundle and perform case-insensitive searches for codes (e.g., searching for 'Heart Rate' if 'HEARTRATE' returns no results).\n\n## When to Use This Skill\n- When a search returns a `link` array containing a `next` relation.\n- When a search for a specific code (e.g., `code=HEARTRATE`) returns a `total: 0` or an empty entry array, but the task implies data should exist.\n- When you need to aggregate data across multiple pages of results.\n\n## Common Failure Patterns\n- Ignoring the `next` link in the bundle, leading to incomplete data retrieval.\n- Assuming that FHIR server codes are case-sensitive or strictly formatted (e.g., 'HEARTRATE' vs 'Heart Rate').\n- Failing to aggregate results from multiple pages before performing calculations.\n\n## Recommended Patterns\n\n**Pattern 1: Pagination Handling**\nIf the bundle contains a `link` with `relation: \"next\"`, you must follow the `url` provided in that link to fetch the subsequent page. Repeat this until no `next` link exists.\n\n**Pattern 2: Case-Insensitive Search**\nIf a search for a specific code returns no results, retry the search using alternative casing or common variations (e.g., 'Heart Rate', 'heart rate', 'HEARTRATE').\n\n**Pattern 3: Data Aggregation**\nAlways collect all entries from all pages before performing calculations (e.g., averages, date comparisons).\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=HEARTRATE`.\n2. If `total: 0`, issue GET `.../Observation?code=Heart+Rate`.\n3. If the bundle has a `next` link, follow it and append the new entries to your local list.\n4. Once all pages are retrieved, extract the `valueQuantity.value` from each entry.\n5. Calculate the average and call `FINISH`.\n\n## Success Indicators\n- Agent successfully retrieves data that was previously missed due to pagination or case mismatch.\n- Agent follows `next` links until the full dataset is retrieved.\n\n## Failure Indicators\n- Agent continues to return \"No data found\" despite the presence of `next` links in the response.\n- Agent fails to aggregate results across multiple pages.",
+        "tags": [
+          "fhir",
+          "search",
+          "pagination",
+          "data-retrieval"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "active_medication_duplication_prevention",
+        "description": "Prevents duplicate medication orders by verifying existing active orders of the same therapeutic class before creation.",
+        "content": "## Skill Title\nActive Medication Duplication Prevention\n\n## Pattern Description\nWhen tasked with creating a new medication order, you must first ensure that no active orders for the same therapeutic class or specific medication already exist. Creating duplicate orders can lead to medication errors and patient safety risks. This skill requires you to perform a comprehensive search for existing active orders before initiating any POST request.\n\n## When to Use This Skill\n- When the task instruction is to \"verify\" or \"ensure\" a specific medication order exists.\n- Before creating any new `MedicationRequest` or `ServiceRequest` for a medication or treatment.\n- When you have identified zero orders for a specific medication but need to confirm no therapeutic equivalents are already active.\n\n## Common Failure Patterns\n- Assuming zero results from a narrow search (e.g., searching only by exact name) means no active orders exist.\n- Failing to check for therapeutic equivalents (e.g., ordering Heparin when Enoxaparin is already active).\n- Creating a new order without first checking if an existing order is already active, leading to duplicate therapy.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nBefore creating an order, perform a GET request for all active `MedicationRequest` resources for the patient. Do not rely on a single search parameter.\n\n**Pattern 2: Therapeutic Class Verification**\nReview the returned bundle for any medications that serve the same clinical purpose as the requested order. If an active order for a therapeutic equivalent is found, do not create a new order. Instead, report the existing order to the user.\n\n**Pattern 3: Duplicate Discontinuation**\nIf multiple active orders are found, identify the newest one and discontinue the others. Only create a new order if no active, appropriate therapy exists.\n\n## Example Application\n\n**Task:** \"Verify that patient S0869531 has exactly one active DVT prophylaxis order. If there are zero orders, create one.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S0869531&status=active`\n2. Inspect the bundle for any anticoagulants (e.g., Heparin, Enoxaparin).\n3. If an active anticoagulant is found, report it and do not POST a new order.\n4. If no active anticoagulant is found, proceed to POST the new `MedicationRequest`.\n\n## Success Indicators\n- Agent performs a broad search for active medications before creating a new one.\n- Agent identifies and reports existing therapeutic equivalents instead of creating duplicates.\n\n## Failure Indicators\n- Agent creates a new order despite an active, equivalent medication being present in the patient's record.",
+        "tags": [
+          "medication",
+          "safety",
+          "duplication"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include active ServiceRequest verification to prevent duplicate orders and ensure accurate history.",
+          "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\nWhen evaluating a patient's history for a procedure or vaccination, you must not rely solely on `Procedure` resources. You must also check for `ServiceRequest` resources to identify pending or active orders that may not yet be marked as completed procedures. This prevents the creation of duplicate orders and ensures you have a complete picture of the patient's clinical status.\n\n## When to Use This Skill\n- When the task requires checking if a procedure or vaccination has been performed.\n- When the task requires ordering a new procedure or medication if a previous one is missing or outdated.\n- When you find zero results in `Procedure` or `Immunization` resources and are about to place a new order.\n\n## Common Failure Patterns\n- Searching only `Procedure` or `Immunization` and ignoring `ServiceRequest`.\n- Failing to check for `status=active` or `status=on-hold` in `ServiceRequest` before creating a new order.\n- Assuming a lack of `Procedure` records means the patient has never had the service, without checking for pending requests.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways query `Procedure`, `Immunization` (if applicable), and `ServiceRequest` for the patient. Use the `patient` and `code` parameters to narrow results.\n\n**Pattern 2: Pre-Order Verification**\nBefore executing a `POST` for a new order, you must perform a `GET` on `ServiceRequest` with the relevant `code` and `patient` ID. If any `active` or `on-hold` requests exist, you must report these to the user and ask for confirmation before creating a duplicate.\n\n**Pattern 3: Date Filtering**\nWhen checking for \"recent\" procedures, use the `date` parameter (e.g., `date=ge2022-11-07`) to filter results server-side rather than fetching all records and filtering manually.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none found in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=74177&date=ge2022-11-07`\n2. GET `ServiceRequest?patient=S123&code=74177&status=active`\n3. If both return `total: 0`, proceed to `POST` the new `ServiceRequest`.\n4. If either returns a result, report the existing record and do not create a duplicate.\n\n## Success Indicators\n- Agent identifies existing `ServiceRequest` records before creating new ones.\n- Agent avoids duplicate orders for the same procedure code.\n\n## Failure Indicators\n- Agent creates a new `ServiceRequest` when an `active` one already exists.\n- Agent reports \"no record found\" when an `active` `ServiceRequest` is present.",
+          "tags": [
+            "search",
+            "verification",
+            "duplicate-prevention"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -1,
+        "fixes": 3,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include Immunization, Procedure, and MedicationRequest, with mandatory verification of existing orders.",
+          "content": "# Comprehensive Procedure and Vaccination Search Strategy\n\n## Pattern Description\nWhen evaluating a patient's history for a specific procedure or vaccination, you must perform an exhaustive search across multiple FHIR resources. Relying on a single resource type (e.g., only `Immunization`) often leads to false negatives. You must check `Immunization`, `Procedure`, and `MedicationRequest` (or `ServiceRequest`) to ensure no prior record or pending order exists.\n\n## When to Use This Skill\n- When the task requires determining the date of a last vaccine or procedure.\n- When the task requires checking for existing orders before creating a new one.\n- When a search for a specific code returns an empty bundle.\n\n## Common Failure Patterns\n- Searching only one resource type (e.g., `Immunization`) and assuming absence means no record exists.\n- Failing to check for active `ServiceRequest` or `MedicationRequest` resources, leading to duplicate orders.\n- Using only one coding system (e.g., CPT) when others (e.g., CVX, local codes) might be present.\n- Failing to handle case-insensitive searches or partial matches in `code` or `text` fields.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf a search in one resource returns no results, you must query the others. \n- Query `Immunization?patient={id}`\n- Query `Procedure?patient={id}&code={code}`\n- Query `MedicationRequest?patient={id}`\n- Query `ServiceRequest?patient={id}`\n\n**Pattern 2: Verification of Existing Orders**\nBefore creating a new order, you must verify that no active order for the same procedure or vaccine already exists. If a `ServiceRequest` or `MedicationRequest` with `status=active` is found, do not create a duplicate.\n\n**Pattern 3: Handling Empty Results**\nIf all searches return empty bundles, explicitly state this in your final response. Do not assume a record exists if it is not found after checking all three resource types.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 days ago, order a new influenza vaccine.\"\n\n**Step-by-step:**\n1. GET `Immunization?patient=S2090974`\n2. GET `Procedure?patient=S2090974&code=90686`\n3. GET `ServiceRequest?patient=S2090974`\n4. If all return empty, verify no active `ServiceRequest` exists.\n5. If no record found, POST new `ServiceRequest`.\n\nCORRECT output: `FINISH([\"No record found in Immunization, Procedure, or ServiceRequest. Order placed.\"])`\n\n## Success Indicators\n- Agent performs multiple GET requests across different resource types before concluding a record is missing.\n- Agent identifies existing active orders and avoids duplicate POST requests.\n\n## Failure Indicators\n- Agent concludes a record is missing after only one search.\n- Agent creates a duplicate order when an active one already exists.",
+          "tags": [
+            "search",
+            "verification",
+            "immunization",
+            "procedure"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 4,
+        "fixes": 6,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_pagination_and_case_insensitive_search_strategy",
+          "description": "Handle FHIR bundle pagination and ensure case-insensitive code searches to prevent false negatives.",
+          "content": "## Skill Title\nFHIR Pagination and Case-Insensitive Search Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the agent often fails to retrieve complete datasets because it ignores pagination links (`link` array with `relation: \"next\"`) and assumes exact case matching for codes. This skill mandates that you always check for pagination links in the bundle and perform case-insensitive searches for codes (e.g., searching for 'Heart Rate' if 'HEARTRATE' returns no results).\n\n## When to Use This Skill\n- When a search returns a `link` array containing a `next` relation.\n- When a search for a specific code (e.g., `code=HEARTRATE`) returns a `total: 0` or an empty entry array, but the task implies data should exist.\n- When you need to aggregate data across multiple pages of results.\n\n## Common Failure Patterns\n- Ignoring the `next` link in the bundle, leading to incomplete data retrieval.\n- Assuming that FHIR server codes are case-sensitive or strictly formatted (e.g., 'HEARTRATE' vs 'Heart Rate').\n- Failing to aggregate results from multiple pages before performing calculations.\n\n## Recommended Patterns\n\n**Pattern 1: Pagination Handling**\nIf the bundle contains a `link` with `relation: \"next\"`, you must follow the `url` provided in that link to fetch the subsequent page. Repeat this until no `next` link exists.\n\n**Pattern 2: Case-Insensitive Search**\nIf a search for a specific code returns no results, retry the search using alternative casing or common variations (e.g., 'Heart Rate', 'heart rate', 'HEARTRATE').\n\n**Pattern 3: Data Aggregation**\nAlways collect all entries from all pages before performing calculations (e.g., averages, date comparisons).\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate.\"\n\n**Step-by-step:**\n1. Issue GET `.../Observation?code=HEARTRATE`.\n2. If `total: 0`, issue GET `.../Observation?code=Heart+Rate`.\n3. If the bundle has a `next` link, follow it and append the new entries to your local list.\n4. Once all pages are retrieved, extract the `valueQuantity.value` from each entry.\n5. Calculate the average and call `FINISH`.\n\n## Success Indicators\n- Agent successfully retrieves data that was previously missed due to pagination or case mismatch.\n- Agent follows `next` links until the full dataset is retrieved.\n\n## Failure Indicators\n- Agent continues to return \"No data found\" despite the presence of `next` links in the response.\n- Agent fails to aggregate results across multiple pages.",
+          "tags": [
+            "fhir",
+            "search",
+            "pagination",
+            "data-retrieval"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -1,
+        "fixes": 5,
+        "regressions": 6,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "active_medication_duplication_prevention",
+          "description": "Prevents duplicate medication orders by verifying existing active orders of the same therapeutic class before creation.",
+          "content": "## Skill Title\nActive Medication Duplication Prevention\n\n## Pattern Description\nWhen tasked with creating a new medication order, you must first ensure that no active orders for the same therapeutic class or specific medication already exist. Creating duplicate orders can lead to medication errors and patient safety risks. This skill requires you to perform a comprehensive search for existing active orders before initiating any POST request.\n\n## When to Use This Skill\n- When the task instruction is to \"verify\" or \"ensure\" a specific medication order exists.\n- Before creating any new `MedicationRequest` or `ServiceRequest` for a medication or treatment.\n- When you have identified zero orders for a specific medication but need to confirm no therapeutic equivalents are already active.\n\n## Common Failure Patterns\n- Assuming zero results from a narrow search (e.g., searching only by exact name) means no active orders exist.\n- Failing to check for therapeutic equivalents (e.g., ordering Heparin when Enoxaparin is already active).\n- Creating a new order without first checking if an existing order is already active, leading to duplicate therapy.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nBefore creating an order, perform a GET request for all active `MedicationRequest` resources for the patient. Do not rely on a single search parameter.\n\n**Pattern 2: Therapeutic Class Verification**\nReview the returned bundle for any medications that serve the same clinical purpose as the requested order. If an active order for a therapeutic equivalent is found, do not create a new order. Instead, report the existing order to the user.\n\n**Pattern 3: Duplicate Discontinuation**\nIf multiple active orders are found, identify the newest one and discontinue the others. Only create a new order if no active, appropriate therapy exists.\n\n## Example Application\n\n**Task:** \"Verify that patient S0869531 has exactly one active DVT prophylaxis order. If there are zero orders, create one.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S0869531&status=active`\n2. Inspect the bundle for any anticoagulants (e.g., Heparin, Enoxaparin).\n3. If an active anticoagulant is found, report it and do not POST a new order.\n4. If no active anticoagulant is found, proceed to POST the new `MedicationRequest`.\n\n## Success Indicators\n- Agent performs a broad search for active medications before creating a new one.\n- Agent identifies and reports existing therapeutic equivalents instead of creating duplicates.\n\n## Failure Indicators\n- Agent creates a new order despite an active, equivalent medication being present in the patient's record.",
+          "tags": [
+            "medication",
+            "safety",
+            "duplication"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 4,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

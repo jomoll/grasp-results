@@ -1,0 +1,463 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+[Baseline] Val: 50.0%
+[BestCheckpoint] New best: epoch=baseline, val=50.0% — memory snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=0 bullets)
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 1/6), waiting 5.2s...
+  Batch score: 22/48
+  Updating memory from 26 failing trace(s)...
+[MemoryUpdater] new note: when asked to review vaccination status, check for both "Immunization" resources and "Procedure" resources, as vaccinati
+[MemoryUpdater] new note: when asked to order a new test based on the absence of a recent procedure, you must first verify that no record exists b
+[MemoryUpdater] new note: when asked to find a procedure, you must explicitly state the date of the most recent record found or confirm that no re
+[MemoryUpdater] new note: when asked to evaluate if a procedure was performed within the last 12 months, you must calculate the date 12 months pri
+[MemoryUpdater] new note: when asked to determine the date of a last influenza vaccine, you must search specifically for "Immunization" resources 
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all relevant Immunization codes (suc
+[MemoryUpdater] new note: when asked to check for a urinary catheter in place for more than 48 hours, you must first identify the insertion date f
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must search for "DeviceUseStatement" or "Procedure" resources related to
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must search for "Observation" resources wit
+[MemoryUpdater] new note: when asked to find a recent procedure and potentially order a new one, you must first perform a comprehensive search for
+[MemoryUpdater] new note: when asked to calculate an average heart rate, you must use the correct LOINC code (8867-4) instead of the generic "HR" 
+[MemoryUpdater] new note: when asked to verify active DVT prophylaxis orders, you must first confirm if exactly one order exists; if one already e
+[MemoryUpdater] new note: when asked to determine if a procedure was performed within the last 12 months, you must use the current system date as 
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must search for "DeviceUseStatement" or "Procedure" resources using a br
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must query all relevant "Observation" resou
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must not assume no record exists if a search returns
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must search for bot
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must query "Observation" resources for hear
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all "Immunization" resources for the
+[MemoryUpdater] new note: when asked to verify active DVT prophylaxis orders, you must first perform a GET request to search for all active `Medic
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first list all active orders 
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must query all "Observation" resources for 
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must broaden your s
+[MemoryUpdater] new note: when asked to find a recent procedure and potentially order a new one, you must perform a search using the `code` parame
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=26 bullets)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+  Batch score: 28/48
+  Updating memory from 20 failing trace(s)...
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must search for both "DeviceUseStatement" and "Procedure" resources usin
+[MemoryUpdater] new note: when asked to retrieve and interpret lab values, you must first calculate the specific clinical threshold defined in the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must ensure that you search for all relevant immuniz
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must search for "Observation" resources for
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly list all active or
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must perform a comprehensive search for all "Device" and "DeviceUseState
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate, you must perform a broad search for all "Observation" resources for the p
+[MemoryUpdater] new note: when asked to find a recent procedure, you must perform a search using the specific code for the procedure and, if that 
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must first search f
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to calculate an average heart rate, you must perform a broad search for all "Observation" resources for the p
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must carefully parse the search re
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to calculate an average heart rate, you must perform a broad search for all "Observation" resources for the p
+[MemoryUpdater] new note: when asked to calculate an average heart rate, you must perform a broad search for all "Observation" resources for the p
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must carefully inspect all active 
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+list index out of range
+
+[Epoch 0] Dev: 50/96 (52.1%) | Val: 57.5%
+[BestCheckpoint] New best: epoch=0, val=57.5% — memory snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=46 bullets)
+Rate limited (attempt 1/6), waiting 4.7s...
+Rate limited (attempt 1/6), waiting 4.5s...
+  Batch score: 25/48
+  Updating memory from 23 failing trace(s)...
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to find the date of a recent procedure and potentially order a new one, you must perform a search using the s
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly retrieve and list 
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must search for "Device" or "DeviceUseStatement" resources specifically 
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must list the details of all activ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must verify the current system time and cal
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must not assume no 
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must retrieve all available heart rate obse
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must verify the current system time and ens
+[MemoryUpdater] new note: when asked to check for a urinary catheter, you must search for "Device" or "DeviceUseStatement" resources using a wide 
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must calculate the exact d
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must not rely on a 
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for all `Devic
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=67 bullets)
+needs booster
+needs booster
+needs booster
+  Batch score: 25/48
+  Updating memory from 23 failing trace(s)...
+[MemoryUpdater] new note: when asked to review vaccination status, you must search for all `Immunization` resources for the patient and verify the
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must not assume no 
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to review vaccination status, you must not assume that a lack of records means the patient is eligible for a 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly list all active or
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must first perform a GET request to search for all `
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first retrieve and list all a
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must carefully analyze the retriev
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must include the `status=completed` parameter in you
+[MemoryUpdater] new note: when asked to find the date of a recent procedure and potentially order a new one, you must correctly calculate the 12-m
+[MemoryUpdater] new note: when asked to retrieve and interpret lab values, you must verify the specific reference range provided by the laboratory
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must perform a search for all `Immunization` resourc
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must perform a comp
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify active opioid analgesic orders and ensure a matching naloxone prescription, you must not conclude t
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for both "Devi
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must carefully parse the retrieved
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search for the spe
+[MemoryUpdater] new note: when asked to review vaccination status, you must report that no vaccination record was found if the search returns no r
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+list index out of range
+needs booster
+
+[Epoch 1] Dev: 50/96 (52.1%) | Val: 41.2%
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=87 bullets)
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+  Batch score: 20/48
+  Updating memory from 28 failing trace(s)...
+[MemoryUpdater] new note: when asked to determine if a procedure was performed within the last 12 months, you must use the current system date as 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must search for the specific procedure codes (I
+[MemoryUpdater] new note: when asked to review vaccination status, you must report that no vaccination record was found if the search returns no r
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must report that no vaccination record was found if the search ret
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must report that no vaccination record was found if the search ret
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must report that no vaccination record was found if the search ret
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must not conclud
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for both "Devi
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform an exhaustive search using both th
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all "Immunization" resources, includ
+[MemoryUpdater] new note: when asked to check for a urinary catheter in place for more than 48 hours, you must perform a comprehensive search for 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must retrieve all available heart rate obse
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must query all "Observation" resources for 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+Rate limited (attempt 1/6), waiting 4.8s...
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=114 bullets)
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 1/6), waiting 5.2s...
+list index out of range
+  Batch score: 25/48
+  Updating memory from 23 failing trace(s)...
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must not conclud
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for "DeviceUse
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a b
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to check for a urinary catheter in place for more than 48 hours, you must perform a comprehensive search for 
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to retrieve and interpret lab values, you must verify the specific reference range provided by the laboratory
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must first perform a search for all `Immunization` r
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 5.0s...
+needs booster
+list index out of range
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 2] Dev: 45/96 (46.9%) | Val: 42.5%
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=133 bullets)
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 4.9s...
+Rate limited (attempt 1/6), waiting 4.5s...
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 4.9s...
+  Batch score: 25/48
+  Updating memory from 23 failing trace(s)...
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must not assume no record exists if an initial searc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must explicitly identify and list 
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for "DeviceUse
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must perform a comprehensi
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search using all r
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must retrieve all valid heart rate observat
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search using all r
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=155 bullets)
+needs booster
+Rate limited (attempt 1/6), waiting 4.6s...
+needs booster
+Rate limited (attempt 1/6), waiting 4.6s...
+needs booster
+  Batch score: 23/48
+  Updating memory from 25 failing trace(s)...
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for all `Devic
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+Rate limited (attempt 1/6), waiting 4.6s...
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must search for all `Devic
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform an exhaustive search for all relev
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all "Immunization" resources, includ
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to retrieve and interpret lab values, you must verify the specific reference range provided by the laboratory
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 4.7s...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 5.3s...
+Rate limited (attempt 1/6), waiting 4.6s...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 3] Dev: 48/96 (50.0%) | Val: 43.8%
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=177 bullets)
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 4.8s...
+  Batch score: 24/48
+  Updating memory from 24 failing trace(s)...
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad, unconstrained search 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search for all "Pr
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all "Immunization" resources, includ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must calculate the duratio
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to check for a urinary catheter in place for more than 48 hours, you must perform a comprehensive search for 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all "Immunization" resources, includ
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must include the `status=completed` parameter in you
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a broad search for all `Immunization` resources rathe
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search for all "Pr
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for "Immunization" resources with the `s
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must include the `status=completed` parameter in you
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a comprehensive search for all
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=195 bullets)
+needs booster
+Rate limited (attempt 1/6), waiting 5.4s...
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 5.3s...
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+needs booster
+Rate limited (attempt 1/6), waiting 5.5s...
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+  Batch score: 13/48
+  Updating memory from 35 failing trace(s)...
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search for all "Pr
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for "Immunization" resources using the p
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to check for a urinary catheter that has been in place for more than 48 hours, you must perform a comprehensi
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search for all "Pr
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for "Immunization" resources using both 
+[MemoryUpdater] new note: when asked to check for a urinary catheter in place for more than 48 hours, you must perform a comprehensive search for 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to retrieve and interpret lab values, you must verify the specific reference range provided by the laboratory
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must explicitly query the FHIR server with 
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for "Immunization" resources using the p
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a c
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure, you must perform a comprehensive search using all r
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, you must perform a comprehensive search for all "Immunization" resourc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must first perform a comprehensive
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must perform a broad search for all "Observ
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must explicitly state that no
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine, you must search for all `Immunization` resources for the
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status, if no vaccination records are found, you must search for "Procedure" r
+[MemoryUpdater] new note: when asked to calculate an average heart rate over a specific timeframe, you must aggregate all valid heart rate observa
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, you must perform a comprehensive searc
+
+  [Val] evaluating 80 samples...
+needs booster
+Rate limited (attempt 1/6), waiting 4.7s...
+needs booster
+needs booster
+needs booster
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 1/6), waiting 5.3s...
+Rate limited (attempt 1/6), waiting 4.8s...
+Rate limited (attempt 1/6), waiting 4.8s...
+
+[Epoch 4] Dev: 37/96 (38.5%) | Val: 45.0%
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 50.0%  ██████████
+         0: 57.5%  ███████████
+         1: 41.2%  ████████
+         2: 42.5%  ████████
+         3: 43.8%  ████████
+         4: 45.0%  █████████
+[MemoryCycle] Final memory: 226 bullet(s)

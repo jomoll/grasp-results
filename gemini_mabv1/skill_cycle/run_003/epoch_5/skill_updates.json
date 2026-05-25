@@ -1,0 +1,284 @@
+[
+  {
+    "epoch": 5,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 33,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "conditional_order_execution_strategy",
+        "description": "Enforce conditional logic to prevent unnecessary orders when clinical thresholds are not met.",
+        "content": "# Conditional Order Execution Strategy\n\n## Pattern Description\nWhen a task requires an action (like ordering medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the clinical condition for the order is met. If the retrieved value is within the normal range, you must terminate the task immediately using the `FINISH` function, explaining why no action was taken.\n\n## When to Use This Skill\n- When a task instruction contains a conditional trigger (e.g., \"If low, then order...\").\n- When you have retrieved a lab value and need to decide whether to proceed with a `MedicationRequest` or `ServiceRequest`.\n- When the task implies that an order is only necessary if a specific clinical threshold is breached.\n\n## Common Failure Patterns\n- Executing `POST` requests for medications or follow-up labs before checking if the initial condition (e.g., low potassium) is met.\n- Proceeding with an order even when the retrieved lab value is within the normal range.\n- Failing to use `FINISH` to terminate the task after determining that no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Evaluation**\n1. Retrieve the most recent lab value using `GET`.\n2. Compare the value against the provided or standard clinical threshold.\n3. If the value is within the normal range, call `FINISH` with a summary of the finding and state that no order is required.\n4. Only if the value meets the \"low\" or \"abnormal\" criteria, proceed to construct and execute the `POST` request.\n\n**Pattern 2: Order Pairing**\nIf the condition is met, ensure all requested orders (e.g., medication and follow-up lab) are executed sequentially before calling `FINISH`.\n\n## Example Application\n\n**Task:** \"Check potassium. If low (<3.5), order replacement. Also order follow-up.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Evaluate: Value is 3.9. \n3. Decision: 3.9 is not < 3.5. Do not POST.\n4. Output: `FINISH([\"Potassium is 3.9, which is not low. No orders placed.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical condition is not met.\n- The agent correctly identifies the threshold and terminates the task.\n\n## Failure Indicators\n- `POST` requests are sent despite the lab value being within the normal range.",
+        "tags": [
+          "conditional-logic",
+          "order-management",
+          "fhir"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce machine-readable list or tuple format for final answers, ensuring data types match the requested schema.",
+        "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen a task requires returning clinical data points (such as lab values, dates, or MRNs), you must provide the final answer in a strictly formatted machine-readable list or tuple. This prevents the inclusion of conversational text, units, or mixed data types that break downstream parsing.\n\n## When to Use This Skill\n\n- When the task asks for specific data points (e.g., \"What is the last value and when was it recorded?\").\n- When the task requires a final answer after performing GET or POST operations.\n- When the task specifies a return format (e.g., \"The answer should be a single number\").\n\n## Common Failure Patterns\n\n- Returning a list of strings when numbers are expected (e.g., `[\"3.1 mmol/L\"]` instead of `[3.1]`).\n- Including natural language explanations in the `FINISH` call (e.g., `[\"The value is 5.0\"]`).\n- Mixing data types in the list (e.g., `[5.0, \"2023-11-09\"]` where the schema expects a specific order or type).\n- Returning a single string instead of a list (e.g., `\"S6551923\"` instead of `[\"S6551923\"]`).\n\n## Recommended Patterns\n\n**Pattern 1: Data Extraction**\nExtract only the raw value (number) and the raw ISO-8601 date string. Do not include units or descriptive text.\n\nCORRECT: `FINISH([3.1, \"2023-11-13T10:15:00Z\"])`\nWRONG:   `FINISH([\"3.1 mmol/L\", \"recorded on 2023-11-13\"])`\n\n**Pattern 2: Single Value/ID**\nIf only one item is requested, wrap it in a list.\n\nCORRECT: `FINISH([\"S6551923\"])`\nWRONG:   `FINISH(\"S6551923\")`\n\n**Pattern 3: Error Handling**\nIf a value is not found, return the specific error code or string requested by the prompt, wrapped in a list.\n\nCORRECT: `FINISH([-1])` or `FINISH([\"Patient not found\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Parse `valueQuantity.value` as a float.\n3. Parse `effectiveDateTime` as a string.\n4. Construct the final output as `FINISH([value, date_string])`.\n\n## Success Indicators\n\n- The final output is a valid JSON list containing only the requested data points.\n- No conversational text or units are present in the `FINISH` arguments.\n\n## Failure Indicators\n\n- The system logs a format error or the user indicates the output was not machine-readable.\n- The output contains units (e.g., \"mmol/L\") inside the list elements.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Include date-based filtering in FHIR observation searches to satisfy time-constrained clinical queries.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., labs, vitals), you must ensure the retrieved data is both relevant to the specific patient and current according to the task's time constraints. Relying solely on sorting by date is insufficient when the task requires data within a specific window (e.g., \"within the last 24 hours\").\n\nAlways apply a date-based filter (`_date`) in your search query when a time constraint is specified. This prevents the retrieval of stale data and ensures the agent correctly identifies when no recent data exists.\n\n## When to Use This Skill\n- When the task specifies a time window (e.g., \"within the last 24 hours\", \"in the last year\").\n- When searching for laboratory results or vital signs where the clinical decision depends on the recency of the measurement.\n\n## Common Failure Patterns\n- Omitting the `_date` parameter, leading to the retrieval of outdated results that do not satisfy the task's temporal requirements.\n- Relying only on `_sort=-date` and manually checking the date in the response, which fails if the most recent record is outside the required window.\n\n## Recommended Patterns\n\n**Pattern 1: Time-Constrained Search**\nWhen a time window is provided, calculate the start date and include it in the search query using the `ge` (greater than or equal) prefix.\n\nCORRECT: `GET /Observation?patient={id}&code={code}&_date=ge{24h_ago_timestamp}&_sort=-date`\nWRONG:   `GET /Observation?patient={id}&code={code}&_sort=-date` (and then filtering manually)\n\n**Pattern 2: Handling Empty Results**\nIf the search returns an empty bundle or no records within the specified date range, conclude that no valid data exists for the task.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. Identify the current time (e.g., 2023-11-13T10:15:00).\n2. Calculate the 24-hour threshold (e.g., 2023-11-12T10:15:00).\n3. Issue GET with date filter: `GET /Observation?patient=S3057899&code=MG&_date=ge2023-11-12T10:15:00&_sort=-date`\n4. If the bundle is empty, report that no magnesium level was recorded in the last 24 hours.\n\n## Success Indicators\n- The agent includes `_date=ge...` in the FHIR search URL.\n- The agent correctly identifies when no records exist within the specified window.\n\n## Failure Indicators\n- The agent retrieves records older than the specified time window and incorrectly uses them for clinical decisions.",
+        "tags": [
+          "fhir",
+          "search",
+          "date-filter"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Expand search strategy to include both local codes and standard LOINC codes for laboratory observations.",
+        "content": "## Skill Title\n\nFHIR Observation Search Strategy\n\n## Pattern Description\n\nWhen searching for laboratory observations, the agent must account for the fact that clinical systems may store data using either local facility-specific codes or standardized LOINC codes. Relying on a single code often leads to empty search results even when the data exists in the chart.\n\nTo ensure comprehensive data retrieval, you must perform a multi-step search if the initial query for a provided local code returns no results. Always prioritize the most specific code provided in the task context.\n\n## When to Use This Skill\n\n- When a GET /Observation request for a specific lab code returns a bundle with `total: 0`.\n- When the task provides both a local code (e.g., \"A1C\", \"MG\") and a corresponding LOINC code (e.g., \"4548-4\", \"2160-0\").\n- When searching for laboratory results where multiple coding systems might be in use.\n\n## Common Failure Patterns\n\n- Searching only for the local code and giving up when it returns no results.\n- Failing to attempt a secondary search using the provided LOINC code when the primary search fails.\n- Assuming that a zero-result search means the data does not exist in the patient's record.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nAlways start by searching for the local code provided in the task description using `_sort=-date` to get the most recent record first.\n\n**Pattern 2: Fallback Search**\nIf the primary search returns `total: 0`, immediately perform a second GET request using the LOINC code provided in the task context. \n\n**Pattern 3: Verification**\nIf both the local code and the LOINC code searches return `total: 0`, only then conclude that the data is unavailable.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S2016972?\"\n\n**Step-by-step:**\n\n1. Issue GET `.../Observation?patient=S2016972&code=A1C&_sort=-date`.\n2. If the response is `total: 0`, issue GET `.../Observation?patient=S2016972&code=4548-4&_sort=-date`.\n3. If the second search returns a resource, extract the value from `valueQuantity.value`.\n4. If both return `total: 0`, report that no record was found.\n\n## Success Indicators\n\n- The agent successfully retrieves data by trying the secondary LOINC code after the primary code fails.\n- The agent avoids premature \"not found\" conclusions.\n\n## Failure Indicators\n\n- The agent stops after one failed search attempt.\n- The agent reports \"not found\" when the data was actually stored under the alternative code.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_order_execution_strategy",
+          "description": "Enforce conditional logic to prevent unnecessary orders when clinical thresholds are not met.",
+          "content": "# Conditional Order Execution Strategy\n\n## Pattern Description\nWhen a task requires an action (like ordering medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the clinical condition for the order is met. If the retrieved value is within the normal range, you must terminate the task immediately using the `FINISH` function, explaining why no action was taken.\n\n## When to Use This Skill\n- When a task instruction contains a conditional trigger (e.g., \"If low, then order...\").\n- When you have retrieved a lab value and need to decide whether to proceed with a `MedicationRequest` or `ServiceRequest`.\n- When the task implies that an order is only necessary if a specific clinical threshold is breached.\n\n## Common Failure Patterns\n- Executing `POST` requests for medications or follow-up labs before checking if the initial condition (e.g., low potassium) is met.\n- Proceeding with an order even when the retrieved lab value is within the normal range.\n- Failing to use `FINISH` to terminate the task after determining that no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Conditional Evaluation**\n1. Retrieve the most recent lab value using `GET`.\n2. Compare the value against the provided or standard clinical threshold.\n3. If the value is within the normal range, call `FINISH` with a summary of the finding and state that no order is required.\n4. Only if the value meets the \"low\" or \"abnormal\" criteria, proceed to construct and execute the `POST` request.\n\n**Pattern 2: Order Pairing**\nIf the condition is met, ensure all requested orders (e.g., medication and follow-up lab) are executed sequentially before calling `FINISH`.\n\n## Example Application\n\n**Task:** \"Check potassium. If low (<3.5), order replacement. Also order follow-up.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Evaluate: Value is 3.9. \n3. Decision: 3.9 is not < 3.5. Do not POST.\n4. Output: `FINISH([\"Potassium is 3.9, which is not low. No orders placed.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical condition is not met.\n- The agent correctly identifies the threshold and terminates the task.\n\n## Failure Indicators\n- `POST` requests are sent despite the lab value being within the normal range.",
+          "tags": [
+            "conditional-logic",
+            "order-management",
+            "fhir"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "structured_final_output_strategy",
+          "description": "Enforce machine-readable list or tuple format for final answers, ensuring data types match the requested schema.",
+          "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen a task requires returning clinical data points (such as lab values, dates, or MRNs), you must provide the final answer in a strictly formatted machine-readable list or tuple. This prevents the inclusion of conversational text, units, or mixed data types that break downstream parsing.\n\n## When to Use This Skill\n\n- When the task asks for specific data points (e.g., \"What is the last value and when was it recorded?\").\n- When the task requires a final answer after performing GET or POST operations.\n- When the task specifies a return format (e.g., \"The answer should be a single number\").\n\n## Common Failure Patterns\n\n- Returning a list of strings when numbers are expected (e.g., `[\"3.1 mmol/L\"]` instead of `[3.1]`).\n- Including natural language explanations in the `FINISH` call (e.g., `[\"The value is 5.0\"]`).\n- Mixing data types in the list (e.g., `[5.0, \"2023-11-09\"]` where the schema expects a specific order or type).\n- Returning a single string instead of a list (e.g., `\"S6551923\"` instead of `[\"S6551923\"]`).\n\n## Recommended Patterns\n\n**Pattern 1: Data Extraction**\nExtract only the raw value (number) and the raw ISO-8601 date string. Do not include units or descriptive text.\n\nCORRECT: `FINISH([3.1, \"2023-11-13T10:15:00Z\"])`\nWRONG:   `FINISH([\"3.1 mmol/L\", \"recorded on 2023-11-13\"])`\n\n**Pattern 2: Single Value/ID**\nIf only one item is requested, wrap it in a list.\n\nCORRECT: `FINISH([\"S6551923\"])`\nWRONG:   `FINISH(\"S6551923\")`\n\n**Pattern 3: Error Handling**\nIf a value is not found, return the specific error code or string requested by the prompt, wrapped in a list.\n\nCORRECT: `FINISH([-1])` or `FINISH([\"Patient not found\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Parse `valueQuantity.value` as a float.\n3. Parse `effectiveDateTime` as a string.\n4. Construct the final output as `FINISH([value, date_string])`.\n\n## Success Indicators\n\n- The final output is a valid JSON list containing only the requested data points.\n- No conversational text or units are present in the `FINISH` arguments.\n\n## Failure Indicators\n\n- The system logs a format error or the user indicates the output was not machine-readable.\n- The output contains units (e.g., \"mmol/L\") inside the list elements.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": -4,
+        "score": -4,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Include date-based filtering in FHIR observation searches to satisfy time-constrained clinical queries.",
+          "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., labs, vitals), you must ensure the retrieved data is both relevant to the specific patient and current according to the task's time constraints. Relying solely on sorting by date is insufficient when the task requires data within a specific window (e.g., \"within the last 24 hours\").\n\nAlways apply a date-based filter (`_date`) in your search query when a time constraint is specified. This prevents the retrieval of stale data and ensures the agent correctly identifies when no recent data exists.\n\n## When to Use This Skill\n- When the task specifies a time window (e.g., \"within the last 24 hours\", \"in the last year\").\n- When searching for laboratory results or vital signs where the clinical decision depends on the recency of the measurement.\n\n## Common Failure Patterns\n- Omitting the `_date` parameter, leading to the retrieval of outdated results that do not satisfy the task's temporal requirements.\n- Relying only on `_sort=-date` and manually checking the date in the response, which fails if the most recent record is outside the required window.\n\n## Recommended Patterns\n\n**Pattern 1: Time-Constrained Search**\nWhen a time window is provided, calculate the start date and include it in the search query using the `ge` (greater than or equal) prefix.\n\nCORRECT: `GET /Observation?patient={id}&code={code}&_date=ge{24h_ago_timestamp}&_sort=-date`\nWRONG:   `GET /Observation?patient={id}&code={code}&_sort=-date` (and then filtering manually)\n\n**Pattern 2: Handling Empty Results**\nIf the search returns an empty bundle or no records within the specified date range, conclude that no valid data exists for the task.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. Identify the current time (e.g., 2023-11-13T10:15:00).\n2. Calculate the 24-hour threshold (e.g., 2023-11-12T10:15:00).\n3. Issue GET with date filter: `GET /Observation?patient=S3057899&code=MG&_date=ge2023-11-12T10:15:00&_sort=-date`\n4. If the bundle is empty, report that no magnesium level was recorded in the last 24 hours.\n\n## Success Indicators\n- The agent includes `_date=ge...` in the FHIR search URL.\n- The agent correctly identifies when no records exist within the specified window.\n\n## Failure Indicators\n- The agent retrieves records older than the specified time window and incorrectly uses them for clinical decisions.",
+          "tags": [
+            "fhir",
+            "search",
+            "date-filter"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 2,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Expand search strategy to include both local codes and standard LOINC codes for laboratory observations.",
+          "content": "## Skill Title\n\nFHIR Observation Search Strategy\n\n## Pattern Description\n\nWhen searching for laboratory observations, the agent must account for the fact that clinical systems may store data using either local facility-specific codes or standardized LOINC codes. Relying on a single code often leads to empty search results even when the data exists in the chart.\n\nTo ensure comprehensive data retrieval, you must perform a multi-step search if the initial query for a provided local code returns no results. Always prioritize the most specific code provided in the task context.\n\n## When to Use This Skill\n\n- When a GET /Observation request for a specific lab code returns a bundle with `total: 0`.\n- When the task provides both a local code (e.g., \"A1C\", \"MG\") and a corresponding LOINC code (e.g., \"4548-4\", \"2160-0\").\n- When searching for laboratory results where multiple coding systems might be in use.\n\n## Common Failure Patterns\n\n- Searching only for the local code and giving up when it returns no results.\n- Failing to attempt a secondary search using the provided LOINC code when the primary search fails.\n- Assuming that a zero-result search means the data does not exist in the patient's record.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nAlways start by searching for the local code provided in the task description using `_sort=-date` to get the most recent record first.\n\n**Pattern 2: Fallback Search**\nIf the primary search returns `total: 0`, immediately perform a second GET request using the LOINC code provided in the task context. \n\n**Pattern 3: Verification**\nIf both the local code and the LOINC code searches return `total: 0`, only then conclude that the data is unavailable.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S2016972?\"\n\n**Step-by-step:**\n\n1. Issue GET `.../Observation?patient=S2016972&code=A1C&_sort=-date`.\n2. If the response is `total: 0`, issue GET `.../Observation?patient=S2016972&code=4548-4&_sort=-date`.\n3. If the second search returns a resource, extract the value from `valueQuantity.value`.\n4. If both return `total: 0`, report that no record was found.\n\n## Success Indicators\n\n- The agent successfully retrieves data by trying the secondary LOINC code after the primary code fails.\n- The agent avoids premature \"not found\" conclusions.\n\n## Failure Indicators\n\n- The agent stops after one failed search attempt.\n- The agent reports \"not found\" when the data was actually stored under the alternative code.",
+          "tags": [
+            "fhir",
+            "search",
+            "lab-results"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 5,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "lab_threshold_validation_strategy",
+        "description": "Standardize clinical threshold comparisons for laboratory values to prevent subjective interpretation errors.",
+        "content": "# Lab Threshold Validation Strategy\n\n## Pattern Description\nWhen evaluating laboratory results against clinical thresholds (e.g., potassium < 3.5 mmol/L), you must apply a strict, objective comparison. Subjective interpretation or rounding of values often leads to incorrect clinical decisions. Always use the raw numerical value returned by the FHIR resource and compare it directly against the specified threshold.\n\n## When to Use This Skill\n- When a task requires checking if a lab value is \"low\", \"high\", or \"abnormal\" based on a provided threshold.\n- When the task involves conditional logic (e.g., \"If low, then order replacement\").\n- When the lab value is at the exact threshold boundary.\n\n## Common Failure Patterns\n- Treating a value equal to the threshold as \"not low\" when the clinical intent is inclusive (e.g., 3.5 is low).\n- Using conversational language to interpret results instead of performing a direct numerical comparison.\n- Failing to account for units when comparing values (e.g., comparing mg/dL to mmol/L).\n\n## Recommended Patterns\n\n**Pattern 1: Numerical Comparison**\nAlways extract the `valueQuantity.value` as a float. Perform the comparison using standard operators (`<`, `>`, `<=`, `>=`).\n\nCORRECT: `if value < 3.5: order_replacement()`\nWRONG: `if value <= 3.5: order_replacement()` (if the threshold is strictly below)\n\n**Pattern 2: Threshold Inclusivity**\nIf the task specifies a threshold, assume the boundary is inclusive unless explicitly stated otherwise. If the value equals the threshold, treat it as meeting the criteria for the action.\n\n**Pattern 3: Verification**\nBefore concluding, explicitly state the value and the threshold in your internal reasoning to ensure the comparison is correct.\n\n## Example Application\n\n**Task:** \"Check if potassium is low (threshold 3.5 mmol/L).\"\n\n**Step-by-step:**\n1. Extract `valueQuantity.value` (e.g., 3.5).\n2. Compare: `3.5 < 3.5` is False. \n3. Decision: Do not order replacement.\n4. Output: `FINISH([\"Potassium is 3.5 mmol/L. Threshold is 3.5 mmol/L. Value is not below threshold, no replacement required.\"])\n\n## Success Indicators\n- Consistent application of threshold logic across different patients.\n- No subjective descriptions of \"normal\" or \"abnormal\" without explicit numerical justification.\n\n## Failure Indicators\n- Agent incorrectly identifies a value equal to the threshold as \"low\" or \"not low\" inconsistently.\n- Agent fails to perform the comparison and relies on qualitative assessment.",
+        "tags": [
+          "lab",
+          "threshold",
+          "validation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Expand search strategy to include multiple LOINC codes and common aliases when primary codes return no results.",
+        "content": "# FHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, a single code search often fails due to variations in how systems record data (e.g., local codes vs. standard LOINC). You must implement a multi-step search strategy that attempts the primary code first, then falls back to known aliases or descriptive text searches if the initial result is empty.\n\n## When to Use This Skill\n- When a GET /Observation request returns a bundle with `total: 0`.\n- When the task specifies a lab test (e.g., HbA1C, Magnesium) and the primary code provided in the context yields no records.\n- When you need to ensure you have exhausted all possible ways the data might be stored before concluding it is missing.\n\n## Common Failure Patterns\n- Relying on a single code (e.g., \"A1C\" or \"MG\") and giving up when it returns no results.\n- Failing to check for standard LOINC codes (e.g., 4548-4 for HbA1C, 2160-0 for Magnesium) when a text-based code fails.\n- Assuming a zero-result bundle means the data does not exist without attempting at least one alternative code or alias.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nAlways start with the code provided in the task description. Use `_sort=-date` to ensure you get the most recent record first.\n\n**Pattern 2: Fallback Search**\nIf the primary search returns `total: 0`, immediately perform a second search using the standard LOINC code for that test. \n- For HbA1C: If \"A1C\" fails, search for `4548-4`.\n- For Magnesium: If \"MG\" fails, search for `2160-0`.\n\n**Pattern 3: Verification**\nIf both the primary and fallback searches return `total: 0`, only then conclude that the data is not available and proceed with the task's \"not found\" or \"order new\" logic.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S6488980?\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6488980&code=A1C&_sort=-date`\n2. If `total` is 0, GET `.../Observation?patient=S6488980&code=4548-4&_sort=-date`\n3. If both return 0, report that no record was found.\n\n## Success Indicators\n- Agent successfully retrieves data after the second search attempt.\n- Agent correctly identifies that data is missing only after exhausting all search aliases.\n\n## Failure Indicators\n- Agent returns -1 or \"Not available\" after only one failed search attempt.\n- Agent fails to attempt the standard LOINC code when a local code fails.",
+        "tags": [
+          "fhir",
+          "search",
+          "lab-results"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Update to include explicit verification of lab result dates and normal range thresholds before triggering downstream actions.",
+        "content": "# FHIR Observation Search Strategy\n\n## Pattern Description\nUse `_sort=-date` and multiple code aliases when searching for laboratory observations to ensure the most recent data is retrieved. Before performing any downstream actions (like ordering a new test or medication), you must verify the retrieved observation's date and value against the task requirements.\n\n## When to Use This Skill\n- When searching for laboratory observations (e.g., HbA1C, Potassium, Magnesium).\n- When a task requires conditional logic based on the age of a lab result (e.g., \"if > 1 year old\").\n- When a task requires conditional logic based on the value of a lab result (e.g., \"if low, order replacement\").\n\n## Common Failure Patterns\n- Ordering a new test when a valid, recent result already exists in the bundle.\n- Ordering a medication or replacement when the lab value is within normal limits.\n- Failing to check the `effectiveDateTime` of the observation, leading to stale data usage.\n- Assuming a missing result in the first page of a bundle means the result does not exist (always check `total` and `link` for pagination).\n\n## Recommended Patterns\n\n**Pattern 1: Retrieval and Validation**\n1. Perform the GET request with `_sort=-date`.\n2. Inspect the `entry` array. If empty, the lab is missing.\n3. If not empty, extract the most recent `effectiveDateTime` and `valueQuantity.value` from the first entry.\n\n**Pattern 2: Conditional Logic**\n1. Compare the `effectiveDateTime` to the current date. If the difference is within the threshold (e.g., < 1 year), do not order a new test.\n2. Compare the `valueQuantity.value` to the normal range. If the value is within normal limits, do not order replacement medication.\n\n**Pattern 3: Completion**\n1. If the condition for action is not met, report the existing value and date, and explicitly state why no action was taken.\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=A1C&_sort=-date`\n2. Extract `effectiveDateTime` (e.g., \"2022-01-01\") and `value` (e.g., 5.7).\n3. Calculate age: Current date (2023-11-13) - 2022-01-01 > 1 year.\n4. Since it is > 1 year, proceed to POST `ServiceRequest`.\n\n## Success Indicators\n- No redundant `ServiceRequest` or `MedicationRequest` POSTs when existing data is sufficient or normal.\n- Correct identification of \"outdated\" vs \"missing\" lab results.\n\n## Failure Indicators\n- Agent orders a test despite a recent result being present in the bundle.\n- Agent orders replacement medication when the lab value is normal.",
+        "tags": [
+          "fhir",
+          "observation",
+          "logic"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce consistent data types in final output lists to prevent format mismatches.",
+        "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen providing a final answer to a task, you must ensure that all elements within the `FINISH()` list are of a consistent data type. Mixing types (e.g., numbers and strings) often leads to parsing errors or incorrect interpretations by the evaluation system. If the task requires returning multiple pieces of information, such as a lab value and a date, ensure they are either all formatted as strings or all formatted as numbers, depending on the task requirements.\n\n## When to Use This Skill\n\n- When the task requires returning a list of values (e.g., `[value, date]`).\n- When previous attempts resulted in `answer_format_wrong_type` errors.\n- When you are combining numeric lab results with string-based timestamps.\n\n## Common Failure Patterns\n\n- Returning `[6.1, \"2023-10-13\"]` (mixed number and string).\n- Returning `[\"6.1\", \"2023-10-13\"]` when the system expects a numeric value for the first element.\n- Returning conversational text inside the list instead of raw data.\n\n## Recommended Patterns\n\n**Pattern 1: Type Homogenization**\nIf you must return a list containing both a number and a string, convert the number to a string to ensure the entire list contains only strings.\n\nCORRECT: `FINISH([\"6.1\", \"2023-10-13\"])\nWRONG:   `FINISH([6.1, \"2023-10-13\"])\n\n**Pattern 2: Single Type Enforcement**\nIf the task asks for a numeric value, ensure the output is strictly a list containing only that number.\n\nCORRECT: `FINISH([6.1])`\nWRONG:   `FINISH([\"6.1\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 6.1) and the date (e.g., \"2023-10-13\").\n3. Convert the numeric value to a string to match the date format.\n4. Construct the output: `FINISH([\"6.1\", \"2023-10-13\"])`.\n\n## Success Indicators\n\n- The final output is a valid JSON list with consistent data types.\n- No `answer_format_wrong_type` errors occur in the evaluation logs.\n\n## Failure Indicators\n\n- The evaluation system flags a type mismatch.\n- The output contains mixed types like `[number, string]`.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_threshold_validation_strategy",
+          "description": "Standardize clinical threshold comparisons for laboratory values to prevent subjective interpretation errors.",
+          "content": "# Lab Threshold Validation Strategy\n\n## Pattern Description\nWhen evaluating laboratory results against clinical thresholds (e.g., potassium < 3.5 mmol/L), you must apply a strict, objective comparison. Subjective interpretation or rounding of values often leads to incorrect clinical decisions. Always use the raw numerical value returned by the FHIR resource and compare it directly against the specified threshold.\n\n## When to Use This Skill\n- When a task requires checking if a lab value is \"low\", \"high\", or \"abnormal\" based on a provided threshold.\n- When the task involves conditional logic (e.g., \"If low, then order replacement\").\n- When the lab value is at the exact threshold boundary.\n\n## Common Failure Patterns\n- Treating a value equal to the threshold as \"not low\" when the clinical intent is inclusive (e.g., 3.5 is low).\n- Using conversational language to interpret results instead of performing a direct numerical comparison.\n- Failing to account for units when comparing values (e.g., comparing mg/dL to mmol/L).\n\n## Recommended Patterns\n\n**Pattern 1: Numerical Comparison**\nAlways extract the `valueQuantity.value` as a float. Perform the comparison using standard operators (`<`, `>`, `<=`, `>=`).\n\nCORRECT: `if value < 3.5: order_replacement()`\nWRONG: `if value <= 3.5: order_replacement()` (if the threshold is strictly below)\n\n**Pattern 2: Threshold Inclusivity**\nIf the task specifies a threshold, assume the boundary is inclusive unless explicitly stated otherwise. If the value equals the threshold, treat it as meeting the criteria for the action.\n\n**Pattern 3: Verification**\nBefore concluding, explicitly state the value and the threshold in your internal reasoning to ensure the comparison is correct.\n\n## Example Application\n\n**Task:** \"Check if potassium is low (threshold 3.5 mmol/L).\"\n\n**Step-by-step:**\n1. Extract `valueQuantity.value` (e.g., 3.5).\n2. Compare: `3.5 < 3.5` is False. \n3. Decision: Do not order replacement.\n4. Output: `FINISH([\"Potassium is 3.5 mmol/L. Threshold is 3.5 mmol/L. Value is not below threshold, no replacement required.\"])\n\n## Success Indicators\n- Consistent application of threshold logic across different patients.\n- No subjective descriptions of \"normal\" or \"abnormal\" without explicit numerical justification.\n\n## Failure Indicators\n- Agent incorrectly identifies a value equal to the threshold as \"low\" or \"not low\" inconsistently.\n- Agent fails to perform the comparison and relies on qualitative assessment.",
+          "tags": [
+            "lab",
+            "threshold",
+            "validation"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Expand search strategy to include multiple LOINC codes and common aliases when primary codes return no results.",
+          "content": "# FHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for laboratory observations, a single code search often fails due to variations in how systems record data (e.g., local codes vs. standard LOINC). You must implement a multi-step search strategy that attempts the primary code first, then falls back to known aliases or descriptive text searches if the initial result is empty.\n\n## When to Use This Skill\n- When a GET /Observation request returns a bundle with `total: 0`.\n- When the task specifies a lab test (e.g., HbA1C, Magnesium) and the primary code provided in the context yields no records.\n- When you need to ensure you have exhausted all possible ways the data might be stored before concluding it is missing.\n\n## Common Failure Patterns\n- Relying on a single code (e.g., \"A1C\" or \"MG\") and giving up when it returns no results.\n- Failing to check for standard LOINC codes (e.g., 4548-4 for HbA1C, 2160-0 for Magnesium) when a text-based code fails.\n- Assuming a zero-result bundle means the data does not exist without attempting at least one alternative code or alias.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nAlways start with the code provided in the task description. Use `_sort=-date` to ensure you get the most recent record first.\n\n**Pattern 2: Fallback Search**\nIf the primary search returns `total: 0`, immediately perform a second search using the standard LOINC code for that test. \n- For HbA1C: If \"A1C\" fails, search for `4548-4`.\n- For Magnesium: If \"MG\" fails, search for `2160-0`.\n\n**Pattern 3: Verification**\nIf both the primary and fallback searches return `total: 0`, only then conclude that the data is not available and proceed with the task's \"not found\" or \"order new\" logic.\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value for patient S6488980?\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S6488980&code=A1C&_sort=-date`\n2. If `total` is 0, GET `.../Observation?patient=S6488980&code=4548-4&_sort=-date`\n3. If both return 0, report that no record was found.\n\n## Success Indicators\n- Agent successfully retrieves data after the second search attempt.\n- Agent correctly identifies that data is missing only after exhausting all search aliases.\n\n## Failure Indicators\n- Agent returns -1 or \"Not available\" after only one failed search attempt.\n- Agent fails to attempt the standard LOINC code when a local code fails.",
+          "tags": [
+            "fhir",
+            "search",
+            "lab-results"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 1,
+        "fixes": 2,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Update to include explicit verification of lab result dates and normal range thresholds before triggering downstream actions.",
+          "content": "# FHIR Observation Search Strategy\n\n## Pattern Description\nUse `_sort=-date` and multiple code aliases when searching for laboratory observations to ensure the most recent data is retrieved. Before performing any downstream actions (like ordering a new test or medication), you must verify the retrieved observation's date and value against the task requirements.\n\n## When to Use This Skill\n- When searching for laboratory observations (e.g., HbA1C, Potassium, Magnesium).\n- When a task requires conditional logic based on the age of a lab result (e.g., \"if > 1 year old\").\n- When a task requires conditional logic based on the value of a lab result (e.g., \"if low, order replacement\").\n\n## Common Failure Patterns\n- Ordering a new test when a valid, recent result already exists in the bundle.\n- Ordering a medication or replacement when the lab value is within normal limits.\n- Failing to check the `effectiveDateTime` of the observation, leading to stale data usage.\n- Assuming a missing result in the first page of a bundle means the result does not exist (always check `total` and `link` for pagination).\n\n## Recommended Patterns\n\n**Pattern 1: Retrieval and Validation**\n1. Perform the GET request with `_sort=-date`.\n2. Inspect the `entry` array. If empty, the lab is missing.\n3. If not empty, extract the most recent `effectiveDateTime` and `valueQuantity.value` from the first entry.\n\n**Pattern 2: Conditional Logic**\n1. Compare the `effectiveDateTime` to the current date. If the difference is within the threshold (e.g., < 1 year), do not order a new test.\n2. Compare the `valueQuantity.value` to the normal range. If the value is within normal limits, do not order replacement medication.\n\n**Pattern 3: Completion**\n1. If the condition for action is not met, report the existing value and date, and explicitly state why no action was taken.\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=A1C&_sort=-date`\n2. Extract `effectiveDateTime` (e.g., \"2022-01-01\") and `value` (e.g., 5.7).\n3. Calculate age: Current date (2023-11-13) - 2022-01-01 > 1 year.\n4. Since it is > 1 year, proceed to POST `ServiceRequest`.\n\n## Success Indicators\n- No redundant `ServiceRequest` or `MedicationRequest` POSTs when existing data is sufficient or normal.\n- Correct identification of \"outdated\" vs \"missing\" lab results.\n\n## Failure Indicators\n- Agent orders a test despite a recent result being present in the bundle.\n- Agent orders replacement medication when the lab value is normal.",
+          "tags": [
+            "fhir",
+            "observation",
+            "logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 1,
+        "fixes": 3,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "structured_final_output_strategy",
+          "description": "Enforce consistent data types in final output lists to prevent format mismatches.",
+          "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen providing a final answer to a task, you must ensure that all elements within the `FINISH()` list are of a consistent data type. Mixing types (e.g., numbers and strings) often leads to parsing errors or incorrect interpretations by the evaluation system. If the task requires returning multiple pieces of information, such as a lab value and a date, ensure they are either all formatted as strings or all formatted as numbers, depending on the task requirements.\n\n## When to Use This Skill\n\n- When the task requires returning a list of values (e.g., `[value, date]`).\n- When previous attempts resulted in `answer_format_wrong_type` errors.\n- When you are combining numeric lab results with string-based timestamps.\n\n## Common Failure Patterns\n\n- Returning `[6.1, \"2023-10-13\"]` (mixed number and string).\n- Returning `[\"6.1\", \"2023-10-13\"]` when the system expects a numeric value for the first element.\n- Returning conversational text inside the list instead of raw data.\n\n## Recommended Patterns\n\n**Pattern 1: Type Homogenization**\nIf you must return a list containing both a number and a string, convert the number to a string to ensure the entire list contains only strings.\n\nCORRECT: `FINISH([\"6.1\", \"2023-10-13\"])\nWRONG:   `FINISH([6.1, \"2023-10-13\"])\n\n**Pattern 2: Single Type Enforcement**\nIf the task asks for a numeric value, ensure the output is strictly a list containing only that number.\n\nCORRECT: `FINISH([6.1])`\nWRONG:   `FINISH([\"6.1\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the observation.\n2. Extract the value (e.g., 6.1) and the date (e.g., \"2023-10-13\").\n3. Convert the numeric value to a string to match the date format.\n4. Construct the output: `FINISH([\"6.1\", \"2023-10-13\"])`.\n\n## Success Indicators\n\n- The final output is a valid JSON list with consistent data types.\n- No `answer_format_wrong_type` errors occur in the evaluation logs.\n\n## Failure Indicators\n\n- The evaluation system flags a type mismatch.\n- The output contains mixed types like `[number, string]`.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

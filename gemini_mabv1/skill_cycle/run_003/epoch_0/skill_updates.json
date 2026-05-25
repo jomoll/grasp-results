@@ -1,0 +1,278 @@
+[
+  {
+    "epoch": 0,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 26,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "patient_age_calculation_strategy",
+        "description": "Calculate patient age by subtracting birthDate from the current date and rounding down.",
+        "content": "## Skill Title\nPatient Age Calculation Strategy\n\n## Pattern Description\nWhen a task requires the age of a patient, you must not rely on static or hallucinated values. Instead, you must retrieve the `birthDate` field from the `Patient` resource and calculate the age based on the current date provided in the task context.\n\nAge is defined as the number of full years elapsed between the `birthDate` and the current date. You must round down to the nearest integer (floor function).\n\n## When to Use This Skill\n- When the task asks for a patient's age.\n- When the task provides a current date in the context and requires an age calculation based on a `birthDate` found in a `Patient` resource.\n\n## Common Failure Patterns\n- Returning a static number or guessing based on appearance.\n- Failing to account for the current date provided in the prompt.\n- Incorrectly rounding up or using floating-point numbers instead of integers.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval**\n1. Perform a `GET` request for the `Patient` resource using the provided MRN or identifier.\n2. Extract the `birthDate` field (format: YYYY-MM-DD).\n\n**Pattern 2: Calculation**\n1. Identify the current date from the task context (e.g., 2023-11-13).\n2. Calculate the difference in years: `Age = CurrentYear - BirthYear`.\n3. If the current month/day is before the birth month/day, subtract 1 from the result.\n4. Ensure the final result is an integer.\n\n**Pattern 3: Completion**\n1. Return the calculated integer as the final answer.\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S2703270?\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Patient?identifier=S2703270`\n2. Extract `birthDate`: \"1978-05-15\".\n3. Current date: \"2023-11-13\".\n4. Calculation: 2023 - 1978 = 45. Since November is after May, the patient is 45.\n5. Output: `FINISH([45])`\n\n## Success Indicators\n- The agent performs a GET request to retrieve the patient record.\n- The final output is a single integer representing the correct age.\n\n## Failure Indicators\n- The agent returns a value that does not match the math based on the `birthDate`.\n- The agent returns a string or a non-integer value.",
+        "tags": [
+          "patient",
+          "calculation",
+          "age"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "patient_age_calculation_strategy",
+        "description": "Calculate patient age by subtracting birthDate from the current date and rounding down.",
+        "content": "## Skill Title\nPatient Age Calculation Strategy\n\n## Pattern Description\nWhen a task requires the age of a patient, you must not rely on static or hallucinated values. Instead, you must retrieve the `birthDate` field from the `Patient` resource and calculate the age based on the current date provided in the task context.\n\nAge is defined as the number of full years elapsed between the `birthDate` and the current date. You must round down to the nearest integer (floor function).\n\n## When to Use This Skill\n- When the task asks for a patient's age.\n- When the task provides a current date in the context and requires an age calculation based on a `birthDate` found in a `Patient` resource.\n\n## Common Failure Patterns\n- Returning a static number or guessing based on appearance.\n- Failing to account for the current date provided in the prompt.\n- Incorrectly rounding up or using floating-point numbers instead of integers.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval**\n1. Perform a `GET` request for the `Patient` resource using the provided MRN or identifier.\n2. Extract the `birthDate` field (format: YYYY-MM-DD).\n\n**Pattern 2: Calculation**\n1. Identify the current date from the task context (e.g., 2023-11-13).\n2. Calculate the difference in years: `Age = CurrentYear - BirthYear`.\n3. If the current month/day is before the birth month/day, subtract 1 from the result.\n4. Ensure the final result is an integer.\n\n**Pattern 3: Completion**\n1. Return the calculated integer as the final answer.\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S2703270?\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Patient?identifier=S2703270`\n2. Extract `birthDate`: \"1978-05-15\".\n3. Current date: \"2023-11-13\".\n4. Calculation: 2023 - 1978 = 45. Since November is after May, the patient is 45.\n5. Output: `FINISH([45])`\n\n## Success Indicators\n- The agent performs a GET request to retrieve the patient record.\n- The final output is a single integer representing the correct age.\n\n## Failure Indicators\n- The agent returns a value that does not match the math based on the `birthDate`.\n- The agent returns a string or a non-integer value.",
+        "tags": [
+          "patient",
+          "calculation",
+          "age"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_order_necessity_verification",
+        "description": "Verify if a new order is clinically necessary by checking existing recent results before posting.",
+        "content": "## Skill Title\nClinical Order Necessity Verification\n\n## Pattern Description\nBefore placing a new order (e.g., ServiceRequest or MedicationRequest) based on a clinical threshold, you must first verify that a recent, valid result does not already exist in the patient's record. Automatically ordering tests or medications without confirming the current status often leads to redundant or unnecessary clinical actions.\n\n## When to Use This Skill\n- When a task instructs you to order a test or medication if a value is \"low\", \"old\", or \"out of range\".\n- Before executing any POST request for a clinical order.\n- When the task implies a conditional trigger (e.g., \"If the lab value is > 1 year old, order a new test\").\n\n## Common Failure Patterns\n- Assuming an order is required without checking the most recent `Observation` resource.\n- Failing to compare the `effectiveDateTime` of the most recent result against the current date/time.\n- Triggering a POST request immediately after a GET request without evaluating the retrieved data.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\n1. Perform a GET request to retrieve the relevant `Observation` resources for the patient.\n2. Sort the results by `effectiveDateTime` to identify the most recent record.\n3. Evaluate the most recent record against the task's criteria (e.g., is it > 1 year old? Is the value below the threshold?).\n4. If the criteria for a new order are NOT met, do not perform the POST request. Instead, report the existing status and explain why no action was taken.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to POST if the verification step confirms the need for the order.\n- If the order is necessary, include a `note` in the `ServiceRequest` or `MedicationRequest` explaining the clinical justification (e.g., \"Previous result from [Date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Inspect the most recent `effectiveDateTime`.\n3. If the date is 2022-03-08 and current date is 2023-11-13, the difference is > 1 year.\n4. Proceed to POST `ServiceRequest`.\n5. If the date is 2023-10-13, do NOT POST. Call `FINISH` with the status.\n\n## Success Indicators\n- Agent correctly identifies that no order is needed when recent data exists.\n- Agent provides a clear explanation in the final output when an order is skipped.\n\n## Failure Indicators\n- Unnecessary `ServiceRequest` or `MedicationRequest` POSTs when recent data is available.\n- Agent ignores the date of the most recent observation.",
+        "tags": [
+          "clinical-logic",
+          "verification",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "lab_result_search_fallback_strategy",
+        "description": "Implements a multi-step search strategy for lab results when primary code queries return no results.",
+        "content": "# Lab Result Search Fallback Strategy\n\n## Pattern Description\nWhen searching for a specific laboratory result (e.g., potassium, magnesium) using a primary LOINC code, the system may return an empty bundle even if the data exists under a different code or category. This skill provides a robust, multi-step search pattern to ensure all potential records are exhausted before concluding that a lab result is missing.\n\n## When to Use This Skill\n- When a GET request for a specific LOINC code returns a bundle with `total: 0`.\n- When the task requires a lab value that is not found using the primary identifier.\n- When you need to verify the absence of a lab result before deciding not to place an order.\n\n## Common Failure Patterns\n- Relying solely on a single LOINC code (e.g., 2823-3 for potassium) and failing to search by category or broader identifiers.\n- Failing to check if the patient has any laboratory observations at all when the specific code search fails.\n- Prematurely concluding that a lab is missing without attempting a broader search.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nIssue the GET request using the specific LOINC code provided in the task context.\n\n**Pattern 2: Broadened Search**\nIf the primary search returns `total: 0`, perform a secondary search using the `category=laboratory` parameter for the patient. \n\n**Pattern 3: Verification**\nIf the secondary search also returns no relevant results, only then conclude that the lab is unavailable. Do not assume the absence of a specific code means the patient has no lab history.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3&patient=S1796597` (Returns `total: 0`).\n2. GET `.../Observation?patient=S1796597&category=laboratory`.\n3. Inspect the returned bundle for any observations related to potassium (e.g., check `code.text` or `code.coding.display`).\n4. If still no results, conclude: `FINISH([\"No potassium level found for patient S1796597 after searching laboratory records.\"])`.\n\n## Success Indicators\n- The agent performs at least one follow-up search using a broader category or parameter when the initial specific search fails.\n- The agent successfully identifies lab results that were not indexed under the primary LOINC code.\n\n## Failure Indicators\n- The agent immediately calls `FINISH` after a single failed search.\n- The agent enters an infinite loop of identical queries.",
+        "tags": [
+          "lab-results",
+          "search-strategy",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_lab_reference_range_verification",
+        "description": "Standardizes the interpretation of lab results by comparing values against reference ranges before taking action.",
+        "content": "## Skill Title\nClinical Lab Reference Range Verification\n\n## Pattern Description\nWhen evaluating lab results to determine if a clinical intervention (like medication replacement) is required, you must not rely on your own internal assumptions about what constitutes a \"low\" or \"abnormal\" value. Instead, you must explicitly check the `referenceRange` field within the FHIR `Observation` resource.\n\nMany lab values that appear low in isolation are within the patient's specific reference range. Always compare the `valueQuantity.value` against the `referenceRange.low` and `referenceRange.high` fields provided in the resource before concluding that a value is abnormal.\n\n## When to Use This Skill\n- When a task requires you to determine if a lab result is \"low\" or \"abnormal\" to trigger a subsequent action (e.g., ordering medication).\n- When you have retrieved an `Observation` resource and need to interpret its clinical significance.\n\n## Common Failure Patterns\n- Assuming a value (e.g., 2.1 mg/dL) is low without checking the provided `referenceRange`.\n- Ignoring the `referenceRange` field entirely and using hardcoded thresholds that may not apply to the specific lab or patient context.\n- Failing to account for units when comparing values.\n\n## Recommended Patterns\n\n**Pattern 1: Extract and Compare**\n1. Retrieve the `Observation` resource.\n2. Locate the `valueQuantity.value` and `valueQuantity.unit`.\n3. Locate the `referenceRange` array. If present, identify the `low` and `high` values.\n4. Compare the `valueQuantity.value` against the `referenceRange.low` and `referenceRange.high`.\n5. Only proceed with an intervention if the value is strictly outside the provided range.\n\n**Pattern 2: Handling Missing Ranges**\n- If `referenceRange` is missing, do not assume the value is abnormal. State that no reference range was provided and ask for clarification or proceed with caution, rather than assuming a clinical deficit.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S3057899`.\n2. Observe `valueQuantity.value` is 2.2 and `referenceRange` is `[{ \"low\": { \"value\": 1.7 }, \"high\": { \"value\": 2.2 } }]`.\n3. Compare: 2.2 is not less than 1.7.\n4. Conclusion: Value is within normal range.\n\nCORRECT output: `FINISH([\"The magnesium level is 2.2 mg/dL, which is within the normal reference range. No replacement ordered.\"])`\nWRONG output: `FINISH([\"The magnesium level is 2.2 mg/dL, which is low. Ordering replacement.\"])`\n\n## Success Indicators\n- Agent correctly identifies normal values even when they are at the lower bound of the reference range.\n- Agent explicitly mentions the reference range in its reasoning or final output.\n\n## Failure Indicators\n- Agent orders medication for values that are within the `referenceRange`.\n- Agent fails to find or parse the `referenceRange` field in the FHIR JSON.",
+        "tags": [
+          "lab-interpretation",
+          "fhir",
+          "clinical-decision"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "patient_age_calculation_strategy",
+          "description": "Calculate patient age by subtracting birthDate from the current date and rounding down.",
+          "content": "## Skill Title\nPatient Age Calculation Strategy\n\n## Pattern Description\nWhen a task requires the age of a patient, you must not rely on static or hallucinated values. Instead, you must retrieve the `birthDate` field from the `Patient` resource and calculate the age based on the current date provided in the task context.\n\nAge is defined as the number of full years elapsed between the `birthDate` and the current date. You must round down to the nearest integer (floor function).\n\n## When to Use This Skill\n- When the task asks for a patient's age.\n- When the task provides a current date in the context and requires an age calculation based on a `birthDate` found in a `Patient` resource.\n\n## Common Failure Patterns\n- Returning a static number or guessing based on appearance.\n- Failing to account for the current date provided in the prompt.\n- Incorrectly rounding up or using floating-point numbers instead of integers.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval**\n1. Perform a `GET` request for the `Patient` resource using the provided MRN or identifier.\n2. Extract the `birthDate` field (format: YYYY-MM-DD).\n\n**Pattern 2: Calculation**\n1. Identify the current date from the task context (e.g., 2023-11-13).\n2. Calculate the difference in years: `Age = CurrentYear - BirthYear`.\n3. If the current month/day is before the birth month/day, subtract 1 from the result.\n4. Ensure the final result is an integer.\n\n**Pattern 3: Completion**\n1. Return the calculated integer as the final answer.\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S2703270?\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Patient?identifier=S2703270`\n2. Extract `birthDate`: \"1978-05-15\".\n3. Current date: \"2023-11-13\".\n4. Calculation: 2023 - 1978 = 45. Since November is after May, the patient is 45.\n5. Output: `FINISH([45])`\n\n## Success Indicators\n- The agent performs a GET request to retrieve the patient record.\n- The final output is a single integer representing the correct age.\n\n## Failure Indicators\n- The agent returns a value that does not match the math based on the `birthDate`.\n- The agent returns a string or a non-integer value.",
+          "tags": [
+            "patient",
+            "calculation",
+            "age"
+          ]
+        },
+        "net": 7,
+        "score": 7,
+        "raw_score": 7,
+        "fixes": 7,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_order_necessity_verification",
+          "description": "Verify if a new order is clinically necessary by checking existing recent results before posting.",
+          "content": "## Skill Title\nClinical Order Necessity Verification\n\n## Pattern Description\nBefore placing a new order (e.g., ServiceRequest or MedicationRequest) based on a clinical threshold, you must first verify that a recent, valid result does not already exist in the patient's record. Automatically ordering tests or medications without confirming the current status often leads to redundant or unnecessary clinical actions.\n\n## When to Use This Skill\n- When a task instructs you to order a test or medication if a value is \"low\", \"old\", or \"out of range\".\n- Before executing any POST request for a clinical order.\n- When the task implies a conditional trigger (e.g., \"If the lab value is > 1 year old, order a new test\").\n\n## Common Failure Patterns\n- Assuming an order is required without checking the most recent `Observation` resource.\n- Failing to compare the `effectiveDateTime` of the most recent result against the current date/time.\n- Triggering a POST request immediately after a GET request without evaluating the retrieved data.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\n1. Perform a GET request to retrieve the relevant `Observation` resources for the patient.\n2. Sort the results by `effectiveDateTime` to identify the most recent record.\n3. Evaluate the most recent record against the task's criteria (e.g., is it > 1 year old? Is the value below the threshold?).\n4. If the criteria for a new order are NOT met, do not perform the POST request. Instead, report the existing status and explain why no action was taken.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to POST if the verification step confirms the need for the order.\n- If the order is necessary, include a `note` in the `ServiceRequest` or `MedicationRequest` explaining the clinical justification (e.g., \"Previous result from [Date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Inspect the most recent `effectiveDateTime`.\n3. If the date is 2022-03-08 and current date is 2023-11-13, the difference is > 1 year.\n4. Proceed to POST `ServiceRequest`.\n5. If the date is 2023-10-13, do NOT POST. Call `FINISH` with the status.\n\n## Success Indicators\n- Agent correctly identifies that no order is needed when recent data exists.\n- Agent provides a clear explanation in the final output when an order is skipped.\n\n## Failure Indicators\n- Unnecessary `ServiceRequest` or `MedicationRequest` POSTs when recent data is available.\n- Agent ignores the date of the most recent observation.",
+          "tags": [
+            "clinical-logic",
+            "verification",
+            "fhir"
+          ]
+        },
+        "net": -8,
+        "score": -8,
+        "raw_score": -8,
+        "fixes": 0,
+        "regressions": 8,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "lab_result_search_fallback_strategy",
+          "description": "Implements a multi-step search strategy for lab results when primary code queries return no results.",
+          "content": "# Lab Result Search Fallback Strategy\n\n## Pattern Description\nWhen searching for a specific laboratory result (e.g., potassium, magnesium) using a primary LOINC code, the system may return an empty bundle even if the data exists under a different code or category. This skill provides a robust, multi-step search pattern to ensure all potential records are exhausted before concluding that a lab result is missing.\n\n## When to Use This Skill\n- When a GET request for a specific LOINC code returns a bundle with `total: 0`.\n- When the task requires a lab value that is not found using the primary identifier.\n- When you need to verify the absence of a lab result before deciding not to place an order.\n\n## Common Failure Patterns\n- Relying solely on a single LOINC code (e.g., 2823-3 for potassium) and failing to search by category or broader identifiers.\n- Failing to check if the patient has any laboratory observations at all when the specific code search fails.\n- Prematurely concluding that a lab is missing without attempting a broader search.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Search**\nIssue the GET request using the specific LOINC code provided in the task context.\n\n**Pattern 2: Broadened Search**\nIf the primary search returns `total: 0`, perform a secondary search using the `category=laboratory` parameter for the patient. \n\n**Pattern 3: Verification**\nIf the secondary search also returns no relevant results, only then conclude that the lab is unavailable. Do not assume the absence of a specific code means the patient has no lab history.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=2823-3&patient=S1796597` (Returns `total: 0`).\n2. GET `.../Observation?patient=S1796597&category=laboratory`.\n3. Inspect the returned bundle for any observations related to potassium (e.g., check `code.text` or `code.coding.display`).\n4. If still no results, conclude: `FINISH([\"No potassium level found for patient S1796597 after searching laboratory records.\"])`.\n\n## Success Indicators\n- The agent performs at least one follow-up search using a broader category or parameter when the initial specific search fails.\n- The agent successfully identifies lab results that were not indexed under the primary LOINC code.\n\n## Failure Indicators\n- The agent immediately calls `FINISH` after a single failed search.\n- The agent enters an infinite loop of identical queries.",
+          "tags": [
+            "lab-results",
+            "search-strategy",
+            "fhir"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_lab_reference_range_verification",
+          "description": "Standardizes the interpretation of lab results by comparing values against reference ranges before taking action.",
+          "content": "## Skill Title\nClinical Lab Reference Range Verification\n\n## Pattern Description\nWhen evaluating lab results to determine if a clinical intervention (like medication replacement) is required, you must not rely on your own internal assumptions about what constitutes a \"low\" or \"abnormal\" value. Instead, you must explicitly check the `referenceRange` field within the FHIR `Observation` resource.\n\nMany lab values that appear low in isolation are within the patient's specific reference range. Always compare the `valueQuantity.value` against the `referenceRange.low` and `referenceRange.high` fields provided in the resource before concluding that a value is abnormal.\n\n## When to Use This Skill\n- When a task requires you to determine if a lab result is \"low\" or \"abnormal\" to trigger a subsequent action (e.g., ordering medication).\n- When you have retrieved an `Observation` resource and need to interpret its clinical significance.\n\n## Common Failure Patterns\n- Assuming a value (e.g., 2.1 mg/dL) is low without checking the provided `referenceRange`.\n- Ignoring the `referenceRange` field entirely and using hardcoded thresholds that may not apply to the specific lab or patient context.\n- Failing to account for units when comparing values.\n\n## Recommended Patterns\n\n**Pattern 1: Extract and Compare**\n1. Retrieve the `Observation` resource.\n2. Locate the `valueQuantity.value` and `valueQuantity.unit`.\n3. Locate the `referenceRange` array. If present, identify the `low` and `high` values.\n4. Compare the `valueQuantity.value` against the `referenceRange.low` and `referenceRange.high`.\n5. Only proceed with an intervention if the value is strictly outside the provided range.\n\n**Pattern 2: Handling Missing Ranges**\n- If `referenceRange` is missing, do not assume the value is abnormal. State that no reference range was provided and ask for clarification or proceed with caution, rather than assuming a clinical deficit.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level. If low, order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S3057899`.\n2. Observe `valueQuantity.value` is 2.2 and `referenceRange` is `[{ \"low\": { \"value\": 1.7 }, \"high\": { \"value\": 2.2 } }]`.\n3. Compare: 2.2 is not less than 1.7.\n4. Conclusion: Value is within normal range.\n\nCORRECT output: `FINISH([\"The magnesium level is 2.2 mg/dL, which is within the normal reference range. No replacement ordered.\"])`\nWRONG output: `FINISH([\"The magnesium level is 2.2 mg/dL, which is low. Ordering replacement.\"])`\n\n## Success Indicators\n- Agent correctly identifies normal values even when they are at the lower bound of the reference range.\n- Agent explicitly mentions the reference range in its reasoning or final output.\n\n## Failure Indicators\n- Agent orders medication for values that are within the `referenceRange`.\n- Agent fails to find or parse the `referenceRange` field in the FHIR JSON.",
+          "tags": [
+            "lab-interpretation",
+            "fhir",
+            "clinical-decision"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": -5,
+        "fixes": 0,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 0,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "conditional_action_validation_strategy",
+        "description": "Verify clinical thresholds before executing state-changing actions like medication or service orders.",
+        "content": "# Conditional Action Validation Strategy\n\n## Pattern Description\nBefore executing any state-changing action (e.g., `POST` requests for `MedicationRequest` or `ServiceRequest`), you must verify that the clinical criteria for that action are met. Do not assume that a task instruction implies an automatic order; always validate the retrieved data against the specified thresholds or time constraints first.\n\n## When to Use This Skill\n- When a task instruction contains a conditional logic (e.g., \"If low, then order...\").\n- When you have retrieved lab results or clinical data that determine whether an intervention is necessary.\n- Before performing any `POST` request that is contingent on a clinical finding.\n\n## Common Failure Patterns\n- Executing a `POST` request despite the retrieved lab value being within the normal range.\n- Ordering a test or medication when the data indicates the condition for the order (e.g., \"greater than 1 year old\") is not met.\n- Failing to check the retrieved data before proceeding to the `POST` step.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the relevant clinical data (e.g., `Observation` resource).\n2. Compare the `valueQuantity.value` against the threshold specified in the task.\n3. If the value does not meet the criteria for action, stop and report the finding via `FINISH`.\n4. Only proceed to `POST` if the criteria are explicitly met.\n\n**Pattern 2: Date/Time Logic Verification**\n1. Extract the `effectiveDateTime` or `issued` date from the resource.\n2. Calculate the duration between the current date and the record date.\n3. If the duration is within the allowed limit (e.g., < 1 year), do not order a new test.\n\n## Example Application\n\n**Task:** \"Check patient's potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=2823-3&patient=...`\n2. Extract `valueQuantity.value` (e.g., 4.0).\n3. Compare 4.0 < 3.5. Result: False.\n4. Do not perform `POST`.\n5. Call `FINISH([\"Potassium is 4.0, which is not low. No order placed.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical criteria are not met.\n- The final `FINISH` output correctly explains why no action was taken based on the data.\n\n## Failure Indicators\n- `POST` requests are sent for normal lab values.\n- The agent ignores the \"If... then...\" conditional structure of the task.",
+        "tags": [
+          "validation",
+          "conditional_logic",
+          "safety"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "natural_language_response_protocol",
+        "description": "Ensures final answers are provided as natural language sentences rather than raw data structures.",
+        "content": "# Natural Language Response Protocol\n\n## Pattern Description\nWhen providing a final answer to a user, you must always communicate in clear, complete, and professional natural language. Avoid returning raw data structures, lists, arrays, or bare numerical values, as these are often ambiguous or fail to meet the user's expectation for a conversational response.\n\n## When to Use This Skill\n- When you are about to call the `FINISH` function.\n- When the task requires reporting a lab value, a date, or a status update.\n- When you have successfully retrieved data but are currently outputting it as a list (e.g., `[5.4]`) or an array of strings.\n\n## Common Failure Patterns\n- Returning `[5.4]` instead of \"The last HbA1C value is 5.4%.\"\n- Returning `[\"[-1]\", \"[-1]\"]` instead of \"No HbA1C measurement was found in the chart.\"\n- Returning raw numerical values like `[2.1]` instead of a descriptive sentence.\n\n## Recommended Patterns\n\n**Pattern 1: Contextualizing Data**\nAlways wrap your findings in a sentence that includes the subject, the value, and the context (e.g., date or unit).\n\nCORRECT: `FINISH(\"The most recent magnesium level is 2.1 mg/dL, recorded on 2023-11-13.\")`\nWRONG: `FINISH([2.1])`\n\n**Pattern 2: Handling Missing Data**\nIf a search returns no results or an error code, explain the situation clearly in plain English.\n\nCORRECT: `FINISH(\"No HbA1C measurement was found in the patient's chart.\")`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level?\"\n\n**Step-by-step:**\n1. Perform the search for the observation.\n2. Extract the value (e.g., 2.1) and the date.\n3. Construct a sentence: \"The most recent magnesium level for the patient is 2.1 mg/dL.\"\n4. Call `FINISH` with the string.\n\n## Success Indicators\n- The final output is a human-readable sentence.\n- The output contains no brackets or list formatting.\n\n## Failure Indicators\n- The output is a raw list, array, or single number.",
+        "tags": [
+          "formatting",
+          "communication"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_pagination_limit",
+        "description": "Prevent infinite loops by limiting FHIR search requests to a single page and avoiding follow-up pagination links.",
+        "content": "# FHIR Search Pagination Limit\n\n## Pattern Description\nWhen performing FHIR searches, the agent often enters an infinite loop by attempting to follow `next` link relations in the bundle metadata. This behavior is unnecessary for most clinical tasks, which only require the most recent record. You must restrict your search to the initial result set and avoid following pagination links.\n\n## When to Use This Skill\n- When you receive a FHIR Bundle response containing a `link` array with a `relation: \"next\"` entry.\n- When you are searching for a specific resource (e.g., Observation, Patient) and have already received a valid response.\n- When you find yourself repeatedly calling the same URL with `_getpages` or `_getpagesoffset` parameters.\n\n## Common Failure Patterns\n- Following the `next` link in the `link` array of a Bundle.\n- Attempting to fetch additional pages when the initial search already returned relevant data.\n- Retrying the same search with pagination parameters after a 400 error.\n\n## Recommended Patterns\n\n**Pattern 1: Single-Page Search**\nAlways treat the first response from a FHIR search as the complete dataset for your task. Do not inspect or follow the `link` array for pagination.\n\n**Pattern 2: Stop on First Result**\nIf the first page contains the information you need (e.g., the most recent Observation), process that data and call `FINISH` immediately. Do not attempt to fetch more records.\n\n**Pattern 3: Error Handling**\nIf a request with `_getpages` or `_getpagesoffset` fails (e.g., 400 Client Error), do not retry the request. Instead, re-evaluate your initial search query or conclude the task with the data you already have.\n\n## Example Application\n\n**Task:** \"Check patient S1311412's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/Observation?code=2823-3&patient=S1311412`.\n2. Receive a Bundle. Even if the Bundle contains a `next` link, ignore it.\n3. Extract the most recent observation from the `entry` array.\n4. If the entry is found, proceed to logic. If not, stop searching.\n5. Call `FINISH` with the result.\n\n## Success Indicators\n- The agent completes the task without calling URLs containing `_getpages` or `_getpagesoffset`.\n- The agent stops searching after the first successful GET request.\n\n## Failure Indicators\n- The agent enters a loop of GET requests with increasing `_getpagesoffset` values.\n- The agent triggers a 400 error by attempting to follow a stale or invalid pagination link.",
+        "tags": [
+          "fhir",
+          "search",
+          "pagination",
+          "loop_prevention"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_action_validation_strategy",
+        "description": "Verify clinical thresholds before executing state-changing actions like medication or service orders.",
+        "content": "# Conditional Action Validation Strategy\n\n## Pattern Description\nBefore executing any state-changing action (e.g., `POST` requests for `MedicationRequest` or `ServiceRequest`), you must verify that the clinical criteria for that action are met. Do not assume that a task instruction implies an automatic order; always validate the retrieved data against the specified thresholds or time constraints first.\n\n## When to Use This Skill\n- When a task instruction contains a conditional logic (e.g., \"If low, then order...\").\n- When you have retrieved lab results or clinical data that determine whether an intervention is necessary.\n- Before performing any `POST` request that is contingent on a clinical finding.\n\n## Common Failure Patterns\n- Executing a `POST` request despite the retrieved lab value being within the normal range.\n- Ordering a test or medication when the data indicates the condition for the order (e.g., \"greater than 1 year old\") is not met.\n- Failing to check the retrieved data before proceeding to the `POST` step.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the relevant clinical data (e.g., `Observation` resource).\n2. Compare the `valueQuantity.value` against the threshold specified in the task.\n3. If the value does not meet the criteria for action, stop and report the finding via `FINISH`.\n4. Only proceed to `POST` if the criteria are explicitly met.\n\n**Pattern 2: Date/Time Logic Verification**\n1. Extract the `effectiveDateTime` or `issued` date from the resource.\n2. Calculate the duration between the current date and the record date.\n3. If the duration is within the allowed limit (e.g., < 1 year), do not order a new test.\n\n## Example Application\n\n**Task:** \"Check patient's potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=2823-3&patient=...`\n2. Extract `valueQuantity.value` (e.g., 4.0).\n3. Compare 4.0 < 3.5. Result: False.\n4. Do not perform `POST`.\n5. Call `FINISH([\"Potassium is 4.0, which is not low. No order placed.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical criteria are not met.\n- The final `FINISH` output correctly explains why no action was taken based on the data.\n\n## Failure Indicators\n- `POST` requests are sent for normal lab values.\n- The agent ignores the \"If... then...\" conditional structure of the task.",
+        "tags": [
+          "validation",
+          "conditional_logic",
+          "safety"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_action_validation_strategy",
+          "description": "Verify clinical thresholds before executing state-changing actions like medication or service orders.",
+          "content": "# Conditional Action Validation Strategy\n\n## Pattern Description\nBefore executing any state-changing action (e.g., `POST` requests for `MedicationRequest` or `ServiceRequest`), you must verify that the clinical criteria for that action are met. Do not assume that a task instruction implies an automatic order; always validate the retrieved data against the specified thresholds or time constraints first.\n\n## When to Use This Skill\n- When a task instruction contains a conditional logic (e.g., \"If low, then order...\").\n- When you have retrieved lab results or clinical data that determine whether an intervention is necessary.\n- Before performing any `POST` request that is contingent on a clinical finding.\n\n## Common Failure Patterns\n- Executing a `POST` request despite the retrieved lab value being within the normal range.\n- Ordering a test or medication when the data indicates the condition for the order (e.g., \"greater than 1 year old\") is not met.\n- Failing to check the retrieved data before proceeding to the `POST` step.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Verification**\n1. Retrieve the relevant clinical data (e.g., `Observation` resource).\n2. Compare the `valueQuantity.value` against the threshold specified in the task.\n3. If the value does not meet the criteria for action, stop and report the finding via `FINISH`.\n4. Only proceed to `POST` if the criteria are explicitly met.\n\n**Pattern 2: Date/Time Logic Verification**\n1. Extract the `effectiveDateTime` or `issued` date from the resource.\n2. Calculate the duration between the current date and the record date.\n3. If the duration is within the allowed limit (e.g., < 1 year), do not order a new test.\n\n## Example Application\n\n**Task:** \"Check patient's potassium. If low (< 3.5), order replacement.\"\n\n**Step-by-step:**\n1. GET `Observation?code=2823-3&patient=...`\n2. Extract `valueQuantity.value` (e.g., 4.0).\n3. Compare 4.0 < 3.5. Result: False.\n4. Do not perform `POST`.\n5. Call `FINISH([\"Potassium is 4.0, which is not low. No order placed.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical criteria are not met.\n- The final `FINISH` output correctly explains why no action was taken based on the data.\n\n## Failure Indicators\n- `POST` requests are sent for normal lab values.\n- The agent ignores the \"If... then...\" conditional structure of the task.",
+          "tags": [
+            "validation",
+            "conditional_logic",
+            "safety"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "natural_language_response_protocol",
+          "description": "Ensures final answers are provided as natural language sentences rather than raw data structures.",
+          "content": "# Natural Language Response Protocol\n\n## Pattern Description\nWhen providing a final answer to a user, you must always communicate in clear, complete, and professional natural language. Avoid returning raw data structures, lists, arrays, or bare numerical values, as these are often ambiguous or fail to meet the user's expectation for a conversational response.\n\n## When to Use This Skill\n- When you are about to call the `FINISH` function.\n- When the task requires reporting a lab value, a date, or a status update.\n- When you have successfully retrieved data but are currently outputting it as a list (e.g., `[5.4]`) or an array of strings.\n\n## Common Failure Patterns\n- Returning `[5.4]` instead of \"The last HbA1C value is 5.4%.\"\n- Returning `[\"[-1]\", \"[-1]\"]` instead of \"No HbA1C measurement was found in the chart.\"\n- Returning raw numerical values like `[2.1]` instead of a descriptive sentence.\n\n## Recommended Patterns\n\n**Pattern 1: Contextualizing Data**\nAlways wrap your findings in a sentence that includes the subject, the value, and the context (e.g., date or unit).\n\nCORRECT: `FINISH(\"The most recent magnesium level is 2.1 mg/dL, recorded on 2023-11-13.\")`\nWRONG: `FINISH([2.1])`\n\n**Pattern 2: Handling Missing Data**\nIf a search returns no results or an error code, explain the situation clearly in plain English.\n\nCORRECT: `FINISH(\"No HbA1C measurement was found in the patient's chart.\")`\nWRONG: `FINISH([-1])`\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level?\"\n\n**Step-by-step:**\n1. Perform the search for the observation.\n2. Extract the value (e.g., 2.1) and the date.\n3. Construct a sentence: \"The most recent magnesium level for the patient is 2.1 mg/dL.\"\n4. Call `FINISH` with the string.\n\n## Success Indicators\n- The final output is a human-readable sentence.\n- The output contains no brackets or list formatting.\n\n## Failure Indicators\n- The output is a raw list, array, or single number.",
+          "tags": [
+            "formatting",
+            "communication"
+          ]
+        },
+        "net": -15,
+        "score": -15,
+        "raw_score": -10,
+        "fixes": 0,
+        "regressions": 10,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_pagination_limit",
+          "description": "Prevent infinite loops by limiting FHIR search requests to a single page and avoiding follow-up pagination links.",
+          "content": "# FHIR Search Pagination Limit\n\n## Pattern Description\nWhen performing FHIR searches, the agent often enters an infinite loop by attempting to follow `next` link relations in the bundle metadata. This behavior is unnecessary for most clinical tasks, which only require the most recent record. You must restrict your search to the initial result set and avoid following pagination links.\n\n## When to Use This Skill\n- When you receive a FHIR Bundle response containing a `link` array with a `relation: \"next\"` entry.\n- When you are searching for a specific resource (e.g., Observation, Patient) and have already received a valid response.\n- When you find yourself repeatedly calling the same URL with `_getpages` or `_getpagesoffset` parameters.\n\n## Common Failure Patterns\n- Following the `next` link in the `link` array of a Bundle.\n- Attempting to fetch additional pages when the initial search already returned relevant data.\n- Retrying the same search with pagination parameters after a 400 error.\n\n## Recommended Patterns\n\n**Pattern 1: Single-Page Search**\nAlways treat the first response from a FHIR search as the complete dataset for your task. Do not inspect or follow the `link` array for pagination.\n\n**Pattern 2: Stop on First Result**\nIf the first page contains the information you need (e.g., the most recent Observation), process that data and call `FINISH` immediately. Do not attempt to fetch more records.\n\n**Pattern 3: Error Handling**\nIf a request with `_getpages` or `_getpagesoffset` fails (e.g., 400 Client Error), do not retry the request. Instead, re-evaluate your initial search query or conclude the task with the data you already have.\n\n## Example Application\n\n**Task:** \"Check patient S1311412's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/Observation?code=2823-3&patient=S1311412`.\n2. Receive a Bundle. Even if the Bundle contains a `next` link, ignore it.\n3. Extract the most recent observation from the `entry` array.\n4. If the entry is found, proceed to logic. If not, stop searching.\n5. Call `FINISH` with the result.\n\n## Success Indicators\n- The agent completes the task without calling URLs containing `_getpages` or `_getpagesoffset`.\n- The agent stops searching after the first successful GET request.\n\n## Failure Indicators\n- The agent enters a loop of GET requests with increasing `_getpagesoffset` values.\n- The agent triggers a 400 error by attempting to follow a stale or invalid pagination link.",
+          "tags": [
+            "fhir",
+            "search",
+            "pagination",
+            "loop_prevention"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 4,
+        "fixes": 5,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

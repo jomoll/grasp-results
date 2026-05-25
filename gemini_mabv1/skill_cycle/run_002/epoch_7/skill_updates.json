@@ -1,0 +1,230 @@
+[
+  {
+    "epoch": 7,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 32,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "fhir_subject_reference_validation",
+        "description": "Enforce the 'ResourceType/ID' format for all subject references in POST/PUT requests.",
+        "content": "# FHIR Subject Reference Validation\n\n## Pattern Description\nWhen creating or updating FHIR resources that require a `subject` field (such as `Observation` or `ServiceRequest`), the `reference` string must strictly follow the format `ResourceType/ID` (e.g., `Patient/S12345`). Providing only the ID (e.g., `S12345`) is a common error that leads to resource storage failures or invalid references.\n\n## When to Use This Skill\n- When constructing a POST or PUT request for any FHIR resource containing a `subject` object.\n- Whenever you have retrieved a patient ID or MRN and need to link it to a new clinical resource.\n\n## Common Failure Patterns\n- Using `\"reference\": \"MRN_VALUE\"` instead of `\"reference\": \"Patient/MRN_VALUE\"`.\n- Assuming the API will automatically infer the resource type from the ID string.\n\n## Recommended Patterns\n\n**Pattern 1: Reference Formatting**\nAlways prepend the resource type and a forward slash to the identifier.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6531922\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6531922\" }`\n\n**Pattern 2: Verification**\nBefore finalizing the POST body, verify that the `subject.reference` field contains the literal string \"Patient/\" followed by the patient's identifier.\n\n## Example Application\n\n**Task:** \"Record blood pressure for patient S6531922.\"\n\n**Step-by-step:**\n1. Perform GET to confirm patient existence and retrieve the correct ID.\n2. Construct the Observation resource.\n3. Set `subject.reference` to `\"Patient/S6531922\"`.\n4. Execute POST.\n\n## Success Indicators\n- POST requests are accepted by the server without validation errors.\n- Resources are correctly linked to the patient record in the FHIR store.\n\n## Failure Indicators\n- Server returns 400 Bad Request or validation errors regarding the `subject` field.\n- Resource is created but cannot be retrieved via patient-specific queries.",
+        "tags": [
+          "fhir",
+          "validation",
+          "post-request"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "lab_result_temporal_validation_and_action",
+        "description": "Enforce strict conditional logic for ServiceRequest creation based on existing lab data availability and age.",
+        "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires ordering a new lab test based on the age of a previous result, you must first verify the existence and date of the most recent relevant observation. You must not create a `ServiceRequest` if the initial search returns no data or if the existing data is within the required timeframe. This prevents unnecessary orders and ensures clinical justification.\n\n## When to Use This Skill\n- When a task asks to order a new lab test if a previous result is older than a specific threshold (e.g., 1 year).\n- When the task implies a conditional dependency: \"If X is old/missing, order Y.\"\n- When a search for an existing `Observation` returns a `total` of 0 or an empty `entry` array.\n\n## Common Failure Patterns\n- Creating a `ServiceRequest` automatically without checking if the `Observation` search returned any results.\n- Ordering a new test when the existing result is within the valid timeframe (e.g., less than 1 year old).\n- Failing to distinguish between \"no data found\" and \"data is outdated.\"\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\nBefore issuing a `POST` for a `ServiceRequest`, you must inspect the `Bundle` from your `GET` request. If `total` is 0, you must report that no measurement is available and stop. Do not proceed to order.\n\n**Pattern 2: Temporal Threshold Check**\nIf `total > 0`, extract the `effectiveDateTime` from the most recent `Observation`. Compare this date against the current system time. Only proceed with the `POST` if the difference exceeds the specified threshold (e.g., > 1 year).\n\n**Pattern 3: Justification**\nIf you proceed with the order, include a `note` field in the `ServiceRequest` body explicitly stating the reason (e.g., \"Previous result from [Date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C value is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S123`\n2. If `total == 0`, `FINISH([\"No measurement available\"])`.\n3. If `total > 0`, parse `effectiveDateTime`. If `current_date - effectiveDateTime < 1 year`, `FINISH([\"Result is recent, no order needed.\"])`.\n4. If `current_date - effectiveDateTime >= 1 year`, `POST` the `ServiceRequest` with a `note` explaining the age of the previous result.\n\n## Success Indicators\n- No `ServiceRequest` is created when the search returns no results.\n- `ServiceRequest` is only created when the existing result is confirmed to be outdated.\n\n## Failure Indicators\n- `ServiceRequest` created despite 0 search results.\n- `ServiceRequest` created when the existing result is recent.",
+        "tags": [
+          "lab",
+          "service-request",
+          "temporal-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_subject_reference_validation",
+        "description": "Enforce the 'ResourceType/ID' format for all subject references in POST/PUT requests.",
+        "content": "# FHIR Subject Reference Validation\n\n## Pattern Description\nWhen creating or updating FHIR resources that require a `subject` field (such as `Observation` or `ServiceRequest`), the `reference` string must strictly follow the format `ResourceType/ID` (e.g., `Patient/S12345`). Providing only the ID (e.g., `S12345`) is a common error that leads to resource storage failures or invalid references.\n\n## When to Use This Skill\n- When constructing a POST or PUT request for any FHIR resource containing a `subject` object.\n- Whenever you have retrieved a patient ID or MRN and need to link it to a new clinical resource.\n\n## Common Failure Patterns\n- Using `\"reference\": \"MRN_VALUE\"` instead of `\"reference\": \"Patient/MRN_VALUE\"`.\n- Assuming the API will automatically infer the resource type from the ID string.\n\n## Recommended Patterns\n\n**Pattern 1: Reference Formatting**\nAlways prepend the resource type and a forward slash to the identifier.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6531922\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6531922\" }`\n\n**Pattern 2: Verification**\nBefore finalizing the POST body, verify that the `subject.reference` field contains the literal string \"Patient/\" followed by the patient's identifier.\n\n## Example Application\n\n**Task:** \"Record blood pressure for patient S6531922.\"\n\n**Step-by-step:**\n1. Perform GET to confirm patient existence and retrieve the correct ID.\n2. Construct the Observation resource.\n3. Set `subject.reference` to `\"Patient/S6531922\"`.\n4. Execute POST.\n\n## Success Indicators\n- POST requests are accepted by the server without validation errors.\n- Resources are correctly linked to the patient record in the FHIR store.\n\n## Failure Indicators\n- Server returns 400 Bad Request or validation errors regarding the `subject` field.\n- Resource is created but cannot be retrieved via patient-specific queries.",
+        "tags": [
+          "fhir",
+          "validation",
+          "post-request"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "observation_value_extraction_strategy",
+        "description": "Standardize extraction of numerical values from FHIR Observations to prevent unit-related errors and formatting failures.",
+        "content": "## Skill Title\nObservation Value Extraction Strategy\n\n## Pattern Description\nWhen extracting lab results or vital signs from FHIR Observation resources, you must prioritize the `valueQuantity.value` field as a raw number. Do not include units, descriptive text, or concatenated strings in your final output unless explicitly requested. This ensures downstream logic (like threshold comparisons) can process the data correctly.\n\n## When to Use This Skill\n- When a task requires a numerical value from an Observation (e.g., magnesium level, blood pressure components).\n- When the task asks for a comparison or calculation based on a lab result.\n- When the previous attempt failed due to including units (e.g., '2.2 mg/dL') in the final answer.\n\n## Common Failure Patterns\n- Returning `[\"2.2 mg/dL\"]` instead of `[2.2]`.\n- Returning `[\"118/77 mmHg\"]` when the task requires individual components or a clean string.\n- Including narrative text like \"The level is 2.2\" in the `FINISH` call.\n\n## Recommended Patterns\n\n**Pattern 1: Numerical Extraction**\nAlways inspect `valueQuantity.value` for numeric results. If the value is a number, extract it as a float or integer.\n\nCORRECT: `FINISH([2.2])`\nWRONG: `FINISH([\"2.2 mg/dL\"])`\n\n**Pattern 2: Handling Missing Data**\nIf the search returns no entries or the value is missing, return the sentinel value specified in the prompt (e.g., -1 or \"No measurement available\"). Do not invent values.\n\n**Pattern 3: Formatting**\nEnsure the final output is a clean JSON array containing only the required data point.\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S1311412?\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Observation?code=MG&patient=S1311412`\n2. Parse the bundle, sort entries by `effectiveDateTime` descending.\n3. Extract `valueQuantity.value` from the most recent entry.\n4. Return `FINISH([2.5])`.\n\n## Success Indicators\n- Agent returns a clean numeric value in the `FINISH` call.\n- No units or descriptive text are present in the final output.\n\n## Failure Indicators\n- Agent includes units in the final output.\n- Agent returns a string instead of a number when a number is expected.",
+        "tags": [
+          "fhir",
+          "observation",
+          "extraction",
+          "formatting"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "lab_result_temporal_validation_and_action",
+          "description": "Enforce strict conditional logic for ServiceRequest creation based on existing lab data availability and age.",
+          "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires ordering a new lab test based on the age of a previous result, you must first verify the existence and date of the most recent relevant observation. You must not create a `ServiceRequest` if the initial search returns no data or if the existing data is within the required timeframe. This prevents unnecessary orders and ensures clinical justification.\n\n## When to Use This Skill\n- When a task asks to order a new lab test if a previous result is older than a specific threshold (e.g., 1 year).\n- When the task implies a conditional dependency: \"If X is old/missing, order Y.\"\n- When a search for an existing `Observation` returns a `total` of 0 or an empty `entry` array.\n\n## Common Failure Patterns\n- Creating a `ServiceRequest` automatically without checking if the `Observation` search returned any results.\n- Ordering a new test when the existing result is within the valid timeframe (e.g., less than 1 year old).\n- Failing to distinguish between \"no data found\" and \"data is outdated.\"\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\nBefore issuing a `POST` for a `ServiceRequest`, you must inspect the `Bundle` from your `GET` request. If `total` is 0, you must report that no measurement is available and stop. Do not proceed to order.\n\n**Pattern 2: Temporal Threshold Check**\nIf `total > 0`, extract the `effectiveDateTime` from the most recent `Observation`. Compare this date against the current system time. Only proceed with the `POST` if the difference exceeds the specified threshold (e.g., > 1 year).\n\n**Pattern 3: Justification**\nIf you proceed with the order, include a `note` field in the `ServiceRequest` body explicitly stating the reason (e.g., \"Previous result from [Date] is older than 1 year\").\n\n## Example Application\n\n**Task:** \"If the HbA1C value is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S123`\n2. If `total == 0`, `FINISH([\"No measurement available\"])`.\n3. If `total > 0`, parse `effectiveDateTime`. If `current_date - effectiveDateTime < 1 year`, `FINISH([\"Result is recent, no order needed.\"])`.\n4. If `current_date - effectiveDateTime >= 1 year`, `POST` the `ServiceRequest` with a `note` explaining the age of the previous result.\n\n## Success Indicators\n- No `ServiceRequest` is created when the search returns no results.\n- `ServiceRequest` is only created when the existing result is confirmed to be outdated.\n\n## Failure Indicators\n- `ServiceRequest` created despite 0 search results.\n- `ServiceRequest` created when the existing result is recent.",
+          "tags": [
+            "lab",
+            "service-request",
+            "temporal-logic"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_subject_reference_validation",
+          "description": "Enforce the 'ResourceType/ID' format for all subject references in POST/PUT requests.",
+          "content": "# FHIR Subject Reference Validation\n\n## Pattern Description\nWhen creating or updating FHIR resources that require a `subject` field (such as `Observation` or `ServiceRequest`), the `reference` string must strictly follow the format `ResourceType/ID` (e.g., `Patient/S12345`). Providing only the ID (e.g., `S12345`) is a common error that leads to resource storage failures or invalid references.\n\n## When to Use This Skill\n- When constructing a POST or PUT request for any FHIR resource containing a `subject` object.\n- Whenever you have retrieved a patient ID or MRN and need to link it to a new clinical resource.\n\n## Common Failure Patterns\n- Using `\"reference\": \"MRN_VALUE\"` instead of `\"reference\": \"Patient/MRN_VALUE\"`.\n- Assuming the API will automatically infer the resource type from the ID string.\n\n## Recommended Patterns\n\n**Pattern 1: Reference Formatting**\nAlways prepend the resource type and a forward slash to the identifier.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6531922\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6531922\" }`\n\n**Pattern 2: Verification**\nBefore finalizing the POST body, verify that the `subject.reference` field contains the literal string \"Patient/\" followed by the patient's identifier.\n\n## Example Application\n\n**Task:** \"Record blood pressure for patient S6531922.\"\n\n**Step-by-step:**\n1. Perform GET to confirm patient existence and retrieve the correct ID.\n2. Construct the Observation resource.\n3. Set `subject.reference` to `\"Patient/S6531922\"`.\n4. Execute POST.\n\n## Success Indicators\n- POST requests are accepted by the server without validation errors.\n- Resources are correctly linked to the patient record in the FHIR store.\n\n## Failure Indicators\n- Server returns 400 Bad Request or validation errors regarding the `subject` field.\n- Resource is created but cannot be retrieved via patient-specific queries.",
+          "tags": [
+            "fhir",
+            "validation",
+            "post-request"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_value_extraction_strategy",
+          "description": "Standardize extraction of numerical values from FHIR Observations to prevent unit-related errors and formatting failures.",
+          "content": "## Skill Title\nObservation Value Extraction Strategy\n\n## Pattern Description\nWhen extracting lab results or vital signs from FHIR Observation resources, you must prioritize the `valueQuantity.value` field as a raw number. Do not include units, descriptive text, or concatenated strings in your final output unless explicitly requested. This ensures downstream logic (like threshold comparisons) can process the data correctly.\n\n## When to Use This Skill\n- When a task requires a numerical value from an Observation (e.g., magnesium level, blood pressure components).\n- When the task asks for a comparison or calculation based on a lab result.\n- When the previous attempt failed due to including units (e.g., '2.2 mg/dL') in the final answer.\n\n## Common Failure Patterns\n- Returning `[\"2.2 mg/dL\"]` instead of `[2.2]`.\n- Returning `[\"118/77 mmHg\"]` when the task requires individual components or a clean string.\n- Including narrative text like \"The level is 2.2\" in the `FINISH` call.\n\n## Recommended Patterns\n\n**Pattern 1: Numerical Extraction**\nAlways inspect `valueQuantity.value` for numeric results. If the value is a number, extract it as a float or integer.\n\nCORRECT: `FINISH([2.2])`\nWRONG: `FINISH([\"2.2 mg/dL\"])`\n\n**Pattern 2: Handling Missing Data**\nIf the search returns no entries or the value is missing, return the sentinel value specified in the prompt (e.g., -1 or \"No measurement available\"). Do not invent values.\n\n**Pattern 3: Formatting**\nEnsure the final output is a clean JSON array containing only the required data point.\n\n## Example Application\n\n**Task:** \"What is the most recent magnesium level for patient S1311412?\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Observation?code=MG&patient=S1311412`\n2. Parse the bundle, sort entries by `effectiveDateTime` descending.\n3. Extract `valueQuantity.value` from the most recent entry.\n4. Return `FINISH([2.5])`.\n\n## Success Indicators\n- Agent returns a clean numeric value in the `FINISH` call.\n- No units or descriptive text are present in the final output.\n\n## Failure Indicators\n- Agent includes units in the final output.\n- Agent returns a string instead of a number when a number is expected.",
+          "tags": [
+            "fhir",
+            "observation",
+            "extraction",
+            "formatting"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 7,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 34,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict validation of observation search results against current system time before concluding data absence.",
+        "content": "## Skill Title\nTemporal Observation Filtering and Verification\n\n## Pattern Description\nWhen searching for clinical observations (labs, vitals) within a specific time window (e.g., \"last 24 hours\"), you must not assume that an empty search result or a bundle with old entries implies the absence of data. You must explicitly compare the `effectiveDateTime` or `issued` field of every returned observation against the current system time provided in the task context.\n\nIf a search returns no results, you must verify if the search parameters were too restrictive or if you need to perform a broader search to confirm the absence of data before concluding that no measurement exists.\n\n## When to Use This Skill\n- When a task requires checking for a lab result within a specific timeframe (e.g., \"last 24 hours\").\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you are tempted to conclude \"No [lab] found\" without inspecting the `effectiveDateTime` of the returned resources.\n\n## Common Failure Patterns\n- Assuming `total: 0` in a FHIR bundle means no data exists for the patient, ignoring that the search might have been too narrow.\n- Failing to compare the `effectiveDateTime` of the most recent observation to the current system time, leading to the use of stale data or incorrect \"no data\" conclusions.\n- Returning a negative result (e.g., \"No magnesium level found\") without confirming that the search covered the relevant time window.\n\n## Recommended Patterns\n\n**Pattern 1: Search Validation**\nIf a search returns `total: 0`, do not immediately conclude no data exists. Check if your search parameters (like `code` or `patient`) are correct. If they are, perform a broader search (e.g., remove the time-based filter if you applied one in the URL) to see if any historical data exists, then filter it yourself.\n\n**Pattern 2: Temporal Filtering**\nFor every observation in the bundle, extract the `effectiveDateTime`. Compare this value to the current system time. \n- If `current_time - effectiveDateTime <= 24 hours`, the result is valid.\n- If all results are older than 24 hours, you must state that no result exists *within the last 24 hours*.\n\n**Pattern 3: Negative Conclusion**\nOnly issue a negative `FINISH` (e.g., \"No magnesium level recorded in the last 24 hours\") after you have confirmed that no observations in the bundle meet the temporal criteria.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=MG&patient=S0581164`.\n2. Inspect the bundle. If `total` is 0, verify the patient ID and code.\n3. If results exist, iterate through `entry` and check `resource.effectiveDateTime`.\n4. If the most recent `effectiveDateTime` is > 24 hours from the current time, conclude: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- Agent correctly identifies that data exists but is outside the requested window.\n- Agent performs a broader search if the initial search returns no results.\n\n## Failure Indicators\n- Agent returns \"No data found\" when data exists but is older than the requested window.\n- Agent fails to account for the current system time when evaluating the \"last 24 hours\" constraint.",
+        "tags": [
+          "fhir",
+          "temporal",
+          "observation",
+          "validation"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict validation of observation search results against current system time before concluding data absence.",
+        "content": "## Skill Title\nTemporal Observation Filtering and Verification\n\n## Pattern Description\nWhen searching for clinical observations (labs, vitals) within a specific time window (e.g., \"last 24 hours\"), you must not assume that an empty search result or a bundle with old entries implies the absence of data. You must explicitly compare the `effectiveDateTime` or `issued` field of every returned observation against the current system time provided in the task context.\n\nIf a search returns no results, you must verify if the search parameters were too restrictive or if you need to perform a broader search to confirm the absence of data before concluding that no measurement exists.\n\n## When to Use This Skill\n- When a task requires checking for a lab result within a specific timeframe (e.g., \"last 24 hours\").\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you are tempted to conclude \"No [lab] found\" without inspecting the `effectiveDateTime` of the returned resources.\n\n## Common Failure Patterns\n- Assuming `total: 0` in a FHIR bundle means no data exists for the patient, ignoring that the search might have been too narrow.\n- Failing to compare the `effectiveDateTime` of the most recent observation to the current system time, leading to the use of stale data or incorrect \"no data\" conclusions.\n- Returning a negative result (e.g., \"No magnesium level found\") without confirming that the search covered the relevant time window.\n\n## Recommended Patterns\n\n**Pattern 1: Search Validation**\nIf a search returns `total: 0`, do not immediately conclude no data exists. Check if your search parameters (like `code` or `patient`) are correct. If they are, perform a broader search (e.g., remove the time-based filter if you applied one in the URL) to see if any historical data exists, then filter it yourself.\n\n**Pattern 2: Temporal Filtering**\nFor every observation in the bundle, extract the `effectiveDateTime`. Compare this value to the current system time. \n- If `current_time - effectiveDateTime <= 24 hours`, the result is valid.\n- If all results are older than 24 hours, you must state that no result exists *within the last 24 hours*.\n\n**Pattern 3: Negative Conclusion**\nOnly issue a negative `FINISH` (e.g., \"No magnesium level recorded in the last 24 hours\") after you have confirmed that no observations in the bundle meet the temporal criteria.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=MG&patient=S0581164`.\n2. Inspect the bundle. If `total` is 0, verify the patient ID and code.\n3. If results exist, iterate through `entry` and check `resource.effectiveDateTime`.\n4. If the most recent `effectiveDateTime` is > 24 hours from the current time, conclude: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- Agent correctly identifies that data exists but is outside the requested window.\n- Agent performs a broader search if the initial search returns no results.\n\n## Failure Indicators\n- Agent returns \"No data found\" when data exists but is older than the requested window.\n- Agent fails to account for the current system time when evaluating the \"last 24 hours\" constraint.",
+        "tags": [
+          "fhir",
+          "temporal",
+          "observation",
+          "validation"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "lab_result_temporal_validation_and_action",
+        "description": "Enforce strict temporal validation and conditional logic for lab-based ServiceRequests.",
+        "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires ordering a lab test based on the age of a previous result, you must first retrieve and evaluate the existing data. You must not create a new ServiceRequest if a valid, recent result already exists or if the clinical criteria for ordering (e.g., 'older than 1 year') are not met. \n\nThis pattern prevents unnecessary duplicate orders and ensures that the decision to order is explicitly tied to the absence of recent data or the expiration of existing data.\n\n## When to Use This Skill\n- When the task instruction includes a conditional trigger (e.g., 'If the lab value result date is greater than X, order a new test').\n- When you have performed a GET request for a lab observation and received a bundle.\n- Before issuing a POST request for a ServiceRequest based on lab history.\n\n## Common Failure Patterns\n- Ordering a new test without checking if the existing result is within the required timeframe.\n- Ordering a new test when the search returns no results, without verifying if the task implies a new order is appropriate for a first-time measurement.\n- Assuming a new order is required without explicitly comparing the `effectiveDateTime` of the most recent observation to the current system time.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Evaluation**\n1. Parse the `effectiveDateTime` from the most recent `Observation` in the bundle.\n2. Calculate the age of the result relative to the current system time provided in the context.\n3. If the result is within the threshold (e.g., <= 1 year), report the value and date, and do NOT create a new ServiceRequest.\n\n**Pattern 2: Conditional Ordering**\n1. If the search returns `total: 0`, confirm if the task requires an order for new patients or only for those with expired results.\n2. If the result is older than the threshold, or if no result exists and the task implies an order is needed, proceed with the POST request.\n3. Always include a `note` in the `ServiceRequest` explaining the clinical justification (e.g., 'Last result [date] is older than 1 year').\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If older than 1 year, order a new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. If bundle contains an observation from 6 months ago, report the value and date. Do not POST.\n3. If bundle is empty or the observation is 2 years old, proceed to POST `ServiceRequest`.\n\n## Success Indicators\n- No unnecessary `ServiceRequest` creation when valid, recent data exists.\n- Correct identification of expired lab results.\n\n## Failure Indicators\n- `ServiceRequest` created despite a recent, valid lab result being present in the bundle.",
+        "tags": [
+          "lab",
+          "temporal",
+          "service-request"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "temporal_observation_filtering",
+        "description": "Enforce strict validation of observation search results against current system time before concluding data absence.",
+        "content": "## Skill Title\nTemporal Observation Filtering and Verification\n\n## Pattern Description\nWhen searching for clinical observations (labs, vitals) within a specific time window (e.g., \"last 24 hours\"), you must not assume that an empty search result or a bundle with old entries implies the absence of data. You must explicitly compare the `effectiveDateTime` or `issued` field of every returned observation against the current system time provided in the task context.\n\nIf a search returns no results, you must verify if the search parameters were too restrictive or if you need to perform a broader search to confirm the absence of data before concluding that no measurement exists.\n\n## When to Use This Skill\n- When a task requires checking for a lab result within a specific timeframe (e.g., \"last 24 hours\").\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you are tempted to conclude \"No [lab] found\" without inspecting the `effectiveDateTime` of the returned resources.\n\n## Common Failure Patterns\n- Assuming `total: 0` in a FHIR bundle means no data exists for the patient, ignoring that the search might have been too narrow.\n- Failing to compare the `effectiveDateTime` of the most recent observation to the current system time, leading to the use of stale data or incorrect \"no data\" conclusions.\n- Returning a negative result (e.g., \"No magnesium level found\") without confirming that the search covered the relevant time window.\n\n## Recommended Patterns\n\n**Pattern 1: Search Validation**\nIf a search returns `total: 0`, do not immediately conclude no data exists. Check if your search parameters (like `code` or `patient`) are correct. If they are, perform a broader search (e.g., remove the time-based filter if you applied one in the URL) to see if any historical data exists, then filter it yourself.\n\n**Pattern 2: Temporal Filtering**\nFor every observation in the bundle, extract the `effectiveDateTime`. Compare this value to the current system time. \n- If `current_time - effectiveDateTime <= 24 hours`, the result is valid.\n- If all results are older than 24 hours, you must state that no result exists *within the last 24 hours*.\n\n**Pattern 3: Negative Conclusion**\nOnly issue a negative `FINISH` (e.g., \"No magnesium level recorded in the last 24 hours\") after you have confirmed that no observations in the bundle meet the temporal criteria.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=MG&patient=S0581164`.\n2. Inspect the bundle. If `total` is 0, verify the patient ID and code.\n3. If results exist, iterate through `entry` and check `resource.effectiveDateTime`.\n4. If the most recent `effectiveDateTime` is > 24 hours from the current time, conclude: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- Agent correctly identifies that data exists but is outside the requested window.\n- Agent performs a broader search if the initial search returns no results.\n\n## Failure Indicators\n- Agent returns \"No data found\" when data exists but is older than the requested window.\n- Agent fails to account for the current system time when evaluating the \"last 24 hours\" constraint.",
+        "tags": [
+          "fhir",
+          "temporal",
+          "observation",
+          "validation"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "temporal_observation_filtering",
+          "description": "Enforce strict validation of observation search results against current system time before concluding data absence.",
+          "content": "## Skill Title\nTemporal Observation Filtering and Verification\n\n## Pattern Description\nWhen searching for clinical observations (labs, vitals) within a specific time window (e.g., \"last 24 hours\"), you must not assume that an empty search result or a bundle with old entries implies the absence of data. You must explicitly compare the `effectiveDateTime` or `issued` field of every returned observation against the current system time provided in the task context.\n\nIf a search returns no results, you must verify if the search parameters were too restrictive or if you need to perform a broader search to confirm the absence of data before concluding that no measurement exists.\n\n## When to Use This Skill\n- When a task requires checking for a lab result within a specific timeframe (e.g., \"last 24 hours\").\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you are tempted to conclude \"No [lab] found\" without inspecting the `effectiveDateTime` of the returned resources.\n\n## Common Failure Patterns\n- Assuming `total: 0` in a FHIR bundle means no data exists for the patient, ignoring that the search might have been too narrow.\n- Failing to compare the `effectiveDateTime` of the most recent observation to the current system time, leading to the use of stale data or incorrect \"no data\" conclusions.\n- Returning a negative result (e.g., \"No magnesium level found\") without confirming that the search covered the relevant time window.\n\n## Recommended Patterns\n\n**Pattern 1: Search Validation**\nIf a search returns `total: 0`, do not immediately conclude no data exists. Check if your search parameters (like `code` or `patient`) are correct. If they are, perform a broader search (e.g., remove the time-based filter if you applied one in the URL) to see if any historical data exists, then filter it yourself.\n\n**Pattern 2: Temporal Filtering**\nFor every observation in the bundle, extract the `effectiveDateTime`. Compare this value to the current system time. \n- If `current_time - effectiveDateTime <= 24 hours`, the result is valid.\n- If all results are older than 24 hours, you must state that no result exists *within the last 24 hours*.\n\n**Pattern 3: Negative Conclusion**\nOnly issue a negative `FINISH` (e.g., \"No magnesium level recorded in the last 24 hours\") after you have confirmed that no observations in the bundle meet the temporal criteria.\n\n## Example Application\n\n**Task:** \"Check patient S0581164's last serum magnesium level within last 24 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=MG&patient=S0581164`.\n2. Inspect the bundle. If `total` is 0, verify the patient ID and code.\n3. If results exist, iterate through `entry` and check `resource.effectiveDateTime`.\n4. If the most recent `effectiveDateTime` is > 24 hours from the current time, conclude: `FINISH([\"No magnesium level has been recorded in the last 24 hours.\"])`.\n\n## Success Indicators\n- Agent correctly identifies that data exists but is outside the requested window.\n- Agent performs a broader search if the initial search returns no results.\n\n## Failure Indicators\n- Agent returns \"No data found\" when data exists but is older than the requested window.\n- Agent fails to account for the current system time when evaluating the \"last 24 hours\" constraint.",
+          "tags": [
+            "fhir",
+            "temporal",
+            "observation",
+            "validation"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "lab_result_temporal_validation_and_action",
+          "description": "Enforce strict temporal validation and conditional logic for lab-based ServiceRequests.",
+          "content": "## Skill Title\nLab Result Temporal Validation and Action\n\n## Pattern Description\nWhen a task requires ordering a lab test based on the age of a previous result, you must first retrieve and evaluate the existing data. You must not create a new ServiceRequest if a valid, recent result already exists or if the clinical criteria for ordering (e.g., 'older than 1 year') are not met. \n\nThis pattern prevents unnecessary duplicate orders and ensures that the decision to order is explicitly tied to the absence of recent data or the expiration of existing data.\n\n## When to Use This Skill\n- When the task instruction includes a conditional trigger (e.g., 'If the lab value result date is greater than X, order a new test').\n- When you have performed a GET request for a lab observation and received a bundle.\n- Before issuing a POST request for a ServiceRequest based on lab history.\n\n## Common Failure Patterns\n- Ordering a new test without checking if the existing result is within the required timeframe.\n- Ordering a new test when the search returns no results, without verifying if the task implies a new order is appropriate for a first-time measurement.\n- Assuming a new order is required without explicitly comparing the `effectiveDateTime` of the most recent observation to the current system time.\n\n## Recommended Patterns\n\n**Pattern 1: Temporal Evaluation**\n1. Parse the `effectiveDateTime` from the most recent `Observation` in the bundle.\n2. Calculate the age of the result relative to the current system time provided in the context.\n3. If the result is within the threshold (e.g., <= 1 year), report the value and date, and do NOT create a new ServiceRequest.\n\n**Pattern 2: Conditional Ordering**\n1. If the search returns `total: 0`, confirm if the task requires an order for new patients or only for those with expired results.\n2. If the result is older than the threshold, or if no result exists and the task implies an order is needed, proceed with the POST request.\n3. Always include a `note` in the `ServiceRequest` explaining the clinical justification (e.g., 'Last result [date] is older than 1 year').\n\n## Example Application\n\n**Task:** \"What’s the last HbA1C value? If older than 1 year, order a new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=A1C&patient=S123`.\n2. If bundle contains an observation from 6 months ago, report the value and date. Do not POST.\n3. If bundle is empty or the observation is 2 years old, proceed to POST `ServiceRequest`.\n\n## Success Indicators\n- No unnecessary `ServiceRequest` creation when valid, recent data exists.\n- Correct identification of expired lab results.\n\n## Failure Indicators\n- `ServiceRequest` created despite a recent, valid lab result being present in the bundle.",
+          "tags": [
+            "lab",
+            "temporal",
+            "service-request"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

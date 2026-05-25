@@ -1,0 +1,343 @@
+[
+  {
+    "epoch": 0,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 24,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "fhir_resource_reference_formatting",
+        "description": "Enforces the 'ResourceType/ID' format for all resource references in POST/PUT requests to ensure server compatibility, specifically when creating or updating resources.",
+        "content": "# FHIR Resource Reference Formatting\n\n## Pattern Description\nWhen creating or updating FHIR resources that require references to other resources (such as a `subject` reference in a `ServiceRequest` or `MedicationRequest`), the reference must strictly follow the `ResourceType/ID` format. This skill ensures that all `reference` fields in your JSON payloads are correctly formatted to prevent server-side rejection.\n\n## When to Use This Skill\n- **Only** when constructing a POST or PUT request body that includes a `reference` field.\n- Do **not** apply this logic to GET request parameters or search queries, as these do not require the `ResourceType/ID` format and applying it there may cause search failures.\n\n## Common Failure Patterns\n- Using only the ID (e.g., `\"reference\": \"S6538722\"`) instead of the full path in a POST/PUT body.\n- Omitting the slash separator.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting and Formatting**\nAlways extract the ID from the `fullUrl` or `id` field of the source resource and prepend the correct `ResourceType/` prefix.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6538722\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6538722\" }`\n\n## Example Application\n\n**Task:** Create a ServiceRequest for patient S6538722.\n\n**Step-by-step:**\n1. Identify the patient ID from the previous GET response: `S6538722`.\n2. Construct the `subject` object: `{\"reference\": \"Patient/S6538722\"}`.\n3. Include this in the POST body for the `ServiceRequest`.\n\nCORRECT output: `POST /ServiceRequest { \"subject\": { \"reference\": \"Patient/S6538722\" }, ... }`",
+        "tags": [
+          "fhir",
+          "json",
+          "post",
+          "put"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "dynamic_date_filter_calculation",
+        "description": "Calculate relative date filters dynamically using current system time instead of hardcoded dates.",
+        "content": "# Dynamic Date Filter Calculation\n\n## Pattern Description\nWhen a task requires filtering resources by a relative time window (e.g., \"within the last 12 months\" or \"more than 365 days ago\"), you must calculate the exact date threshold based on the current system time provided in the task context. Using hardcoded dates leads to stale queries and incorrect clinical assessments.\n\n## When to Use This Skill\n- When the task instruction specifies a relative time duration (e.g., \"last 12 months\", \"past 365 days\").\n- When you need to construct a FHIR search query with a `date` parameter (e.g., `date=geYYYY-MM-DD`).\n- When the current system time is provided in the task context.\n\n## Common Failure Patterns\n- Using a hardcoded date from a previous example or a static date string.\n- Failing to account for the current year/month provided in the prompt context.\n- Using an incorrect FHIR prefix (e.g., using `eq` instead of `ge` for \"within the last X days\").\n\n## Recommended Patterns\n\n**Pattern 1: Calculate the threshold date**\n1. Identify the current date from the task context (e.g., `2024-01-09`).\n2. Subtract the required duration (e.g., 365 days) to determine the threshold date.\n3. Format the threshold date as `YYYY-MM-DD`.\n\n**Pattern 2: Construct the FHIR query**\n1. Use the `ge` (greater than or equal) prefix for \"within the last X days\" or \"since X date\".\n2. Example: If today is `2024-01-09` and you need the last 365 days, the threshold is `2023-01-09`. The query parameter is `date=ge2023-01-09`.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine. If it was administered more than 365 days ago, order a new one. Current date: 2024-01-09.\"\n\n**Step-by-step:**\n1. Current date is `2024-01-09`.\n2. Subtract 365 days: `2023-01-09`.\n3. Construct GET: `GET /Procedure?patient=S123&code=90686&date=ge2023-01-09`.\n4. If the bundle is empty, the last vaccine was more than 365 days ago.\n\n## Success Indicators\n- The `date` parameter in your GET request matches the calculated threshold based on the current system time.\n- The agent correctly identifies that no records exist within the calculated window.\n\n## Failure Indicators\n- The `date` parameter uses a year that is clearly in the past (e.g., 2022 when the current date is 2024).\n- The agent returns a \"not found\" result because the search window was too restrictive due to an outdated date.",
+        "tags": [
+          "fhir",
+          "search",
+          "date-calculation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "observation_broad_search_fallback",
+        "description": "Perform a broad search for all observations and filter locally when specific code-based searches return no results.",
+        "content": "# Observation Broad Search Fallback Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (like heart rate, TSH, or other vitals/labs) using a `code` parameter, the FHIR server may return zero results even if the data exists under a different coding system or display name. If a targeted search returns an empty bundle, you must perform a broader search for all observations for that patient and category to manually inspect the available codes.\n\n## When to Use This Skill\n- When a `GET /Observation?patient={id}&code={code}` request returns a Bundle with `total: 0`.\n- When you are tasked with finding a specific observation type but the initial search by code fails.\n\n## Common Failure Patterns\n- Assuming that a zero-result search means the data does not exist.\n- Failing to check the `category` or `patient` parameters in a broader search, leading to excessive data retrieval.\n- Giving up after one failed search attempt.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nStart with the most specific search possible using the provided code.\n\n**Pattern 2: Broad Fallback**\nIf the targeted search returns `total: 0`, perform a broader search:\n`GET /Observation?patient={id}&category={category}`\n\n**Pattern 3: Local Filtering**\nOnce you receive the broader bundle, iterate through the `entry` list. Inspect the `code.coding` or `code.text` fields of each resource to identify the target observation manually. If you find a match, extract the value from `valueQuantity.value`.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6227720.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6227720&code=HEARTRATE`.\n2. If the response is `total: 0`, issue `GET /Observation?patient=S6227720&category=vital-signs`.\n3. Iterate through the returned resources, checking `resource.code.text` for \"Heart Rate\" or similar strings.\n4. Extract the `valueQuantity.value` from the matching resource.\n\n## Success Indicators\n- The agent successfully identifies the target observation in the broader search results after the initial specific search fails.\n- The agent avoids premature `FINISH` calls that claim data is missing.\n\n## Failure Indicators\n- The agent continues to perform broad searches even when the specific search was successful.\n- The agent fails to filter the broad search results and incorrectly identifies a different observation as the target.",
+        "tags": [
+          "fhir",
+          "search",
+          "observation",
+          "fallback"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_duplication_prevention",
+        "description": "Strategy to identify and discontinue duplicate active medication orders before creating new ones.",
+        "content": "## Skill Title\nMedication Order Duplication Prevention\n\n## Pattern Description\nWhen tasked with ensuring a patient has exactly one active order for a specific medication or therapeutic class, you must first retrieve all active orders for that patient. If you find multiple active orders that serve the same clinical purpose (e.g., DVT prophylaxis), you must discontinue the older ones and keep only the most recent one. If no active order exists, you may proceed to create a new one.\n\n## When to Use This Skill\n- When the task instruction specifies \"exactly one active order\" for a medication.\n- When the task instruction explicitly mentions discontinuing duplicates.\n- When you are about to create a new medication order but have not yet verified the current active list for that patient.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders, leading to duplication.\n- Failing to discontinue existing orders when multiple are found.\n- Misidentifying therapeutic classes (e.g., treating a therapeutic anticoagulant as a DVT prophylaxis order).\n\n## Recommended Patterns\n\n**Pattern 1: Verification**\n1. Perform a GET request for `MedicationRequest?patient={patient_id}&status=active`.\n2. Filter the results to identify orders matching the therapeutic intent (e.g., DVT prophylaxis).\n3. If multiple orders exist, identify the one with the most recent `authoredOn` date.\n4. For all other matching orders, issue a `PATCH` or `PUT` request to update the `status` to `stopped` or `cancelled`.\n\n**Pattern 2: Creation**\n1. Only if zero active orders are found, proceed to `POST` the new `MedicationRequest`.\n2. Ensure the `status` is set to `active` and `intent` is `order`.\n\n## Example Application\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S6227720&status=active`.\n2. Review the bundle. If two heparin orders are found, identify the one with the latest `authoredOn`.\n3. PATCH the older order(s) with `{\"status\": \"stopped\"}`.\n4. If no active order exists, POST the new `MedicationRequest`.\n\n## Success Indicators\n- The agent performs a GET request before any POST request.\n- The agent identifies and discontinues existing duplicates before creating a new one.\n\n## Failure Indicators\n- The agent creates a new order while an existing one remains active.\n- The agent fails to discontinue older, redundant orders.",
+        "tags": [
+          "medication",
+          "fhir",
+          "duplication"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_resource_reference_formatting",
+        "description": "Enforces the 'ResourceType/ID' format for all resource references in POST/PUT requests to ensure server compatibility.",
+        "content": "# FHIR Resource Reference Formatting\n\n## Pattern Description\nWhen creating or updating FHIR resources that require references to other resources (such as a `subject` reference in a `ServiceRequest` or `MedicationRequest`), the reference must strictly follow the `ResourceType/ID` format. Many FHIR servers reject requests that use incorrect formats (e.g., just the ID or an incorrect path). This skill ensures that all `reference` fields in your JSON payloads are correctly formatted to prevent server-side rejection.\n\n## When to Use This Skill\n- When constructing any POST or PUT request body that includes a `reference` field (e.g., `subject.reference`, `patient.reference`, `encounter.reference`).\n- When you have retrieved a resource and need to link it to a new resource you are creating.\n\n## Common Failure Patterns\n- Using only the ID (e.g., `\"reference\": \"S6538722\"`) instead of the full path.\n- Using incorrect resource types in the path (e.g., `\"reference\": \"User/S6538722\"` when the resource is a `Patient`).\n- Omitting the slash separator.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting and Formatting**\nAlways extract the ID from the `fullUrl` or `id` field of the source resource and prepend the correct `ResourceType/` prefix.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6538722\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6538722\" }`\n\n**Pattern 2: Verification**\nBefore sending the POST request, inspect the JSON payload to ensure every `reference` field follows the `[ResourceType]/[ID]` pattern.\n\n## Example Application\n\n**Task:** Create a ServiceRequest for patient S6538722.\n\n**Step-by-step:**\n1. Identify the patient ID from the previous GET response: `S6538722`.\n2. Construct the `subject` object: `{\"reference\": \"Patient/S6538722\"}`.\n3. Include this in the POST body for the `ServiceRequest`.\n\nCORRECT output: `POST /ServiceRequest { \"subject\": { \"reference\": \"Patient/S6538722\" }, ... }`\nWRONG output:   `POST /ServiceRequest { \"subject\": { \"reference\": \"S6538722\" }, ... }`\n\n## Success Indicators\n- The FHIR server returns a 201 Created or 200 OK status code.\n- The `system_note` does not report that the resource was not found or failed to store.\n\n## Failure Indicators\n- The server returns a 400 Bad Request or 422 Unprocessable Entity error.\n- The `system_note` indicates the resource was not found on subsequent retrieval.",
+        "tags": [
+          "fhir",
+          "post",
+          "reference",
+          "formatting"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "dynamic_date_filter_calculation",
+          "description": "Calculate relative date filters dynamically using current system time instead of hardcoded dates.",
+          "content": "# Dynamic Date Filter Calculation\n\n## Pattern Description\nWhen a task requires filtering resources by a relative time window (e.g., \"within the last 12 months\" or \"more than 365 days ago\"), you must calculate the exact date threshold based on the current system time provided in the task context. Using hardcoded dates leads to stale queries and incorrect clinical assessments.\n\n## When to Use This Skill\n- When the task instruction specifies a relative time duration (e.g., \"last 12 months\", \"past 365 days\").\n- When you need to construct a FHIR search query with a `date` parameter (e.g., `date=geYYYY-MM-DD`).\n- When the current system time is provided in the task context.\n\n## Common Failure Patterns\n- Using a hardcoded date from a previous example or a static date string.\n- Failing to account for the current year/month provided in the prompt context.\n- Using an incorrect FHIR prefix (e.g., using `eq` instead of `ge` for \"within the last X days\").\n\n## Recommended Patterns\n\n**Pattern 1: Calculate the threshold date**\n1. Identify the current date from the task context (e.g., `2024-01-09`).\n2. Subtract the required duration (e.g., 365 days) to determine the threshold date.\n3. Format the threshold date as `YYYY-MM-DD`.\n\n**Pattern 2: Construct the FHIR query**\n1. Use the `ge` (greater than or equal) prefix for \"within the last X days\" or \"since X date\".\n2. Example: If today is `2024-01-09` and you need the last 365 days, the threshold is `2023-01-09`. The query parameter is `date=ge2023-01-09`.\n\n## Example Application\n\n**Task:** \"Determine the date of the last influenza vaccine. If it was administered more than 365 days ago, order a new one. Current date: 2024-01-09.\"\n\n**Step-by-step:**\n1. Current date is `2024-01-09`.\n2. Subtract 365 days: `2023-01-09`.\n3. Construct GET: `GET /Procedure?patient=S123&code=90686&date=ge2023-01-09`.\n4. If the bundle is empty, the last vaccine was more than 365 days ago.\n\n## Success Indicators\n- The `date` parameter in your GET request matches the calculated threshold based on the current system time.\n- The agent correctly identifies that no records exist within the calculated window.\n\n## Failure Indicators\n- The `date` parameter uses a year that is clearly in the past (e.g., 2022 when the current date is 2024).\n- The agent returns a \"not found\" result because the search window was too restrictive due to an outdated date.",
+          "tags": [
+            "fhir",
+            "search",
+            "date-calculation"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_broad_search_fallback",
+          "description": "Perform a broad search for all observations and filter locally when specific code-based searches return no results.",
+          "content": "# Observation Broad Search Fallback Strategy\n\n## Pattern Description\nWhen searching for specific clinical observations (like heart rate, TSH, or other vitals/labs) using a `code` parameter, the FHIR server may return zero results even if the data exists under a different coding system or display name. If a targeted search returns an empty bundle, you must perform a broader search for all observations for that patient and category to manually inspect the available codes.\n\n## When to Use This Skill\n- When a `GET /Observation?patient={id}&code={code}` request returns a Bundle with `total: 0`.\n- When you are tasked with finding a specific observation type but the initial search by code fails.\n\n## Common Failure Patterns\n- Assuming that a zero-result search means the data does not exist.\n- Failing to check the `category` or `patient` parameters in a broader search, leading to excessive data retrieval.\n- Giving up after one failed search attempt.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nStart with the most specific search possible using the provided code.\n\n**Pattern 2: Broad Fallback**\nIf the targeted search returns `total: 0`, perform a broader search:\n`GET /Observation?patient={id}&category={category}`\n\n**Pattern 3: Local Filtering**\nOnce you receive the broader bundle, iterate through the `entry` list. Inspect the `code.coding` or `code.text` fields of each resource to identify the target observation manually. If you find a match, extract the value from `valueQuantity.value`.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S6227720.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S6227720&code=HEARTRATE`.\n2. If the response is `total: 0`, issue `GET /Observation?patient=S6227720&category=vital-signs`.\n3. Iterate through the returned resources, checking `resource.code.text` for \"Heart Rate\" or similar strings.\n4. Extract the `valueQuantity.value` from the matching resource.\n\n## Success Indicators\n- The agent successfully identifies the target observation in the broader search results after the initial specific search fails.\n- The agent avoids premature `FINISH` calls that claim data is missing.\n\n## Failure Indicators\n- The agent continues to perform broad searches even when the specific search was successful.\n- The agent fails to filter the broad search results and incorrectly identifies a different observation as the target.",
+          "tags": [
+            "fhir",
+            "search",
+            "observation",
+            "fallback"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "raw_score": 2,
+        "fixes": 7,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_duplication_prevention",
+          "description": "Strategy to identify and discontinue duplicate active medication orders before creating new ones.",
+          "content": "## Skill Title\nMedication Order Duplication Prevention\n\n## Pattern Description\nWhen tasked with ensuring a patient has exactly one active order for a specific medication or therapeutic class, you must first retrieve all active orders for that patient. If you find multiple active orders that serve the same clinical purpose (e.g., DVT prophylaxis), you must discontinue the older ones and keep only the most recent one. If no active order exists, you may proceed to create a new one.\n\n## When to Use This Skill\n- When the task instruction specifies \"exactly one active order\" for a medication.\n- When the task instruction explicitly mentions discontinuing duplicates.\n- When you are about to create a new medication order but have not yet verified the current active list for that patient.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders, leading to duplication.\n- Failing to discontinue existing orders when multiple are found.\n- Misidentifying therapeutic classes (e.g., treating a therapeutic anticoagulant as a DVT prophylaxis order).\n\n## Recommended Patterns\n\n**Pattern 1: Verification**\n1. Perform a GET request for `MedicationRequest?patient={patient_id}&status=active`.\n2. Filter the results to identify orders matching the therapeutic intent (e.g., DVT prophylaxis).\n3. If multiple orders exist, identify the one with the most recent `authoredOn` date.\n4. For all other matching orders, issue a `PATCH` or `PUT` request to update the `status` to `stopped` or `cancelled`.\n\n**Pattern 2: Creation**\n1. Only if zero active orders are found, proceed to `POST` the new `MedicationRequest`.\n2. Ensure the `status` is set to `active` and `intent` is `order`.\n\n## Example Application\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/MedicationRequest?patient=S6227720&status=active`.\n2. Review the bundle. If two heparin orders are found, identify the one with the latest `authoredOn`.\n3. PATCH the older order(s) with `{\"status\": \"stopped\"}`.\n4. If no active order exists, POST the new `MedicationRequest`.\n\n## Success Indicators\n- The agent performs a GET request before any POST request.\n- The agent identifies and discontinues existing duplicates before creating a new one.\n\n## Failure Indicators\n- The agent creates a new order while an existing one remains active.\n- The agent fails to discontinue older, redundant orders.",
+          "tags": [
+            "medication",
+            "fhir",
+            "duplication"
+          ]
+        },
+        "net": 5,
+        "score": 5,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_reference_formatting",
+          "description": "Enforces the 'ResourceType/ID' format for all resource references in POST/PUT requests to ensure server compatibility.",
+          "content": "# FHIR Resource Reference Formatting\n\n## Pattern Description\nWhen creating or updating FHIR resources that require references to other resources (such as a `subject` reference in a `ServiceRequest` or `MedicationRequest`), the reference must strictly follow the `ResourceType/ID` format. Many FHIR servers reject requests that use incorrect formats (e.g., just the ID or an incorrect path). This skill ensures that all `reference` fields in your JSON payloads are correctly formatted to prevent server-side rejection.\n\n## When to Use This Skill\n- When constructing any POST or PUT request body that includes a `reference` field (e.g., `subject.reference`, `patient.reference`, `encounter.reference`).\n- When you have retrieved a resource and need to link it to a new resource you are creating.\n\n## Common Failure Patterns\n- Using only the ID (e.g., `\"reference\": \"S6538722\"`) instead of the full path.\n- Using incorrect resource types in the path (e.g., `\"reference\": \"User/S6538722\"` when the resource is a `Patient`).\n- Omitting the slash separator.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting and Formatting**\nAlways extract the ID from the `fullUrl` or `id` field of the source resource and prepend the correct `ResourceType/` prefix.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6538722\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6538722\" }`\n\n**Pattern 2: Verification**\nBefore sending the POST request, inspect the JSON payload to ensure every `reference` field follows the `[ResourceType]/[ID]` pattern.\n\n## Example Application\n\n**Task:** Create a ServiceRequest for patient S6538722.\n\n**Step-by-step:**\n1. Identify the patient ID from the previous GET response: `S6538722`.\n2. Construct the `subject` object: `{\"reference\": \"Patient/S6538722\"}`.\n3. Include this in the POST body for the `ServiceRequest`.\n\nCORRECT output: `POST /ServiceRequest { \"subject\": { \"reference\": \"Patient/S6538722\" }, ... }`\nWRONG output:   `POST /ServiceRequest { \"subject\": { \"reference\": \"S6538722\" }, ... }`\n\n## Success Indicators\n- The FHIR server returns a 201 Created or 200 OK status code.\n- The `system_note` does not report that the resource was not found or failed to store.\n\n## Failure Indicators\n- The server returns a 400 Bad Request or 422 Unprocessable Entity error.\n- The `system_note` indicates the resource was not found on subsequent retrieval.",
+          "tags": [
+            "fhir",
+            "post",
+            "reference",
+            "formatting"
+          ]
+        },
+        "net": 8,
+        "score": 8,
+        "raw_score": 7,
+        "fixes": 9,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_reference_formatting",
+          "description": "Enforces the 'ResourceType/ID' format for all resource references in POST/PUT requests to ensure server compatibility, specifically when creating or updating resources.",
+          "content": "# FHIR Resource Reference Formatting\n\n## Pattern Description\nWhen creating or updating FHIR resources that require references to other resources (such as a `subject` reference in a `ServiceRequest` or `MedicationRequest`), the reference must strictly follow the `ResourceType/ID` format. This skill ensures that all `reference` fields in your JSON payloads are correctly formatted to prevent server-side rejection.\n\n## When to Use This Skill\n- **Only** when constructing a POST or PUT request body that includes a `reference` field.\n- Do **not** apply this logic to GET request parameters or search queries, as these do not require the `ResourceType/ID` format and applying it there may cause search failures.\n\n## Common Failure Patterns\n- Using only the ID (e.g., `\"reference\": \"S6538722\"`) instead of the full path in a POST/PUT body.\n- Omitting the slash separator.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting and Formatting**\nAlways extract the ID from the `fullUrl` or `id` field of the source resource and prepend the correct `ResourceType/` prefix.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S6538722\" }`\nWRONG:   `\"subject\": { \"reference\": \"S6538722\" }`\n\n## Example Application\n\n**Task:** Create a ServiceRequest for patient S6538722.\n\n**Step-by-step:**\n1. Identify the patient ID from the previous GET response: `S6538722`.\n2. Construct the `subject` object: `{\"reference\": \"Patient/S6538722\"}`.\n3. Include this in the POST body for the `ServiceRequest`.\n\nCORRECT output: `POST /ServiceRequest { \"subject\": { \"reference\": \"Patient/S6538722\" }, ... }`",
+          "tags": [
+            "fhir",
+            "json",
+            "post",
+            "put"
+          ]
+        },
+        "net": 9,
+        "score": 9,
+        "fixes": 9,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 2,
+        "contrastive_revision": true
+      }
+    ]
+  },
+  {
+    "epoch": 0,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "fhir_search_temporal_fallback_strategy",
+        "description": "Ensures historical records are captured by performing an initial broad search before applying restrictive date filters.",
+        "content": "## Skill Title\nFHIR Search Temporal Fallback Strategy\n\n## Pattern Description\nWhen searching for historical procedures or observations to determine if a recent event occurred, agents often apply a restrictive date filter (e.g., `date=ge[date]`) too early. If the initial search returns no results, the agent may incorrectly conclude that no such event exists. This skill mandates a two-step search pattern: first, perform a broad search to confirm the existence of any historical records, and second, apply temporal logic to the retrieved data.\n\n## When to Use This Skill\n- When a task requires checking for the existence of a procedure or observation within a specific timeframe (e.g., \"within the last 12 months\").\n- When an initial search with a date filter returns zero results, but the task requires verifying if an event occurred at any point in the past.\n\n## Common Failure Patterns\n- Applying a `date=ge[date]` filter in the first GET request, causing the agent to miss older records that might be relevant for context or to confirm the absence of a procedure.\n- Assuming that a zero-result search with a date filter is definitive proof that no such procedure has ever occurred.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Initial Search**\nIf you need to check for a procedure or observation, start by searching without a date filter to see if any records exist for the patient.\n\n**Pattern 2: Temporal Filtering**\nOnce you have the full list of records, filter them locally based on the required date range. If the list is empty, you can confidently conclude no such event occurred.\n\n**Pattern 3: Verification**\nIf the broad search returns results, inspect the `effectiveDateTime` or `performedDateTime` fields to determine if the most recent event falls within the required window.\n\n## Example Application\n\n**Task:** \"Find the date of the most recent CT Abdomen procedure. If performed more than 12 months ago, order a new one.\"\n\n**Step-by-step:**\n1. Issue GET `.../Procedure?patient=S123&code=IMGCT0491` (no date filter).\n2. If the bundle is empty, conclude no procedure exists and proceed to order.\n3. If the bundle contains entries, extract the dates from the resources.\n4. Compare the most recent date to the current date to decide if an order is needed.\n\nCORRECT output: `GET .../Procedure?patient=S123&code=IMGCT0491`\nWRONG output: `GET .../Procedure?patient=S123&code=IMGCT0491&date=ge2022-11-07` (if this is the only search performed).\n\n## Success Indicators\n- The agent retrieves historical records that were previously missed due to restrictive date filters.\n- The agent correctly identifies the most recent procedure date even if it is older than the initial filter threshold.\n\n## Failure Indicators\n- The agent continues to use restrictive date filters in the first request, leading to false negatives.",
+        "tags": [
+          "fhir",
+          "search",
+          "temporal-logic"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_medication_request_filtering_strategy",
+        "description": "Enforces filtering MedicationRequest searches by status and specific medication codes to avoid broad, inaccurate results.",
+        "content": "# FHIR MedicationRequest Filtering Strategy\n\n## Pattern Description\nWhen searching for specific medication orders (e.g., opioids, prophylaxis), you must avoid broad patient-level searches that return all historical or irrelevant medications. You must explicitly filter by `status=active` and, where possible, use specific codes or identifiers to narrow the result set. Relying on a generic `patient=ID` search often leads to false negatives when the bundle is large or contains inactive/irrelevant orders.\n\n## When to Use This Skill\n- When the task requires verifying the presence or absence of a specific class of medication (e.g., opioids, DVT prophylaxis).\n- When a broad `GET /MedicationRequest?patient=ID` returns a large bundle or fails to identify an active order that exists.\n- When you need to confirm if a specific medication is currently active for a patient.\n\n## Common Failure Patterns\n- Using `GET /MedicationRequest?patient=ID` and assuming the first result or the absence of a result is definitive.\n- Failing to filter by `status=active`, leading to the inclusion of discontinued or completed orders in your logic.\n- Assuming that a lack of results in a broad search means no order exists, when the order might be buried in a paginated response or masked by inactive records.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include `status=active` in your query parameters. If the API supports it, include the medication code or a specific identifier to narrow the search.\n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active`\nWRONG:   `GET /MedicationRequest?patient=S123`\n\n**Pattern 2: Result Verification**\nIf the search returns a bundle, iterate through the `entry` array and inspect the `status` field of each `MedicationRequest` resource to ensure it is indeed `active` before concluding that no order exists.\n\n**Pattern 3: Handling Pagination**\nIf the bundle contains a `next` link, you must follow it until you have inspected all pages before concluding that no active order exists.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status filter: `GET /MedicationRequest?patient=S1796597&status=active`\n2. Parse the bundle. If the bundle is empty, confirm no active orders exist.\n3. If results exist, filter the list for opioid medications (e.g., hydromorphone, fentanyl).\n4. If an opioid is found, check for a corresponding naloxone order in the same list.\n5. If no naloxone is found, proceed to create the order.\n\n## Success Indicators\n- The agent correctly identifies active orders by filtering out inactive ones.\n- The agent avoids false negatives caused by broad, unfiltered searches.\n\n## Failure Indicators\n- The agent reports \"No active orders found\" when an active order is present in the patient's record.\n- The agent incorrectly identifies a discontinued order as active.",
+        "tags": [
+          "fhir",
+          "medication",
+          "search",
+          "filtering"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_observation_code_lookup",
+        "description": "Use standard LOINC/SNOMED codes for observations instead of literal strings.",
+        "content": "# FHIR Observation Code Lookup\n\n## Pattern Description\nWhen searching for clinical observations (like heart rate, blood pressure, or lab results), do not rely on literal string names (e.g., 'HEARTRATE') in the `code` search parameter. FHIR servers typically index observations using standardized coding systems like LOINC or SNOMED-CT. Using a literal string often results in a 0-count bundle.\n\n## When to Use This Skill\n- When a search for an observation by a descriptive name (e.g., `code=HEARTRATE`) returns zero results.\n- When the task description provides a common clinical term but the FHIR server requires a specific code.\n\n## Common Failure Patterns\n- Using `code=HEARTRATE` or `code=TSH` directly when the server expects a specific LOINC code (e.g., `8867-4` for Heart Rate).\n- Assuming the server performs fuzzy string matching on the `code` parameter.\n\n## Recommended Patterns\n\n**Pattern 1: Search by Code System**\nIf a search by name fails, search by the standard code if provided in the context, or perform a broader search by `category` and filter the results locally to identify the correct code for future queries.\n\n**Pattern 2: Broad Search Fallback**\nIf the specific code is unknown, perform a search by `category` (e.g., `category=vital-signs`) and inspect the `code.coding` field of the returned resources to find the correct system and code for the desired observation.\n\n**Example Application**\n\n**Task:** \"Calculate the average heart rate.\"\n\n**Step-by-step:**\n1. Attempt search: `GET /Observation?category=vital-signs&patient=S123`\n2. Inspect the `code.coding` of the returned resources to find the Heart Rate entry (e.g., `system: http://loinc.org, code: 8867-4`).\n3. Use the discovered code for subsequent specific queries: `GET /Observation?patient=S123&code=8867-4`\n\n## Success Indicators\n- The agent successfully retrieves observation resources after switching from a string-based code to a system-based code.\n- The `total` field in the FHIR Bundle is greater than 0.\n\n## Failure Indicators\n- Repeated 0-count bundles despite trying multiple variations of the clinical term.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_temporal_fallback_strategy",
+        "description": "Ensures historical records are captured by performing an initial broad search before applying restrictive date filters.",
+        "content": "## Skill Title\nFHIR Search Temporal Fallback Strategy\n\n## Pattern Description\nWhen searching for historical procedures or observations to determine if a recent event occurred, agents often apply a restrictive date filter (e.g., `date=ge[date]`) too early. If the initial search returns no results, the agent may incorrectly conclude that no such event exists. This skill mandates a two-step search pattern: first, perform a broad search to confirm the existence of any historical records, and second, apply temporal logic to the retrieved data.\n\n## When to Use This Skill\n- When a task requires checking for the existence of a procedure or observation within a specific timeframe (e.g., \"within the last 12 months\").\n- When an initial search with a date filter returns zero results, but the task requires verifying if an event occurred at any point in the past.\n\n## Common Failure Patterns\n- Applying a `date=ge[date]` filter in the first GET request, causing the agent to miss older records that might be relevant for context or to confirm the absence of a procedure.\n- Assuming that a zero-result search with a date filter is definitive proof that no such procedure has ever occurred.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Initial Search**\nIf you need to check for a procedure or observation, start by searching without a date filter to see if any records exist for the patient.\n\n**Pattern 2: Temporal Filtering**\nOnce you have the full list of records, filter them locally based on the required date range. If the list is empty, you can confidently conclude no such event occurred.\n\n**Pattern 3: Verification**\nIf the broad search returns results, inspect the `effectiveDateTime` or `performedDateTime` fields to determine if the most recent event falls within the required window.\n\n## Example Application\n\n**Task:** \"Find the date of the most recent CT Abdomen procedure. If performed more than 12 months ago, order a new one.\"\n\n**Step-by-step:**\n1. Issue GET `.../Procedure?patient=S123&code=IMGCT0491` (no date filter).\n2. If the bundle is empty, conclude no procedure exists and proceed to order.\n3. If the bundle contains entries, extract the dates from the resources.\n4. Compare the most recent date to the current date to decide if an order is needed.\n\nCORRECT output: `GET .../Procedure?patient=S123&code=IMGCT0491`\nWRONG output: `GET .../Procedure?patient=S123&code=IMGCT0491&date=ge2022-11-07` (if this is the only search performed).\n\n## Success Indicators\n- The agent retrieves historical records that were previously missed due to restrictive date filters.\n- The agent correctly identifies the most recent procedure date even if it is older than the initial filter threshold.\n\n## Failure Indicators\n- The agent continues to use restrictive date filters in the first request, leading to false negatives.",
+        "tags": [
+          "fhir",
+          "search",
+          "temporal-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_lifecycle_management",
+        "description": "Ensures exactly one active order by checking for existing orders and updating their status to 'stopped' before creating new ones.",
+        "content": "## Skill Title\nMedication Order Lifecycle Management\n\n## Pattern Description\nWhen a task requires maintaining exactly one active order for a specific medication or therapy (e.g., DVT prophylaxis), you must first audit the patient's current active orders. If an active order exists, you must evaluate if it meets the current requirements. If it is a duplicate or requires replacement, you must explicitly update the status of the existing order to 'stopped' before creating a new one to prevent duplication.\n\n## When to Use This Skill\n- When the task instruction specifies maintaining exactly one active order for a medication or therapy.\n- When you identify existing active orders for the same medication during a GET request.\n- When you need to replace an existing order with a new one due to dosage or frequency changes.\n\n## Common Failure Patterns\n- Creating a new order without checking for or discontinuing existing active orders, leading to duplicate therapy.\n- Assuming that creating a new order automatically replaces or invalidates previous active orders.\n- Failing to update the `status` field of the existing resource to 'stopped' (or 'discontinued') via a PUT request.\n\n## Recommended Patterns\n\n**Pattern 1: Audit and Discontinue**\n1. Perform a GET request for the relevant `MedicationRequest` resource filtered by `patient`.\n2. If active orders exist, identify the ID of the order(s) to be discontinued.\n3. For each order to be discontinued, perform a GET to retrieve the full resource, update the `status` field to `stopped`, and send a PUT request to the server.\n4. Only after the existing order is successfully updated to 'stopped', proceed to POST the new order.\n\n**Pattern 2: Verification**\n- Always verify the `status` field of the existing resource before deciding to discontinue. Do not discontinue orders that are already 'stopped' or 'completed'.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215`.\n2. Identify active order `MedicationRequest/770507`.\n3. GET `MedicationRequest/770507` to retrieve the full JSON.\n4. Update `status` to `stopped` and PUT to `MedicationRequest/770507`.\n5. POST the new `MedicationRequest` with the correct dosage.\n\n## Success Indicators\n- The server returns a 200 OK for the PUT request updating the status to 'stopped'.\n- The final state of the patient's records shows only one active order for the specified medication.\n\n## Failure Indicators\n- Multiple active orders remain for the same medication after the task is finished.\n- The agent creates a new order without addressing the existing active ones.",
+        "tags": [
+          "medication",
+          "fhir",
+          "lifecycle",
+          "duplication"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_medication_request_filtering_strategy",
+          "description": "Enforces filtering MedicationRequest searches by status and specific medication codes to avoid broad, inaccurate results.",
+          "content": "# FHIR MedicationRequest Filtering Strategy\n\n## Pattern Description\nWhen searching for specific medication orders (e.g., opioids, prophylaxis), you must avoid broad patient-level searches that return all historical or irrelevant medications. You must explicitly filter by `status=active` and, where possible, use specific codes or identifiers to narrow the result set. Relying on a generic `patient=ID` search often leads to false negatives when the bundle is large or contains inactive/irrelevant orders.\n\n## When to Use This Skill\n- When the task requires verifying the presence or absence of a specific class of medication (e.g., opioids, DVT prophylaxis).\n- When a broad `GET /MedicationRequest?patient=ID` returns a large bundle or fails to identify an active order that exists.\n- When you need to confirm if a specific medication is currently active for a patient.\n\n## Common Failure Patterns\n- Using `GET /MedicationRequest?patient=ID` and assuming the first result or the absence of a result is definitive.\n- Failing to filter by `status=active`, leading to the inclusion of discontinued or completed orders in your logic.\n- Assuming that a lack of results in a broad search means no order exists, when the order might be buried in a paginated response or masked by inactive records.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include `status=active` in your query parameters. If the API supports it, include the medication code or a specific identifier to narrow the search.\n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active`\nWRONG:   `GET /MedicationRequest?patient=S123`\n\n**Pattern 2: Result Verification**\nIf the search returns a bundle, iterate through the `entry` array and inspect the `status` field of each `MedicationRequest` resource to ensure it is indeed `active` before concluding that no order exists.\n\n**Pattern 3: Handling Pagination**\nIf the bundle contains a `next` link, you must follow it until you have inspected all pages before concluding that no active order exists.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status filter: `GET /MedicationRequest?patient=S1796597&status=active`\n2. Parse the bundle. If the bundle is empty, confirm no active orders exist.\n3. If results exist, filter the list for opioid medications (e.g., hydromorphone, fentanyl).\n4. If an opioid is found, check for a corresponding naloxone order in the same list.\n5. If no naloxone is found, proceed to create the order.\n\n## Success Indicators\n- The agent correctly identifies active orders by filtering out inactive ones.\n- The agent avoids false negatives caused by broad, unfiltered searches.\n\n## Failure Indicators\n- The agent reports \"No active orders found\" when an active order is present in the patient's record.\n- The agent incorrectly identifies a discontinued order as active.",
+          "tags": [
+            "fhir",
+            "medication",
+            "search",
+            "filtering"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 6,
+        "fixes": 9,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 9,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_observation_code_lookup",
+          "description": "Use standard LOINC/SNOMED codes for observations instead of literal strings.",
+          "content": "# FHIR Observation Code Lookup\n\n## Pattern Description\nWhen searching for clinical observations (like heart rate, blood pressure, or lab results), do not rely on literal string names (e.g., 'HEARTRATE') in the `code` search parameter. FHIR servers typically index observations using standardized coding systems like LOINC or SNOMED-CT. Using a literal string often results in a 0-count bundle.\n\n## When to Use This Skill\n- When a search for an observation by a descriptive name (e.g., `code=HEARTRATE`) returns zero results.\n- When the task description provides a common clinical term but the FHIR server requires a specific code.\n\n## Common Failure Patterns\n- Using `code=HEARTRATE` or `code=TSH` directly when the server expects a specific LOINC code (e.g., `8867-4` for Heart Rate).\n- Assuming the server performs fuzzy string matching on the `code` parameter.\n\n## Recommended Patterns\n\n**Pattern 1: Search by Code System**\nIf a search by name fails, search by the standard code if provided in the context, or perform a broader search by `category` and filter the results locally to identify the correct code for future queries.\n\n**Pattern 2: Broad Search Fallback**\nIf the specific code is unknown, perform a search by `category` (e.g., `category=vital-signs`) and inspect the `code.coding` field of the returned resources to find the correct system and code for the desired observation.\n\n**Example Application**\n\n**Task:** \"Calculate the average heart rate.\"\n\n**Step-by-step:**\n1. Attempt search: `GET /Observation?category=vital-signs&patient=S123`\n2. Inspect the `code.coding` of the returned resources to find the Heart Rate entry (e.g., `system: http://loinc.org, code: 8867-4`).\n3. Use the discovered code for subsequent specific queries: `GET /Observation?patient=S123&code=8867-4`\n\n## Success Indicators\n- The agent successfully retrieves observation resources after switching from a string-based code to a system-based code.\n- The `total` field in the FHIR Bundle is greater than 0.\n\n## Failure Indicators\n- Repeated 0-count bundles despite trying multiple variations of the clinical term.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": 5,
+        "fixes": 7,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 9,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_temporal_fallback_strategy",
+          "description": "Ensures historical records are captured by performing an initial broad search before applying restrictive date filters.",
+          "content": "## Skill Title\nFHIR Search Temporal Fallback Strategy\n\n## Pattern Description\nWhen searching for historical procedures or observations to determine if a recent event occurred, agents often apply a restrictive date filter (e.g., `date=ge[date]`) too early. If the initial search returns no results, the agent may incorrectly conclude that no such event exists. This skill mandates a two-step search pattern: first, perform a broad search to confirm the existence of any historical records, and second, apply temporal logic to the retrieved data.\n\n## When to Use This Skill\n- When a task requires checking for the existence of a procedure or observation within a specific timeframe (e.g., \"within the last 12 months\").\n- When an initial search with a date filter returns zero results, but the task requires verifying if an event occurred at any point in the past.\n\n## Common Failure Patterns\n- Applying a `date=ge[date]` filter in the first GET request, causing the agent to miss older records that might be relevant for context or to confirm the absence of a procedure.\n- Assuming that a zero-result search with a date filter is definitive proof that no such procedure has ever occurred.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Initial Search**\nIf you need to check for a procedure or observation, start by searching without a date filter to see if any records exist for the patient.\n\n**Pattern 2: Temporal Filtering**\nOnce you have the full list of records, filter them locally based on the required date range. If the list is empty, you can confidently conclude no such event occurred.\n\n**Pattern 3: Verification**\nIf the broad search returns results, inspect the `effectiveDateTime` or `performedDateTime` fields to determine if the most recent event falls within the required window.\n\n## Example Application\n\n**Task:** \"Find the date of the most recent CT Abdomen procedure. If performed more than 12 months ago, order a new one.\"\n\n**Step-by-step:**\n1. Issue GET `.../Procedure?patient=S123&code=IMGCT0491` (no date filter).\n2. If the bundle is empty, conclude no procedure exists and proceed to order.\n3. If the bundle contains entries, extract the dates from the resources.\n4. Compare the most recent date to the current date to decide if an order is needed.\n\nCORRECT output: `GET .../Procedure?patient=S123&code=IMGCT0491`\nWRONG output: `GET .../Procedure?patient=S123&code=IMGCT0491&date=ge2022-11-07` (if this is the only search performed).\n\n## Success Indicators\n- The agent retrieves historical records that were previously missed due to restrictive date filters.\n- The agent correctly identifies the most recent procedure date even if it is older than the initial filter threshold.\n\n## Failure Indicators\n- The agent continues to use restrictive date filters in the first request, leading to false negatives.",
+          "tags": [
+            "fhir",
+            "search",
+            "temporal-logic"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 9,
+        "fixes": 9,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 9,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_lifecycle_management",
+          "description": "Ensures exactly one active order by checking for existing orders and updating their status to 'stopped' before creating new ones.",
+          "content": "## Skill Title\nMedication Order Lifecycle Management\n\n## Pattern Description\nWhen a task requires maintaining exactly one active order for a specific medication or therapy (e.g., DVT prophylaxis), you must first audit the patient's current active orders. If an active order exists, you must evaluate if it meets the current requirements. If it is a duplicate or requires replacement, you must explicitly update the status of the existing order to 'stopped' before creating a new one to prevent duplication.\n\n## When to Use This Skill\n- When the task instruction specifies maintaining exactly one active order for a medication or therapy.\n- When you identify existing active orders for the same medication during a GET request.\n- When you need to replace an existing order with a new one due to dosage or frequency changes.\n\n## Common Failure Patterns\n- Creating a new order without checking for or discontinuing existing active orders, leading to duplicate therapy.\n- Assuming that creating a new order automatically replaces or invalidates previous active orders.\n- Failing to update the `status` field of the existing resource to 'stopped' (or 'discontinued') via a PUT request.\n\n## Recommended Patterns\n\n**Pattern 1: Audit and Discontinue**\n1. Perform a GET request for the relevant `MedicationRequest` resource filtered by `patient`.\n2. If active orders exist, identify the ID of the order(s) to be discontinued.\n3. For each order to be discontinued, perform a GET to retrieve the full resource, update the `status` field to `stopped`, and send a PUT request to the server.\n4. Only after the existing order is successfully updated to 'stopped', proceed to POST the new order.\n\n**Pattern 2: Verification**\n- Always verify the `status` field of the existing resource before deciding to discontinue. Do not discontinue orders that are already 'stopped' or 'completed'.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6539215`.\n2. Identify active order `MedicationRequest/770507`.\n3. GET `MedicationRequest/770507` to retrieve the full JSON.\n4. Update `status` to `stopped` and PUT to `MedicationRequest/770507`.\n5. POST the new `MedicationRequest` with the correct dosage.\n\n## Success Indicators\n- The server returns a 200 OK for the PUT request updating the status to 'stopped'.\n- The final state of the patient's records shows only one active order for the specified medication.\n\n## Failure Indicators\n- Multiple active orders remain for the same medication after the task is finished.\n- The agent creates a new order without addressing the existing active ones.",
+          "tags": [
+            "medication",
+            "fhir",
+            "lifecycle",
+            "duplication"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 8,
+        "fixes": 9,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 9,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

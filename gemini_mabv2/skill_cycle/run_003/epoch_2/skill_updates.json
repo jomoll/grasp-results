@@ -1,0 +1,294 @@
+[
+  {
+    "epoch": 2,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 30,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_pagination_traversal_strategy",
+        "description": "Ensures complete data retrieval by recursively following 'next' links in FHIR bundles when search results are paginated.",
+        "content": "# FHIR Pagination Traversal Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the server may return a paginated bundle. If you stop after the first page, you risk missing critical historical data, leading to false negatives (e.g., reporting 'no records found' when data exists on page 2+). This skill mandates that you inspect the `link` array in every bundle for a `relation: \"next\"` entry and continue fetching until all pages are exhausted or the required data is found.\n\n## When to Use This Skill\n- When a GET request returns a bundle with a `link` containing `relation: \"next\"`.\n- When a search for clinical data (Observations, Procedures, Immunizations) returns zero results or incomplete history, and the bundle indicates pagination.\n- When the task requires an exhaustive search over a patient's history.\n\n## Common Failure Patterns\n- Stopping after the first GET request when the bundle contains a `next` link.\n- Assuming a `total` count of 0 in the first page means no data exists, ignoring subsequent pages.\n- Failing to aggregate entries from multiple pages before performing calculations (e.g., averages).\n\n## Recommended Patterns\n\n**Pattern 1: Recursive Traversal**\n1. Inspect the `link` array in the response bundle.\n2. If a `relation: \"next\"` exists, extract the `url`.\n3. Issue a new GET request using that exact `url`.\n4. Repeat until no `next` link is present.\n\n**Pattern 2: Data Aggregation**\n1. Maintain a list of all `entry` objects retrieved across all pages.\n2. Only perform filtering or calculations (e.g., average heart rate) after all pages have been fetched.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S2161163.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S2161163&category=vital-signs`.\n2. Observe `link` contains `relation: \"next\"`.\n3. GET the URL provided in the `next` link.\n4. Continue until no `next` link is found.\n5. Aggregate all `Observation` resources from all pages.\n6. Filter for `code` = 'HEARTRATE' and calculate the average.\n\n## Success Indicators\n- Agent retrieves all pages of a resource bundle.\n- Final answer reflects data found on non-initial pages.\n\n## Failure Indicators\n- Agent reports 'no records found' despite the presence of a `next` link in the initial response.",
+        "tags": [
+          "fhir",
+          "search",
+          "pagination"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include DiagnosticReport and Observation resources for procedure and device status tracking.",
+        "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen searching for the history or status of a procedure, device, or imaging study, do not rely solely on `Procedure` or `ServiceRequest` resources. Clinical systems often store imaging results in `DiagnosticReport` and device status (like urinary catheter presence) in `Observation` resources. \n\nThis strategy ensures you capture the full clinical context by querying multiple resource types when the primary search returns no results or incomplete data.\n\n## When to Use This Skill\n- When a search for a procedure (e.g., urinary catheter, CT scan) in `Procedure` or `ServiceRequest` returns no results or stale data.\n- When checking for the presence of a device (e.g., urinary catheter) that might be tracked via nursing observations.\n- When looking for imaging study history that is not explicitly linked to a `Procedure` resource.\n\n## Common Failure Patterns\n- Searching only `Procedure` and missing `DiagnosticReport` for imaging studies.\n- Searching only `Procedure` and `ServiceRequest` for device status, missing `Observation` entries.\n- Assuming a `total: 0` response from one resource type means the procedure or device does not exist.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf the initial search for a procedure or device in `Procedure` and `ServiceRequest` yields no results, you must expand your search to include:\n1. `DiagnosticReport` (for imaging studies).\n2. `Observation` (for device status or lab-based procedure tracking).\n\n**Pattern 2: Verification**\nAlways verify the `status` field of the returned resources. An `active` status in an `Observation` or `ServiceRequest` is often more relevant than a historical `completed` `Procedure`.\n\n**Pattern 3: Guard Clauses**\nBefore creating a new order, ensure you have queried all three potential sources (`Procedure`, `ServiceRequest`, and `DiagnosticReport`/`Observation`) to avoid duplicate orders.\n\n## Example Application\n\n**Task:** \"Check if patient S3241217 has a urinary catheter (NUR1373) in place.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S3241217&code=NUR1373` (Result: 0)\n2. GET `ServiceRequest?patient=S3241217&code=NUR1373` (Result: 0)\n3. GET `Observation?patient=S3241217&code=NUR1373` (Result: Found active observation)\n4. Use the observation date to calculate duration and decide if removal is needed.\n\n## Success Indicators\n- Agent identifies procedures or devices that were previously missed by single-resource searches.\n- Reduction in duplicate orders caused by failing to find existing active records.\n\n## Failure Indicators\n- Agent continues to report \"no record found\" when the data exists in `DiagnosticReport` or `Observation`.",
+        "tags": [
+          "search",
+          "procedure",
+          "imaging",
+          "device"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "comprehensive_medication_search_strategy",
+        "description": "Expand medication searches to include all statuses and broad class-based filtering to prevent false negatives.",
+        "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, relying solely on `status=active` or exact string matches often leads to false negatives. Patients may have historical, completed, or on-hold orders that are clinically relevant for safety checks (e.g., naloxone matching for opioid therapy). You must broaden your search scope to include all statuses and use flexible filtering to capture relevant medication classes.\n\n## When to Use This Skill\n- When a task requires verifying the presence of a medication or class of medications (e.g., opioids, anticoagulants).\n- When an initial search with `status=active` returns no results but the clinical context suggests the patient might have a history of the medication.\n- When searching for a class of drugs where multiple specific formulations or brand names exist.\n\n## Common Failure Patterns\n- Searching only with `status=active` and missing relevant historical or paused orders.\n- Relying on exact string matches for medication names, which fails to capture variations in naming or dosage forms.\n- Failing to check both `MedicationRequest` and `ServiceRequest` resources when a medication might be ordered as a service or procedure.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Status Search**\nIf an initial search for a medication returns no results, perform a follow-up search without the `status` parameter to retrieve all records for that patient.\n\n**Pattern 2: Class-Based Filtering**\nWhen searching for a class (e.g., opioids), do not rely on a single code. Search for the patient's entire `MedicationRequest` list and filter the results locally based on the provided list of relevant names or codes.\n\n**Pattern 3: Multi-Resource Verification**\nAlways check both `MedicationRequest` and `ServiceRequest` bundles if the primary search yields no results, as some clinical orders are stored as service requests.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/MedicationRequest?patient=S1796597` (omit `status=active` to see all history).\n2. Parse the bundle entries and filter for opioid names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n3. If an opioid is found, check the same bundle or issue a new GET for `MedicationRequest?patient=S1796597&code=naloxone` to verify coverage.\n4. If no naloxone is found, proceed to create the order.\n\n## Success Indicators\n- Agent identifies medications that were missed in previous `status=active` searches.\n- Agent correctly identifies historical usage that necessitates current clinical action.\n\n## Failure Indicators\n- Agent continues to return \"No orders found\" despite the presence of historical records in the patient's full medication list.",
+        "tags": [
+          "medication",
+          "search",
+          "safety"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include status verification and resource filtering to prevent using invalid or future-dated records.",
+        "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen searching for procedure history, you must ensure that the retrieved records are valid, completed, and relevant to the patient's clinical timeline. A common failure is assuming that any returned resource (including future-dated or non-completed procedures) is a valid historical record. You must explicitly filter by `status` and verify the `performedDateTime` or `effectiveDateTime` to ensure the procedure actually occurred.\n\n## When to Use This Skill\n- When searching for the \"most recent\" procedure of a specific type.\n- When checking if a procedure has been performed within a specific timeframe (e.g., 12 months).\n- When the task requires verifying if a procedure is active or completed.\n\n## Common Failure Patterns\n- Including future-dated records in \"most recent\" calculations.\n- Ignoring the `status` field (e.g., counting 'entered-in-error' or 'cancelled' procedures as valid).\n- Failing to check both `Procedure` and `ServiceRequest` resources when a procedure history is incomplete.\n- Assuming a `Bundle` entry is valid without checking if the `status` is 'completed'.\n\n## Recommended Patterns\n\n**Pattern 1: Status and Date Validation**\nAlways inspect the `status` field of every resource in the search results. If the status is not 'completed', ignore the record. For date-based logic, compare the `performedDateTime` against the current date provided in the task context.\n\nCORRECT: Filter results where `status == 'completed'` and `performedDateTime` is in the past.\nWRONG: Use the first result returned by the API without checking `status` or `performedDateTime`.\n\n**Pattern 2: Cross-Resource Verification**\nIf a search for `Procedure` returns no results, perform a secondary search on `ServiceRequest` using the same code to ensure the procedure wasn't just ordered but not yet finalized.\n\n**Pattern 3: Handling Future Dates**\nIf a procedure has a `performedDateTime` in the future relative to the current task time, treat it as invalid or pending and exclude it from \"most recent\" calculations.\n\n## Example Application\n\n**Task:** \"Find the most recent CT Abdomen procedure for patient S3032536.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S3032536&code=IMGCT0491,IMGIL0001`.\n2. Iterate through the `entry` array.\n3. For each entry, check `resource.status == 'completed'`.\n4. Compare `resource.performedDateTime` with the current date.\n5. Select the most recent valid entry.\n\nCORRECT output: `FINISH([\"The most recent completed CT Abdomen was on 2023-01-15.\"])`\nWRONG output: `FINISH([\"The most recent procedure was on 2026-05-17.\"])` (where 2026 is in the future).\n\n## Success Indicators\n- Agent correctly identifies and ignores non-completed or future-dated procedures.\n- Agent consistently checks both `Procedure` and `ServiceRequest` when history is missing.\n\n## Failure Indicators\n- Agent includes future-dated records in its final answer.\n- Agent reports a procedure as \"most recent\" when its status is 'cancelled' or 'entered-in-error'.",
+        "tags": [
+          "procedure",
+          "search",
+          "validation"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_pagination_traversal_strategy",
+          "description": "Ensures complete data retrieval by recursively following 'next' links in FHIR bundles when search results are paginated.",
+          "content": "# FHIR Pagination Traversal Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the server may return a paginated bundle. If you stop after the first page, you risk missing critical historical data, leading to false negatives (e.g., reporting 'no records found' when data exists on page 2+). This skill mandates that you inspect the `link` array in every bundle for a `relation: \"next\"` entry and continue fetching until all pages are exhausted or the required data is found.\n\n## When to Use This Skill\n- When a GET request returns a bundle with a `link` containing `relation: \"next\"`.\n- When a search for clinical data (Observations, Procedures, Immunizations) returns zero results or incomplete history, and the bundle indicates pagination.\n- When the task requires an exhaustive search over a patient's history.\n\n## Common Failure Patterns\n- Stopping after the first GET request when the bundle contains a `next` link.\n- Assuming a `total` count of 0 in the first page means no data exists, ignoring subsequent pages.\n- Failing to aggregate entries from multiple pages before performing calculations (e.g., averages).\n\n## Recommended Patterns\n\n**Pattern 1: Recursive Traversal**\n1. Inspect the `link` array in the response bundle.\n2. If a `relation: \"next\"` exists, extract the `url`.\n3. Issue a new GET request using that exact `url`.\n4. Repeat until no `next` link is present.\n\n**Pattern 2: Data Aggregation**\n1. Maintain a list of all `entry` objects retrieved across all pages.\n2. Only perform filtering or calculations (e.g., average heart rate) after all pages have been fetched.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S2161163.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S2161163&category=vital-signs`.\n2. Observe `link` contains `relation: \"next\"`.\n3. GET the URL provided in the `next` link.\n4. Continue until no `next` link is found.\n5. Aggregate all `Observation` resources from all pages.\n6. Filter for `code` = 'HEARTRATE' and calculate the average.\n\n## Success Indicators\n- Agent retrieves all pages of a resource bundle.\n- Final answer reflects data found on non-initial pages.\n\n## Failure Indicators\n- Agent reports 'no records found' despite the presence of a `next` link in the initial response.",
+          "tags": [
+            "fhir",
+            "search",
+            "pagination"
+          ]
+        },
+        "net": -5,
+        "score": -5,
+        "raw_score": 0,
+        "fixes": 2,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include DiagnosticReport and Observation resources for procedure and device status tracking.",
+          "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen searching for the history or status of a procedure, device, or imaging study, do not rely solely on `Procedure` or `ServiceRequest` resources. Clinical systems often store imaging results in `DiagnosticReport` and device status (like urinary catheter presence) in `Observation` resources. \n\nThis strategy ensures you capture the full clinical context by querying multiple resource types when the primary search returns no results or incomplete data.\n\n## When to Use This Skill\n- When a search for a procedure (e.g., urinary catheter, CT scan) in `Procedure` or `ServiceRequest` returns no results or stale data.\n- When checking for the presence of a device (e.g., urinary catheter) that might be tracked via nursing observations.\n- When looking for imaging study history that is not explicitly linked to a `Procedure` resource.\n\n## Common Failure Patterns\n- Searching only `Procedure` and missing `DiagnosticReport` for imaging studies.\n- Searching only `Procedure` and `ServiceRequest` for device status, missing `Observation` entries.\n- Assuming a `total: 0` response from one resource type means the procedure or device does not exist.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Resource Search**\nIf the initial search for a procedure or device in `Procedure` and `ServiceRequest` yields no results, you must expand your search to include:\n1. `DiagnosticReport` (for imaging studies).\n2. `Observation` (for device status or lab-based procedure tracking).\n\n**Pattern 2: Verification**\nAlways verify the `status` field of the returned resources. An `active` status in an `Observation` or `ServiceRequest` is often more relevant than a historical `completed` `Procedure`.\n\n**Pattern 3: Guard Clauses**\nBefore creating a new order, ensure you have queried all three potential sources (`Procedure`, `ServiceRequest`, and `DiagnosticReport`/`Observation`) to avoid duplicate orders.\n\n## Example Application\n\n**Task:** \"Check if patient S3241217 has a urinary catheter (NUR1373) in place.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S3241217&code=NUR1373` (Result: 0)\n2. GET `ServiceRequest?patient=S3241217&code=NUR1373` (Result: 0)\n3. GET `Observation?patient=S3241217&code=NUR1373` (Result: Found active observation)\n4. Use the observation date to calculate duration and decide if removal is needed.\n\n## Success Indicators\n- Agent identifies procedures or devices that were previously missed by single-resource searches.\n- Reduction in duplicate orders caused by failing to find existing active records.\n\n## Failure Indicators\n- Agent continues to report \"no record found\" when the data exists in `DiagnosticReport` or `Observation`.",
+          "tags": [
+            "search",
+            "procedure",
+            "imaging",
+            "device"
+          ]
+        },
+        "net": -7,
+        "score": -7,
+        "raw_score": -2,
+        "fixes": 3,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "comprehensive_medication_search_strategy",
+          "description": "Expand medication searches to include all statuses and broad class-based filtering to prevent false negatives.",
+          "content": "# Comprehensive Medication Search Strategy\n\n## Pattern Description\nWhen searching for medications, relying solely on `status=active` or exact string matches often leads to false negatives. Patients may have historical, completed, or on-hold orders that are clinically relevant for safety checks (e.g., naloxone matching for opioid therapy). You must broaden your search scope to include all statuses and use flexible filtering to capture relevant medication classes.\n\n## When to Use This Skill\n- When a task requires verifying the presence of a medication or class of medications (e.g., opioids, anticoagulants).\n- When an initial search with `status=active` returns no results but the clinical context suggests the patient might have a history of the medication.\n- When searching for a class of drugs where multiple specific formulations or brand names exist.\n\n## Common Failure Patterns\n- Searching only with `status=active` and missing relevant historical or paused orders.\n- Relying on exact string matches for medication names, which fails to capture variations in naming or dosage forms.\n- Failing to check both `MedicationRequest` and `ServiceRequest` resources when a medication might be ordered as a service or procedure.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Status Search**\nIf an initial search for a medication returns no results, perform a follow-up search without the `status` parameter to retrieve all records for that patient.\n\n**Pattern 2: Class-Based Filtering**\nWhen searching for a class (e.g., opioids), do not rely on a single code. Search for the patient's entire `MedicationRequest` list and filter the results locally based on the provided list of relevant names or codes.\n\n**Pattern 3: Multi-Resource Verification**\nAlways check both `MedicationRequest` and `ServiceRequest` bundles if the primary search yields no results, as some clinical orders are stored as service requests.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET `http://localhost:8080/fhir/MedicationRequest?patient=S1796597` (omit `status=active` to see all history).\n2. Parse the bundle entries and filter for opioid names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n3. If an opioid is found, check the same bundle or issue a new GET for `MedicationRequest?patient=S1796597&code=naloxone` to verify coverage.\n4. If no naloxone is found, proceed to create the order.\n\n## Success Indicators\n- Agent identifies medications that were missed in previous `status=active` searches.\n- Agent correctly identifies historical usage that necessitates current clinical action.\n\n## Failure Indicators\n- Agent continues to return \"No orders found\" despite the presence of historical records in the patient's full medication list.",
+          "tags": [
+            "medication",
+            "search",
+            "safety"
+          ]
+        },
+        "net": -8,
+        "score": -8,
+        "raw_score": -3,
+        "fixes": 2,
+        "regressions": 5,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include status verification and resource filtering to prevent using invalid or future-dated records.",
+          "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen searching for procedure history, you must ensure that the retrieved records are valid, completed, and relevant to the patient's clinical timeline. A common failure is assuming that any returned resource (including future-dated or non-completed procedures) is a valid historical record. You must explicitly filter by `status` and verify the `performedDateTime` or `effectiveDateTime` to ensure the procedure actually occurred.\n\n## When to Use This Skill\n- When searching for the \"most recent\" procedure of a specific type.\n- When checking if a procedure has been performed within a specific timeframe (e.g., 12 months).\n- When the task requires verifying if a procedure is active or completed.\n\n## Common Failure Patterns\n- Including future-dated records in \"most recent\" calculations.\n- Ignoring the `status` field (e.g., counting 'entered-in-error' or 'cancelled' procedures as valid).\n- Failing to check both `Procedure` and `ServiceRequest` resources when a procedure history is incomplete.\n- Assuming a `Bundle` entry is valid without checking if the `status` is 'completed'.\n\n## Recommended Patterns\n\n**Pattern 1: Status and Date Validation**\nAlways inspect the `status` field of every resource in the search results. If the status is not 'completed', ignore the record. For date-based logic, compare the `performedDateTime` against the current date provided in the task context.\n\nCORRECT: Filter results where `status == 'completed'` and `performedDateTime` is in the past.\nWRONG: Use the first result returned by the API without checking `status` or `performedDateTime`.\n\n**Pattern 2: Cross-Resource Verification**\nIf a search for `Procedure` returns no results, perform a secondary search on `ServiceRequest` using the same code to ensure the procedure wasn't just ordered but not yet finalized.\n\n**Pattern 3: Handling Future Dates**\nIf a procedure has a `performedDateTime` in the future relative to the current task time, treat it as invalid or pending and exclude it from \"most recent\" calculations.\n\n## Example Application\n\n**Task:** \"Find the most recent CT Abdomen procedure for patient S3032536.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S3032536&code=IMGCT0491,IMGIL0001`.\n2. Iterate through the `entry` array.\n3. For each entry, check `resource.status == 'completed'`.\n4. Compare `resource.performedDateTime` with the current date.\n5. Select the most recent valid entry.\n\nCORRECT output: `FINISH([\"The most recent completed CT Abdomen was on 2023-01-15.\"])`\nWRONG output: `FINISH([\"The most recent procedure was on 2026-05-17.\"])` (where 2026 is in the future).\n\n## Success Indicators\n- Agent correctly identifies and ignores non-completed or future-dated procedures.\n- Agent consistently checks both `Procedure` and `ServiceRequest` when history is missing.\n\n## Failure Indicators\n- Agent includes future-dated records in its final answer.\n- Agent reports a procedure as \"most recent\" when its status is 'cancelled' or 'entered-in-error'.",
+          "tags": [
+            "procedure",
+            "search",
+            "validation"
+          ]
+        },
+        "net": -8,
+        "score": -8,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 25,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include active order verification, temporal logic for duration, and protocol-based decision thresholds.",
+        "content": "# Comprehensive Procedure and Order Strategy\n\n## Pattern Description\nThis skill governs how to search for, verify, and act upon clinical procedures, medications, and service requests. It mandates a three-step process: (1) exhaustive search for existing records, (2) temporal validation against current system time, and (3) protocol-based decision making. It prevents duplicate orders by checking for active requests before creating new ones and ensures clinical guidelines are followed by comparing lab values against provided reference ranges.\n\n## When to Use This Skill\n- When checking for the existence of a procedure, immunization, or medication order.\n- When a task requires calculating duration (e.g., \"in place for > 48 hours\", \"administered > 365 days ago\").\n- When a task requires comparing lab results (e.g., TSH/FT4) against a protocol.\n- When a task requires verifying if an active order already exists before creating a new one.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders (e.g., DVT prophylaxis, catheter removal).\n- Failing to compare lab values against provided reference ranges, leading to incorrect clinical conclusions.\n- Using future-dated or stale records without validating them against the current system time.\n- Assuming a lack of records in one resource (e.g., Immunization) means no record exists without checking related resources (e.g., Procedure, MedicationRequest).\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nAlways search across all relevant resource types (Immunization, Procedure, MedicationRequest, ServiceRequest) using the patient ID. If a search returns empty, do not assume the record does not exist until you have checked all relevant resource types.\n\n**Pattern 2: Temporal and Status Validation**\nBefore acting, calculate the duration between the `authoredOn` or `occurrenceDateTime` and the current system time. If the duration criteria (e.g., > 48 hours) is met, verify that no active `ServiceRequest` or `MedicationRequest` already exists for the same code.\n\n**Pattern 3: Protocol-Based Decision**\nIf lab values are provided, explicitly compare them against the reference ranges in the prompt. If the protocol requires two instances of a value, ensure you have retrieved enough history to confirm or refute the criteria before concluding no action is needed.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place for > 48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6540602&code=NUR1373`.\n2. Calculate duration: `Current Time - Procedure.authoredOn`.\n3. GET `ServiceRequest?patient=S6540602&code=NUR1373` to ensure no removal order is active.\n4. If duration > 48h AND no active removal order exists, POST `ServiceRequest`.\n\n## Success Indicators\n- Agent performs a search for existing orders before creating new ones.\n- Agent correctly identifies and compares lab values against protocol thresholds.\n- Agent calculates time differences accurately relative to the provided current time.\n\n## Failure Indicators\n- Duplicate orders created when an active one already exists.\n- Incorrect clinical action taken due to ignoring reference ranges.\n- Acting on future-dated records.",
+        "tags": [
+          "search",
+          "verification",
+          "protocol",
+          "temporal-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_pagination_handling_strategy",
+        "description": "Handle large FHIR search results by checking for 'next' links in the bundle instead of using _count or offsets.",
+        "content": "# FHIR Pagination Handling Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the server may return a paginated bundle if the result set exceeds the default page size. Relying on arbitrary `_count` parameters or manual `_getpagesoffset` calculations often leads to 400 errors or incomplete data retrieval. The correct pattern is to inspect the `link` array in the bundle for a relation of `next` and follow that URL to retrieve subsequent pages.\n\n## When to Use This Skill\n- When a search returns a `Bundle` with a `link` array containing a `next` relation.\n- When you suspect the search results are incomplete because the `total` count is higher than the number of entries returned.\n- When you encounter a 400 error after attempting to manually manipulate `_getpages` or `_getpagesoffset` parameters.\n\n## Common Failure Patterns\n- Manually constructing `_getpages` or `_getpagesoffset` URLs: These are server-specific and often invalid if the session expires or the parameters are misaligned.\n- Assuming a single GET request returns all results: Always check the `link` array.\n- Using `_count=100` as a catch-all: This may still be insufficient for large datasets and is not a robust pagination strategy.\n\n## Recommended Patterns\n\n**Pattern 1: Inspecting the Bundle**\nAfter every GET request, check the `link` array in the response JSON.\n\n**Pattern 2: Following the 'next' link**\nIf a `next` link exists, extract the `url` field from that object and issue a new GET request to that exact URL. Do not modify the URL parameters.\n\n**Pattern 3: Termination**\nContinue following `next` links until no `next` relation exists in the `link` array. Aggregate the `entry` arrays from all pages to form the complete dataset.\n\n## Example Application\n\n**Task:** \"Retrieve all observations for patient S123.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S123`.\n2. Inspect the response: `{\"link\": [{\"relation\": \"next\", \"url\": \"http://localhost:8080/fhir?_getpages=...\"}]}`.\n3. If `next` exists, issue `GET` to the provided `next` URL.\n4. Repeat until the `link` array no longer contains a `next` relation.\n5. Process the combined list of entries.\n\n## Success Indicators\n- The agent successfully retrieves all records by following pagination links.\n- No 400 errors related to invalid `_getpages` or `_getpagesoffset` parameters.\n\n## Failure Indicators\n- The agent stops after the first page despite a `next` link being present.\n- The agent attempts to guess pagination parameters instead of using the provided `next` URL.",
+        "tags": [
+          "fhir",
+          "pagination",
+          "search"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include active ServiceRequest verification and status checks to prevent duplicate orders.",
+        "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen evaluating whether a procedure or clinical action is required, you must perform a comprehensive search across multiple resource types (Procedure, Immunization, ServiceRequest, MedicationRequest) to establish a complete history. A common failure is to assume a lack of recent records implies a need for a new order without verifying if an active, pending, or duplicate order already exists.\n\n## When to Use This Skill\n- When the task requires checking for a procedure, vaccination, or medication history.\n- When the task requires ordering a new service or medication if a condition is met (e.g., \"more than X days/months ago\").\n- When you must verify if an active order already exists to avoid creating duplicates.\n\n## Common Failure Patterns\n- Failing to check `ServiceRequest` for existing active orders before creating a new one.\n- Assuming a procedure is \"active\" based solely on its presence, ignoring `status` fields (e.g., `completed`, `discontinued`, `cancelled`).\n- Misinterpreting the `date` parameter in FHIR searches, leading to incomplete history retrieval.\n- Creating a new order when an identical active order is already present in the system.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive History Retrieval**\nAlways search across relevant resource types. If searching for a procedure, check `Procedure` and `ServiceRequest`. If searching for a vaccine, check `Immunization` and `ServiceRequest`.\n\n**Pattern 2: Active Order Verification**\nBefore creating any new order, perform a GET request on the target resource (e.g., `ServiceRequest` or `MedicationRequest`) filtered by `patient` and `code` (if applicable). \n- If the bundle returns `total > 0`, inspect the `status` of each entry.\n- If an entry has `status: active`, you must conclude that an order already exists and refrain from creating a duplicate.\n\n**Pattern 3: Status-Aware Decision Logic**\nWhen evaluating if a procedure is \"in place\" (e.g., a catheter), verify the absence of a removal order or a `completed` status in the `Procedure` resource. A procedure is only \"active\" if it lacks a corresponding `discontinued` or `completed` status.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none performed in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=CODE` to find history.\n2. GET `ServiceRequest?patient=ID&code=CODE` to check for pending/active orders.\n3. If both return `total: 0` or all entries are `status: completed/discontinued` and older than 12 months, proceed to POST.\n4. If any `ServiceRequest` is `status: active`, call `FINISH` stating an order already exists.\n\n## Success Indicators\n- Agent consistently checks `ServiceRequest` before `POST`ing new orders.\n- Agent correctly identifies and ignores `completed` or `discontinued` records.\n\n## Failure Indicators\n- Agent creates a duplicate `ServiceRequest` when one is already active.\n- Agent fails to find a procedure because it only checked one resource type.",
+        "tags": [
+          "procedure",
+          "search",
+          "verification",
+          "duplicate-prevention"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "comprehensive_procedure_search_strategy",
+        "description": "Expand search to include active order verification and duplicate management for medication and service requests.",
+        "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\nWhen tasked with verifying, creating, or managing orders (MedicationRequest, ServiceRequest), you must first perform a comprehensive search to identify existing active orders. This prevents the creation of duplicate or conflicting orders. You must check for both the specific requested order and any existing orders that might serve the same clinical purpose (e.g., other anticoagulants for DVT prophylaxis).\n\n## When to Use This Skill\n- When the task requires verifying the existence of an order (e.g., DVT prophylaxis, naloxone, catheter removal).\n- When the task requires creating an order if zero exist, or discontinuing duplicates if multiple exist.\n- When the task involves checking for history of procedures or vaccinations to determine if a new order is needed.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders of the same class (e.g., creating heparin when another anticoagulant is already active).\n- Failing to check for existing removal orders when a procedure (like a catheter) is identified.\n- Assuming a search for a specific code is exhaustive without checking for broader category matches.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a GET request for the relevant resource (MedicationRequest, ServiceRequest, or Procedure) filtered by `patient` and `status=active` (if applicable). Do not rely on a single search; if the first search returns no results, verify the search parameters.\n\n**Pattern 2: Duplicate and Conflict Verification**\nBefore creating a new order, inspect the bundle returned from your search. \n- If an active order for the same clinical purpose exists, do not create a new one.\n- If multiple active orders exist, identify the newest one and discontinue the others.\n- If the task is to verify a specific order (e.g., DVT prophylaxis), check for any active anticoagulant medication, not just the specific drug requested.\n\n**Pattern 3: Completion and Verification**\nAfter a POST, verify the resource was created. If the system returns a warning or the resource is not found, re-query to confirm the state before calling FINISH.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6227720&status=active`.\n2. Inspect the bundle for any active anticoagulant medications.\n3. If zero are found, POST the new order.\n4. If multiple are found, identify the newest and discontinue the others.\n5. FINISH with a summary of the actions taken.\n\n## Success Indicators\n- Agent identifies existing active orders before attempting to create new ones.\n- Agent correctly identifies and discontinues duplicate orders.\n- Agent avoids creating redundant orders when a clinically equivalent one is already active.\n\n## Failure Indicators\n- Agent creates a new order despite an existing active order being present in the search results.\n- Agent fails to identify that an existing order (e.g., Enoxaparin) satisfies the requirement for DVT prophylaxis.",
+        "tags": [
+          "order-management",
+          "duplicate-prevention",
+          "fhir"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include active order verification, temporal logic for duration, and protocol-based decision thresholds.",
+          "content": "# Comprehensive Procedure and Order Strategy\n\n## Pattern Description\nThis skill governs how to search for, verify, and act upon clinical procedures, medications, and service requests. It mandates a three-step process: (1) exhaustive search for existing records, (2) temporal validation against current system time, and (3) protocol-based decision making. It prevents duplicate orders by checking for active requests before creating new ones and ensures clinical guidelines are followed by comparing lab values against provided reference ranges.\n\n## When to Use This Skill\n- When checking for the existence of a procedure, immunization, or medication order.\n- When a task requires calculating duration (e.g., \"in place for > 48 hours\", \"administered > 365 days ago\").\n- When a task requires comparing lab results (e.g., TSH/FT4) against a protocol.\n- When a task requires verifying if an active order already exists before creating a new one.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders (e.g., DVT prophylaxis, catheter removal).\n- Failing to compare lab values against provided reference ranges, leading to incorrect clinical conclusions.\n- Using future-dated or stale records without validating them against the current system time.\n- Assuming a lack of records in one resource (e.g., Immunization) means no record exists without checking related resources (e.g., Procedure, MedicationRequest).\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Search**\nAlways search across all relevant resource types (Immunization, Procedure, MedicationRequest, ServiceRequest) using the patient ID. If a search returns empty, do not assume the record does not exist until you have checked all relevant resource types.\n\n**Pattern 2: Temporal and Status Validation**\nBefore acting, calculate the duration between the `authoredOn` or `occurrenceDateTime` and the current system time. If the duration criteria (e.g., > 48 hours) is met, verify that no active `ServiceRequest` or `MedicationRequest` already exists for the same code.\n\n**Pattern 3: Protocol-Based Decision**\nIf lab values are provided, explicitly compare them against the reference ranges in the prompt. If the protocol requires two instances of a value, ensure you have retrieved enough history to confirm or refute the criteria before concluding no action is needed.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place for > 48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6540602&code=NUR1373`.\n2. Calculate duration: `Current Time - Procedure.authoredOn`.\n3. GET `ServiceRequest?patient=S6540602&code=NUR1373` to ensure no removal order is active.\n4. If duration > 48h AND no active removal order exists, POST `ServiceRequest`.\n\n## Success Indicators\n- Agent performs a search for existing orders before creating new ones.\n- Agent correctly identifies and compares lab values against protocol thresholds.\n- Agent calculates time differences accurately relative to the provided current time.\n\n## Failure Indicators\n- Duplicate orders created when an active one already exists.\n- Incorrect clinical action taken due to ignoring reference ranges.\n- Acting on future-dated records.",
+          "tags": [
+            "search",
+            "verification",
+            "protocol",
+            "temporal-logic"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_pagination_handling_strategy",
+          "description": "Handle large FHIR search results by checking for 'next' links in the bundle instead of using _count or offsets.",
+          "content": "# FHIR Pagination Handling Strategy\n\n## Pattern Description\nWhen searching for FHIR resources, the server may return a paginated bundle if the result set exceeds the default page size. Relying on arbitrary `_count` parameters or manual `_getpagesoffset` calculations often leads to 400 errors or incomplete data retrieval. The correct pattern is to inspect the `link` array in the bundle for a relation of `next` and follow that URL to retrieve subsequent pages.\n\n## When to Use This Skill\n- When a search returns a `Bundle` with a `link` array containing a `next` relation.\n- When you suspect the search results are incomplete because the `total` count is higher than the number of entries returned.\n- When you encounter a 400 error after attempting to manually manipulate `_getpages` or `_getpagesoffset` parameters.\n\n## Common Failure Patterns\n- Manually constructing `_getpages` or `_getpagesoffset` URLs: These are server-specific and often invalid if the session expires or the parameters are misaligned.\n- Assuming a single GET request returns all results: Always check the `link` array.\n- Using `_count=100` as a catch-all: This may still be insufficient for large datasets and is not a robust pagination strategy.\n\n## Recommended Patterns\n\n**Pattern 1: Inspecting the Bundle**\nAfter every GET request, check the `link` array in the response JSON.\n\n**Pattern 2: Following the 'next' link**\nIf a `next` link exists, extract the `url` field from that object and issue a new GET request to that exact URL. Do not modify the URL parameters.\n\n**Pattern 3: Termination**\nContinue following `next` links until no `next` relation exists in the `link` array. Aggregate the `entry` arrays from all pages to form the complete dataset.\n\n## Example Application\n\n**Task:** \"Retrieve all observations for patient S123.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S123`.\n2. Inspect the response: `{\"link\": [{\"relation\": \"next\", \"url\": \"http://localhost:8080/fhir?_getpages=...\"}]}`.\n3. If `next` exists, issue `GET` to the provided `next` URL.\n4. Repeat until the `link` array no longer contains a `next` relation.\n5. Process the combined list of entries.\n\n## Success Indicators\n- The agent successfully retrieves all records by following pagination links.\n- No 400 errors related to invalid `_getpages` or `_getpagesoffset` parameters.\n\n## Failure Indicators\n- The agent stops after the first page despite a `next` link being present.\n- The agent attempts to guess pagination parameters instead of using the provided `next` URL.",
+          "tags": [
+            "fhir",
+            "pagination",
+            "search"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include active ServiceRequest verification and status checks to prevent duplicate orders.",
+          "content": "# Comprehensive Procedure Search Strategy\n\n## Pattern Description\nWhen evaluating whether a procedure or clinical action is required, you must perform a comprehensive search across multiple resource types (Procedure, Immunization, ServiceRequest, MedicationRequest) to establish a complete history. A common failure is to assume a lack of recent records implies a need for a new order without verifying if an active, pending, or duplicate order already exists.\n\n## When to Use This Skill\n- When the task requires checking for a procedure, vaccination, or medication history.\n- When the task requires ordering a new service or medication if a condition is met (e.g., \"more than X days/months ago\").\n- When you must verify if an active order already exists to avoid creating duplicates.\n\n## Common Failure Patterns\n- Failing to check `ServiceRequest` for existing active orders before creating a new one.\n- Assuming a procedure is \"active\" based solely on its presence, ignoring `status` fields (e.g., `completed`, `discontinued`, `cancelled`).\n- Misinterpreting the `date` parameter in FHIR searches, leading to incomplete history retrieval.\n- Creating a new order when an identical active order is already present in the system.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive History Retrieval**\nAlways search across relevant resource types. If searching for a procedure, check `Procedure` and `ServiceRequest`. If searching for a vaccine, check `Immunization` and `ServiceRequest`.\n\n**Pattern 2: Active Order Verification**\nBefore creating any new order, perform a GET request on the target resource (e.g., `ServiceRequest` or `MedicationRequest`) filtered by `patient` and `code` (if applicable). \n- If the bundle returns `total > 0`, inspect the `status` of each entry.\n- If an entry has `status: active`, you must conclude that an order already exists and refrain from creating a duplicate.\n\n**Pattern 3: Status-Aware Decision Logic**\nWhen evaluating if a procedure is \"in place\" (e.g., a catheter), verify the absence of a removal order or a `completed` status in the `Procedure` resource. A procedure is only \"active\" if it lacks a corresponding `discontinued` or `completed` status.\n\n## Example Application\n\n**Task:** \"Order a new CT Abdomen if none performed in the last 12 months.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=CODE` to find history.\n2. GET `ServiceRequest?patient=ID&code=CODE` to check for pending/active orders.\n3. If both return `total: 0` or all entries are `status: completed/discontinued` and older than 12 months, proceed to POST.\n4. If any `ServiceRequest` is `status: active`, call `FINISH` stating an order already exists.\n\n## Success Indicators\n- Agent consistently checks `ServiceRequest` before `POST`ing new orders.\n- Agent correctly identifies and ignores `completed` or `discontinued` records.\n\n## Failure Indicators\n- Agent creates a duplicate `ServiceRequest` when one is already active.\n- Agent fails to find a procedure because it only checked one resource type.",
+          "tags": [
+            "procedure",
+            "search",
+            "verification",
+            "duplicate-prevention"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "comprehensive_procedure_search_strategy",
+          "description": "Expand search to include active order verification and duplicate management for medication and service requests.",
+          "content": "# Comprehensive Procedure and Order Search Strategy\n\n## Pattern Description\nWhen tasked with verifying, creating, or managing orders (MedicationRequest, ServiceRequest), you must first perform a comprehensive search to identify existing active orders. This prevents the creation of duplicate or conflicting orders. You must check for both the specific requested order and any existing orders that might serve the same clinical purpose (e.g., other anticoagulants for DVT prophylaxis).\n\n## When to Use This Skill\n- When the task requires verifying the existence of an order (e.g., DVT prophylaxis, naloxone, catheter removal).\n- When the task requires creating an order if zero exist, or discontinuing duplicates if multiple exist.\n- When the task involves checking for history of procedures or vaccinations to determine if a new order is needed.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders of the same class (e.g., creating heparin when another anticoagulant is already active).\n- Failing to check for existing removal orders when a procedure (like a catheter) is identified.\n- Assuming a search for a specific code is exhaustive without checking for broader category matches.\n\n## Recommended Patterns\n\n**Pattern 1: Comprehensive Search**\nAlways perform a GET request for the relevant resource (MedicationRequest, ServiceRequest, or Procedure) filtered by `patient` and `status=active` (if applicable). Do not rely on a single search; if the first search returns no results, verify the search parameters.\n\n**Pattern 2: Duplicate and Conflict Verification**\nBefore creating a new order, inspect the bundle returned from your search. \n- If an active order for the same clinical purpose exists, do not create a new one.\n- If multiple active orders exist, identify the newest one and discontinue the others.\n- If the task is to verify a specific order (e.g., DVT prophylaxis), check for any active anticoagulant medication, not just the specific drug requested.\n\n**Pattern 3: Completion and Verification**\nAfter a POST, verify the resource was created. If the system returns a warning or the resource is not found, re-query to confirm the state before calling FINISH.\n\n## Example Application\n\n**Task:** \"Verify that patient S6227720 has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6227720&status=active`.\n2. Inspect the bundle for any active anticoagulant medications.\n3. If zero are found, POST the new order.\n4. If multiple are found, identify the newest and discontinue the others.\n5. FINISH with a summary of the actions taken.\n\n## Success Indicators\n- Agent identifies existing active orders before attempting to create new ones.\n- Agent correctly identifies and discontinues duplicate orders.\n- Agent avoids creating redundant orders when a clinically equivalent one is already active.\n\n## Failure Indicators\n- Agent creates a new order despite an existing active order being present in the search results.\n- Agent fails to identify that an existing order (e.g., Enoxaparin) satisfies the requirement for DVT prophylaxis.",
+          "tags": [
+            "order-management",
+            "duplicate-prevention",
+            "fhir"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": -2,
+        "fixes": 0,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

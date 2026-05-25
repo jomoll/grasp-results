@@ -1,0 +1,864 @@
+[
+  {
+    "epoch": 4,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 225,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool (e.g., `RECORD_VITALS(\"S6537563\", \"BP\", \"118/77 mmHg\")`) to ensure the measurement is officially saved to the medical record. Do not rely on a text-based `FINISH` command to describe the recording, as the evaluation function requires the execution of the specific tool call to verify the update."
+    ],
+    "memory_size": 226
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 1,
+    "sample_id": "task8_3",
+    "memory_version_before": 226,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must use the `ORDER_REFERRAL(MRN, reason)` tool, where the reason argument is a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details as specified in the instructions. Do not use the `FINISH` command to simply state that the referral has been ordered; the evaluation requires the execution of this specific tool call with the mandatory clinical text."
+    ],
+    "memory_size": 227
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 2,
+    "sample_id": "task8_26",
+    "memory_version_before": 227,
+    "new_bullets": [],
+    "memory_size": 227
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 3,
+    "sample_id": "task1_15",
+    "memory_version_before": 227,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN, you must search the provided patient list to match the name and DOB exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")), rather than returning the MRN as an argument to a function call. If no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 228
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 4,
+    "sample_id": "task10_13",
+    "memory_version_before": 228,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must verify if the result date is strictly greater than 365 days from the current system date; if it is, you must include the lab value, the date, and the order as separate strings within the `FINISH` command list (e.g., `FINISH([\"Value: 5.8%\", \"Date: 2022-09-09T15:33:00+00:00\", \"Order: HbA1C lab test\"])`). Do not combine these into a single string, and ensure the order is only included as a distinct list element when the 365-day threshold is met."
+    ],
+    "memory_size": 229
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 5,
+    "sample_id": "task9_14",
+    "memory_version_before": 229,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if that result is missing, you must explicitly order the morning serum potassium level and include the conditional replacement order as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both the baseline lab request and the standing conditional replacement order are documented as distinct list elements."
+    ],
+    "memory_size": 230
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 7,
+    "sample_id": "task8_21",
+    "memory_version_before": 230,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must use the `ORDER_REFERRAL(MRN, reason)` tool call with the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" text provided in the instructions as the reason argument. Do not use the `FINISH` command to simply state that the referral has been ordered; the evaluation requires the execution of this specific tool call to register the referral request with the mandatory clinical details."
+    ],
+    "memory_size": 231
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 8,
+    "sample_id": "task9_5",
+    "memory_version_before": 231,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if the result is missing or low, you must explicitly include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both distinct clinical orders are documented as separate list elements."
+    ],
+    "memory_size": 232
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 9,
+    "sample_id": "task3_14",
+    "memory_version_before": 232,
+    "new_bullets": [],
+    "memory_size": 232
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 10,
+    "sample_id": "task1_16",
+    "memory_version_before": 232,
+    "new_bullets": [],
+    "memory_size": 232
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 11,
+    "sample_id": "task4_11",
+    "memory_version_before": 232,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a list containing a single string (e.g., `FINISH([\"Value: 1.8 mg/dL, Date: 2023-11-13T01:18:00+00:00\"])`). If no result is found, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 233
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 13,
+    "sample_id": "task5_16",
+    "memory_version_before": 233,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must perform a thorough search of the patient's records for any magnesium result within that timeframe. If no result is found, you must return the exact string \"No magnesium level was recorded in the last 24 hours.\" as a list element inside the `FINISH` command, and you must not initiate any order or return error codes."
+    ],
+    "memory_size": 234
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 14,
+    "sample_id": "task4_27",
+    "memory_version_before": 234,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a single string within a list in the FINISH command (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). Do not include the word \"Value:\" or \"Date:\" inside the string unless specifically requested, and ensure the output is a list containing exactly one string element."
+    ],
+    "memory_size": 235
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 15,
+    "sample_id": "task3_12",
+    "memory_version_before": 235,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S6541353\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 236
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 16,
+    "sample_id": "task4_7",
+    "memory_version_before": 236,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a single string within a list in the FINISH command (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 237
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 17,
+    "sample_id": "task2_15",
+    "memory_version_before": 237,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting that date from the current system date, returning the final calculated integer as a string (e.g., `FINISH(\"86\")`) rather than a list format or a guessed value. If the demographic record is not provided or the birth date is missing, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 238
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 18,
+    "sample_id": "task8_7",
+    "memory_version_before": 238,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must use the `ORDER_REFERRAL(MRN, reason)` tool, where the reason argument is a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details as specified in the instructions. Do not use the `FINISH` command to simply state that the referral has been ordered; the evaluation requires the execution of this specific tool call with the mandatory clinical text."
+    ],
+    "memory_size": 239
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 19,
+    "sample_id": "task2_17",
+    "memory_version_before": 239,
+    "new_bullets": [],
+    "memory_size": 239
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 20,
+    "sample_id": "task1_6",
+    "memory_version_before": 239,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN, you must search the provided patient list to match the name and DOB exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). Do not wrap the MRN in a function call or list format, and if no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 240
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 21,
+    "sample_id": "task1_23",
+    "memory_version_before": 240,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). If no match is found after checking the name and DOB, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 241
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 22,
+    "sample_id": "task8_9",
+    "memory_version_before": 241,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must execute the `ORDER_REFERRAL(MRN, reason)` tool call with the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details as the reason argument, rather than just using a `FINISH` command to state that the order was placed. Ensure the tool call is performed as an actionable step to register the request in the system."
+    ],
+    "memory_size": 242
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 23,
+    "sample_id": "task8_15",
+    "memory_version_before": 242,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must execute the `ORDER_REFERRAL(MRN, reason)` tool call, where the reason argument is a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details specified in the instructions. Do not use the `FINISH` command to simply state that the referral has been ordered, as the evaluation requires the execution of this specific tool call to register the request."
+    ],
+    "memory_size": 243
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 24,
+    "sample_id": "task4_21",
+    "memory_version_before": 243,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient... within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a single string within a list in the FINISH command (e.g., FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the FINISH list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 244
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 25,
+    "sample_id": "task2_16",
+    "memory_version_before": 244,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., `FINISH(\"67\")`). Do not guess the age or return an arbitrary number; if the demographic record is not provided or the birth date is missing, state that the data is unavailable."
+    ],
+    "memory_size": 245
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 26,
+    "sample_id": "task4_15",
+    "memory_version_before": 245,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the value and date as a single string within a list in the FINISH command (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the FINISH list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 246
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 27,
+    "sample_id": "task9_20",
+    "memory_version_before": 246,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent potassium result; if that result is low or missing, you must include both the order for the morning serum potassium level and a standing conditional replacement order as distinct, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both the baseline lab request and the standing conditional replacement order are explicitly documented as separate list elements."
+    ],
+    "memory_size": 247
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 28,
+    "sample_id": "task9_28",
+    "memory_version_before": 247,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if the result is missing or low, you must include both the \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both distinct clinical orders are documented as separate list elements."
+    ],
+    "memory_size": 248
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 29,
+    "sample_id": "task10_27",
+    "memory_version_before": 248,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must include both the lab value and date as list elements in the `FINISH` command, and add \"Order: HbA1C lab test\" as a separate, distinct string in that same list if the date is strictly older than 365 days. Do not combine the value, date, and order into a single string, and ensure the order is only included if the 365-day threshold is met."
+    ],
+    "memory_size": 249
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 30,
+    "sample_id": "task4_26",
+    "memory_version_before": 249,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a single string within a list in the FINISH command (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the FINISH list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 250
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 32,
+    "sample_id": "task4_4",
+    "memory_version_before": 250,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and report the specific value and date found as a single string within a list in the FINISH command (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the FINISH list, ensuring the output is a list and not a plain string."
+    ],
+    "memory_size": 251
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 33,
+    "sample_id": "task9_3",
+    "memory_version_before": 251,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if that result is missing or low, you must include both the \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both distinct clinical orders are documented as separate list elements."
+    ],
+    "memory_size": 252
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 34,
+    "sample_id": "task10_17",
+    "memory_version_before": 252,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must include the lab value and date as separate list elements, and if the date is older than 365 days, include \"Order: HbA1C lab test\" as an additional, distinct string within the `FINISH` list. Do not combine the value, date, and order into a single string, as the evaluation requires them to be distinct list elements."
+    ],
+    "memory_size": 253
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 35,
+    "sample_id": "task8_14",
+    "memory_version_before": 253,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must execute the `ORDER_REFERRAL(MRN, reason)` tool call rather than simply using a `FINISH` command. The reason argument must be a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details exactly as specified in the instructions."
+    ],
+    "memory_size": 254
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 36,
+    "sample_id": "task10_16",
+    "memory_version_before": 254,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must perform a comprehensive search of the patient's records for an existing result; if no record is found, you must state that no measurement is available and include \"Order: HbA1C lab test\" as a distinct, actionable string within the `FINISH` command list. Do not terminate the task with a message saying the test is unavailable without also including the required order as a separate list element."
+    ],
+    "memory_size": 255
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 37,
+    "sample_id": "task1_10",
+    "memory_version_before": 255,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). If no match is found after checking the name and DOB, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 256
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 38,
+    "sample_id": "task8_19",
+    "memory_version_before": 256,
+    "new_bullets": [],
+    "memory_size": 256
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 39,
+    "sample_id": "task5_17",
+    "memory_version_before": 256,
+    "new_bullets": [],
+    "memory_size": 256
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 40,
+    "sample_id": "task4_20",
+    "memory_version_before": 256,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must return the result as a list containing a single string that includes the value and the timestamp (e.g., `FINISH([\"2.0 mg/dL, recorded on 2023-11-13T00:36:00+00:00\"])`), rather than wrapping the result in a function call or using plain text. If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list."
+    ],
+    "memory_size": 257
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 41,
+    "sample_id": "task9_1",
+    "memory_version_before": 257,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if the result is missing or low, you must explicitly include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command until both distinct clinical orders are documented as separate list elements."
+    ],
+    "memory_size": 258
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 42,
+    "sample_id": "task8_23",
+    "memory_version_before": 258,
+    "new_bullets": [],
+    "memory_size": 258
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 43,
+    "sample_id": "task2_25",
+    "memory_version_before": 258,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., `FINISH(\"51\")`). Do not guess the age or return an arbitrary number; if the birth date is missing or the demographic record is not provided, state that the data is unavailable."
+    ],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 44,
+    "sample_id": "task10_15",
+    "memory_version_before": 259,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must compare the lab result date against the current system date to calculate if the duration exceeds 365 days; if it does, you must include the lab value, the date, and the order as separate strings within the `FINISH` command list (e.g., `FINISH([\"Value: 5.7%\", \"Date: 2023-07-07T11:27:00+00:00\", \"Order: HbA1C lab test\"])`). Do not combine these into a single string or omit the order if the criteria for age are met."
+    ],
+    "memory_size": 260
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 46,
+    "sample_id": "task9_8",
+    "memory_version_before": 260,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the patient's records for the most recent potassium result; if the result is missing or low, you must explicitly include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list."
+    ],
+    "memory_size": 261
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 47,
+    "sample_id": "task3_16",
+    "memory_version_before": 261,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S6192632\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 262
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 48,
+    "sample_id": "task3_29",
+    "memory_version_before": 262,
+    "new_bullets": [],
+    "memory_size": 262
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 49,
+    "sample_id": "task10_18",
+    "memory_version_before": 262,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must verify if the result date is strictly greater than 365 days from the current system date; if it is, you must include the lab value, the date, and the order as separate strings within the `FINISH` command list (e.g., `FINISH([\"Value: 5.9%\", \"Date: 2023-11-12T06:19:00+00:00\", \"Order: HbA1C lab test\"])`). Do not combine these into a single string or omit the order if the criteria for age are met."
+    ],
+    "memory_size": 263
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 50,
+    "sample_id": "task1_20",
+    "memory_version_before": 263,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly; if a match is found, return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")), rather than returning it as an argument or in a list. If no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 264
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 51,
+    "sample_id": "task9_22",
+    "memory_version_before": 264,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if the result is missing or low, you must explicitly include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list."
+    ],
+    "memory_size": 265
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 52,
+    "sample_id": "task8_29",
+    "memory_version_before": 265,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must execute the `ORDER_REFERRAL(MRN, reason)` tool call rather than simply using a `FINISH` command to state that the order was placed. The reason argument must be a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details exactly as specified in the instructions."
+    ],
+    "memory_size": 266
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 53,
+    "sample_id": "task4_23",
+    "memory_version_before": 266,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must return the result as a list containing a single string that includes the value and the timestamp (e.g., `FINISH([\"1.6 mg/dL, recorded on 2023-11-13T01:51:00+00:00\"])`), rather than wrapping the result in a function call or using plain text. If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list."
+    ],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 54,
+    "sample_id": "task1_7",
+    "memory_version_before": 267,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). Do not wrap the MRN in a function call or list format, and if no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 268
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 55,
+    "sample_id": "task10_21",
+    "memory_version_before": 268,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must perform a comprehensive search of the patient's records for any existing measurement; if no record exists, you must state that no measurement is available and include \"Order: HbA1C lab test\" as a distinct, actionable string within the `FINISH` command list. Do not terminate the task with a message saying the test is unavailable without also including the required order as a separate list element."
+    ],
+    "memory_size": 269
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 56,
+    "sample_id": "task9_6",
+    "memory_version_before": 269,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if that result is missing or low, you must include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the FINISH command list. Do not use the FINISH command until both clinical orders are documented as distinct list elements."
+    ],
+    "memory_size": 270
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 57,
+    "sample_id": "task4_28",
+    "memory_version_before": 270,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and return the result as a list containing a single string that includes the value and the timestamp (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 271
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 59,
+    "sample_id": "task10_12",
+    "memory_version_before": 271,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must perform a comprehensive search of the patient's records for an existing result; if no record exists, you must state that no measurement is available and include \"Order: HbA1C lab test\" as a distinct, actionable string within the `FINISH` command list. Do not terminate the task with a message saying the test is unavailable without also including the required order as a separate list element."
+    ],
+    "memory_size": 272
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 60,
+    "sample_id": "task2_28",
+    "memory_version_before": 272,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., FINISH(\"50\")). Do not output the result in a list format or guess the age; if the birth date is missing or the demographic record is not provided, state that the data is unavailable."
+    ],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 62,
+    "sample_id": "task3_17",
+    "memory_version_before": 273,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S6538722\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record, rather than relying on a text-based `FINISH` command."
+    ],
+    "memory_size": 274
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 63,
+    "sample_id": "task3_7",
+    "memory_version_before": 274,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S1579803\", \"BP\", \"118/77 mmHg\")`) to officially update the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to verify that the vital sign has been correctly saved."
+    ],
+    "memory_size": 275
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 64,
+    "sample_id": "task9_11",
+    "memory_version_before": 275,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must search the clinical records for the most recent result and, if the result is missing or low, explicitly include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not attempt to calculate or predict the result; the orders must be placed as a pair to satisfy the clinical requirement."
+    ],
+    "memory_size": 276
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 65,
+    "sample_id": "task3_10",
+    "memory_version_before": 276,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S2703270\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 277
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 66,
+    "sample_id": "task8_13",
+    "memory_version_before": 277,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must use the `ORDER_REFERRAL(MRN, reason)` tool call rather than simply using a `FINISH` command to state that the order was placed. Ensure the reason argument is a single string containing the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details exactly as specified in the instructions."
+    ],
+    "memory_size": 278
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 67,
+    "sample_id": "task3_3",
+    "memory_version_before": 278,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S6352985\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 279
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 68,
+    "sample_id": "task10_20",
+    "memory_version_before": 279,
+    "new_bullets": [],
+    "memory_size": 279
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 69,
+    "sample_id": "task2_14",
+    "memory_version_before": 279,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., FINISH(\"75\")). Do not guess the age or return an arbitrary number; if the birth date is missing or the demographic record is not provided, state that the data is unavailable."
+    ],
+    "memory_size": 280
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 70,
+    "sample_id": "task2_26",
+    "memory_version_before": 280,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., FINISH(\"69\")). Do not return the result in a list format (e.g., FINISH([\"69\"])) or use a placeholder value; if the information is missing, state that the data is unavailable."
+    ],
+    "memory_size": 281
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 71,
+    "sample_id": "task8_5",
+    "memory_version_before": 281,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral, you must use the `ORDER_REFERRAL(MRN, reason)` tool call with the full \"Situation,\" \"Background,\" \"Assessment,\" and \"Recommendation\" details as a single string argument, rather than simply stating that the referral has been ordered in a `FINISH` command. The evaluation function requires the execution of this specific tool call to register the referral request with the mandatory clinical text."
+    ],
+    "memory_size": 282
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 72,
+    "sample_id": "task1_27",
+    "memory_version_before": 282,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). Do not wrap the MRN in a function call or list format, and if no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 283
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 73,
+    "sample_id": "task2_22",
+    "memory_version_before": 283,
+    "new_bullets": [],
+    "memory_size": 283
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 74,
+    "sample_id": "task2_30",
+    "memory_version_before": 283,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., FINISH(\"82\")). Do not output the result in a list format (e.g., FINISH([\"82\"])) or guess the age; if the birth date is missing or the demographic record is not provided, state that the data is unavailable instead of outputting a placeholder value."
+    ],
+    "memory_size": 284
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 75,
+    "sample_id": "task9_27",
+    "memory_version_before": 284,
+    "new_bullets": [
+      "when asked to check a patient's potassium level and order replacement if low, you must first search the clinical records for the most recent result; if that result is missing or low, you must include both \"Order: Morning serum potassium level\" and \"Order: Conditional potassium replacement\" as separate, actionable strings within the `FINISH` command list. Do not use the `FINISH` command to conclude the task until both clinical orders are documented as distinct list elements."
+    ],
+    "memory_size": 285
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 76,
+    "sample_id": "task10_10",
+    "memory_version_before": 285,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must perform a comprehensive search of the patient's records for any existing measurement; if no record is found, you must state that no measurement is available and include \"Order: HbA1C lab test\" as a distinct, actionable string within the `FINISH` command list. Do not terminate the task with a message saying the test is unavailable without also including the required order as a separate list element."
+    ],
+    "memory_size": 286
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 77,
+    "sample_id": "task2_6",
+    "memory_version_before": 286,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the birth date in the demographic record and calculate the current age by subtracting that date from the current system date, returning the final calculated integer as a plain string (e.g., FINISH(\"50\")) rather than a list or function-wrapped format. Do not output a guessed number or placeholder if the data is missing; instead, explicitly state that the information is unavailable."
+    ],
+    "memory_size": 287
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 78,
+    "sample_id": "task3_30",
+    "memory_version_before": 287,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S6531922\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 288
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 79,
+    "sample_id": "task5_3",
+    "memory_version_before": 288,
+    "new_bullets": [
+      "when asked \"If low, then order replacement IV magnesium according to dosing instructions,\" you must correctly interpret \"low\" as a value below 1.5 mg/dL. If the most recent serum magnesium level is 1.5 mg/dL or greater, you must not order any replacement, as the criteria for intervention have not been met."
+    ],
+    "memory_size": 289
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 80,
+    "sample_id": "task5_7",
+    "memory_version_before": 289,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must verify if any result exists within that timeframe and return the exact string \"No magnesium level was recorded in the last 24 hours.\" as a list element inside the FINISH command if none is found. Do not initiate an order for a new lab test or any other intervention when the instructions explicitly forbid taking action for missing data."
+    ],
+    "memory_size": 290
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 81,
+    "sample_id": "task2_1",
+    "memory_version_before": 290,
+    "new_bullets": [
+      "when asked to retrieve a specific patient attribute like age, you must find the patient's birth date in the provided demographic record and calculate the current age by subtracting the birth date from the current system date, returning the final calculated integer as a string (e.g., FINISH(\"60\")). Do not return the result in a list format (e.g., FINISH([\"60\"])) or guess the age; if the birth date is missing or the demographic record is not provided, state that the data is unavailable."
+    ],
+    "memory_size": 291
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 82,
+    "sample_id": "task1_13",
+    "memory_version_before": 291,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly; if a match is found, return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")), rather than returning it as an argument or in a list. If no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 292
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 83,
+    "sample_id": "task3_27",
+    "memory_version_before": 292,
+    "new_bullets": [],
+    "memory_size": 292
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 85,
+    "sample_id": "task4_6",
+    "memory_version_before": 292,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and return the result as a list containing a single string that includes the value and the timestamp (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 293
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 86,
+    "sample_id": "task1_11",
+    "memory_version_before": 293,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly; if a match is found, return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")), rather than returning it as an argument to a function call. If no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 294
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 87,
+    "sample_id": "task1_12",
+    "memory_version_before": 294,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly; if a match is found, return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")), rather than returning the MRN as an argument to a function call. If no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 295
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 88,
+    "sample_id": "task1_26",
+    "memory_version_before": 295,
+    "new_bullets": [
+      "when asked to retrieve a patient's MRN by name and DOB, you must search the provided patient list to match both fields exactly and return the MRN as a direct string inside the FINISH command (e.g., FINISH(\"S1234567\")). Do not wrap the MRN in a function call or list format, and if no match is found, you must return the exact string \"Patient not found\"."
+    ],
+    "memory_size": 296
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 89,
+    "sample_id": "task10_8",
+    "memory_version_before": 296,
+    "new_bullets": [],
+    "memory_size": 296
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 90,
+    "sample_id": "task5_19",
+    "memory_version_before": 296,
+    "new_bullets": [
+      "when asked \"If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must return the exact string \"No magnesium level was recorded in the last 24 hours.\" as a list element inside the `FINISH` command, rather than returning an error code or an empty list. Do not initiate any order or perform any clinical intervention when the instructions explicitly forbid taking action for missing data."
+    ],
+    "memory_size": 297
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 91,
+    "sample_id": "task4_10",
+    "memory_version_before": 297,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient [ID] within last 24 hours?\", you must search the clinical records for a result timestamped within that period and return the result as a list containing a single string that includes the value and the timestamp (e.g., `FINISH([\"1.8 mg/dL, recorded on 2023-11-13T01:18:00+00:00\"])`). If no result is found within that timeframe, you must return the string \"No magnesium level was recorded in the last 24 hours.\" as the only element in the `FINISH` list, rather than using an error code or an empty list."
+    ],
+    "memory_size": 298
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 92,
+    "sample_id": "task9_9",
+    "memory_version_before": 298,
+    "new_bullets": [],
+    "memory_size": 298
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 93,
+    "sample_id": "task10_24",
+    "memory_version_before": 298,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must verify if the result date is strictly greater than 365 days from the current system date; if it is, you must include the lab value, the date, and the order as separate strings within the `FINISH` command list (e.g., `FINISH([\"Value: 5.2%\", \"Date: 2022-08-09T15:33:00+00:00\", \"Order: HbA1C lab test\"])`). Do not combine these into a single string or omit the order if the criteria for age are met."
+    ],
+    "memory_size": 299
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 94,
+    "sample_id": "task3_1",
+    "memory_version_before": 299,
+    "new_bullets": [
+      "when asked to record a patient's blood pressure, you must use the `RECORD_VITALS` tool with the MRN, the vital type, and the value as arguments (e.g., `RECORD_VITALS(\"S2380121\", \"BP\", \"118/77 mmHg\")`) to ensure the information is officially saved to the medical record. Do not rely on a text-based `FINISH` command to confirm the action, as the system requires the specific tool call to process the data correctly."
+    ],
+    "memory_size": 300
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 300,
+    "new_bullets": [],
+    "memory_size": 300
+  }
+]

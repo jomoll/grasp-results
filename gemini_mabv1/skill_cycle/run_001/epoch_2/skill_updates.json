@@ -1,0 +1,288 @@
+[
+  {
+    "epoch": 2,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 29,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_search_optimization_strategy",
+        "description": "Use _sort=-date and specific codes to retrieve the most recent clinical observations efficiently.",
+        "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nWhen searching for the most recent clinical observation (e.g., lab results, vitals), avoid broad queries that return large, unordered bundles. Instead, use the `_sort=-date` parameter to ensure the most recent record appears first in the bundle. Always use specific LOINC codes or identifiers provided in the task context rather than generic category filters to minimize data noise.\n\n## When to Use This Skill\n- When the task requires the \"most recent\" value of a lab or vital sign.\n- When a previous search returned multiple entries or an empty result set due to pagination or lack of sorting.\n- When searching for specific observations like Potassium (2823-3) or Magnesium (MG).\n\n## Common Failure Patterns\n- Omitting `_sort=-date` and manually parsing large bundles, which leads to stale data or incorrect identification of the \"most recent\" record.\n- Using broad category filters (e.g., `category=vital-signs`) instead of specific codes, resulting in excessive data retrieval.\n- Failing to handle empty search results by assuming the data doesn't exist without verifying the search parameters.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include the patient identifier and the specific code (LOINC or local code) in the initial GET request.\n\n**Pattern 2: Sorting for Recency**\nAppend `&_sort=-date` to your GET request to ensure the first entry in the bundle is the most recent.\n\n**Pattern 3: Handling No Results**\nIf the bundle `total` is 0, do not retry with broader parameters. State clearly that no record was found for the specified code.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the code: 2823-3.\n2. Construct the query: `GET http://localhost:8080/fhir/Observation?patient=S1796597&code=2823-3&_sort=-date`\n3. Inspect the first entry in the returned bundle.\n4. Extract the `valueQuantity.value`.\n\nCORRECT output: `FINISH([4.2])`\nWRONG output: `GET http://localhost:8080/fhir/Observation?patient=S1796597` (too broad)\n\n## Success Indicators\n- The agent retrieves the correct, most recent value in the first or second attempt.\n- The agent uses `_sort=-date` in its search URL.\n\n## Failure Indicators\n- The agent performs multiple redundant searches for the same code.\n- The agent returns an incorrect value because it parsed an older record from a large, unsorted bundle.",
+        "tags": [
+          "fhir",
+          "search",
+          "optimization"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_action_verification_strategy",
+        "description": "Verify task conditions and data thresholds before executing state-changing actions like POST.",
+        "content": "# Conditional Action Verification Strategy\n\n## Pattern Description\nBefore performing any state-changing action (e.g., POSTing a ServiceRequest or MedicationRequest), you must explicitly verify that the action is required based on the task instructions and the retrieved data. Do not assume an action is necessary simply because a lab result is present or missing; perform a logical check against the specific threshold (e.g., time interval or clinical value) provided in the prompt.\n\n## When to Use This Skill\n- When the task includes a conditional instruction (e.g., \"If X is older than 1 year, order Y\").\n- Before executing any POST request that is contingent on the result of a previous GET request.\n- When you have retrieved data but need to confirm if it meets the criteria for an intervention.\n\n## Common Failure Patterns\n- Automatically ordering a test because a result exists, without checking if the date is actually older than the threshold.\n- Ordering a test when the retrieved data is within the acceptable range (e.g., result is < 1 year old).\n- Failing to check if the data is actually missing before concluding that a new order is required.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Threshold Comparison**\n1. Extract the `effectiveDateTime` or `issued` date from the observation.\n2. Calculate the difference between the current date (provided in context) and the observation date.\n3. If the difference is less than the threshold (e.g., 1 year), explicitly state in your reasoning that no action is required and terminate with FINISH.\n\n**Pattern 2: Data Existence Verification**\n1. If a GET request returns an empty bundle, verify if the patient has any history before assuming the data is missing.\n2. If the data is truly missing, proceed with the order; otherwise, report the existing value.\n\n**Pattern 3: Logic Documentation**\n1. Always document the comparison logic in your internal reasoning or the `note` field of the request to ensure the action is justified.\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET Observation for HbA1C.\n2. Identify the most recent `effectiveDateTime` (e.g., 2022-08-09).\n3. Compare with current date (2023-11-13). The difference is > 1 year.\n4. Proceed to POST ServiceRequest.\n\nCORRECT: \"The last result is from 2022-08-09, which is > 1 year old. Ordering new test.\"\nWRONG: \"Ordering new test because I found an HbA1C result.\"\n\n## Success Indicators\n- No unnecessary POST requests are made when conditions are not met.\n- Reasoning clearly states the comparison between the retrieved data and the task threshold.\n\n## Failure Indicators\n- POST requests are executed despite the data meeting the \"no-action\" criteria.\n- Agent fails to perform the date or value comparison before acting.",
+        "tags": [
+          "conditional-logic",
+          "verification",
+          "post-request-safety"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_query_deduplication_strategy",
+        "description": "Prevent redundant FHIR GET requests by tracking previously executed queries and avoiding unnecessary pagination.",
+        "content": "## Skill Title\nFHIR Query Deduplication Strategy\n\n## Pattern Description\nTo prevent excessive API calls and potential 400 errors, you must maintain a mental or scratchpad log of all GET requests already performed for a specific patient and resource type. If a search for a specific code (e.g., `code=2823-3`) has already returned a result (even if empty), do not repeat the exact same query with the same parameters.\n\nAvoid blindly iterating through paginated results (`_getpages`) if the required data has already been retrieved or if the initial search was sufficient to determine the absence of data.\n\n## When to Use This Skill\n- When you have already executed a GET request for a specific resource and code for a patient.\n- When you are tempted to repeat a search for the same `code` and `patient` identifier.\n- When you encounter a `next` link in a bundle but have already found the relevant data or confirmed the data is missing.\n\n## Common Failure Patterns\n- Repeating `GET /Observation?code=X&patient=Y` multiple times in a single task.\n- Following `_getpages` links when the initial search already returned the necessary information or confirmed the resource does not exist.\n- Triggering 400 errors by attempting to re-fetch expired or invalid pagination tokens.\n\n## Recommended Patterns\n\n**Pattern 1: Query Tracking**\nBefore issuing a GET request, check your history. If `GET /Observation?code=2823-3&patient=S123` has been called, do not call it again.\n\n**Pattern 2: Pagination Discipline**\nOnly follow `next` links if the initial search result is incomplete and you have not yet found the required data. If the `total` count is 0 or the relevant record is found, stop searching.\n\n**Pattern 3: Resource Specificity**\nIf you need a specific observation, use the most specific query possible (e.g., `code=...&patient=...`) and avoid broad queries (e.g., `GET /Observation?patient=...`) that return large, unnecessary datasets.\n\n## Example Application\n\n**Task:** \"Check patient S1635224's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=2823-3&patient=S1635224`.\n2. If the response is empty (`total: 0`), record that the data is missing.\n3. Do NOT repeat the same GET request.\n4. If the response contains data, extract the value and proceed to the next step.\n\n## Success Indicators\n- No duplicate GET requests for the same parameters in the action log.\n- No 400 errors caused by re-using pagination tokens.\n\n## Failure Indicators\n- Multiple identical GET requests in the action log.\n- Hitting the task limit due to redundant searching.",
+        "tags": [
+          "fhir",
+          "api",
+          "optimization"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "finish_action_output_protocol",
+        "description": "Standardize the FINISH action output to return raw data types (numbers, lists, or strings) without natural language wrapping.",
+        "content": "## Skill Title\nFinish Action Output Protocol\n\n## Pattern Description\nWhen providing a final answer via the `FINISH` action, you must return the requested data in a clean, machine-readable format. Do not wrap the result in natural language sentences, conversational filler, or explanatory text unless explicitly requested by the task prompt.\n\n- If the task asks for a value (e.g., a lab result or age), return only the value or a list containing the value.\n- If the task asks for multiple data points, return them as a list of values.\n- Avoid adding conversational prefixes like \"The value is...\" or \"Since the result is...\" inside the `FINISH` call.\n\n## When to Use This Skill\n- When the task asks for a specific data point (e.g., \"What is the last HbA1C value?\").\n- When the task requires a numeric or list-based output for downstream processing.\n- When previous attempts resulted in `answer_format_wrong_type` or included unnecessary natural language explanations.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.4%\"])` instead of `FINISH([5.4])` or `FINISH([\"5.4%\"])`.\n- Including reasoning or status updates inside the `FINISH` argument (e.g., `FINISH([\"5.4%, recorded on 2023-11-02\"])` when only the value was requested).\n- Returning a single string containing multiple pieces of information instead of a structured list.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric or Simple Value Extraction**\nIf the task asks for a single value, return it as a single-element list containing the raw value.\nCORRECT: `FINISH([5.4])`\nWRONG: `FINISH([\"The value is 5.4%\"])\n\n**Pattern 2: Multi-Value Extraction**\nIf the task asks for multiple fields, return them as a list of discrete elements.\nCORRECT: `FINISH([5.4, \"2023-11-02\"])\nWRONG: `FINISH([\"5.4% on 2023-11-02\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Extract the `valueQuantity.value` (e.g., 5.4) and `effectiveDateTime` (e.g., 2023-11-02).\n3. Format the output as a list of these two elements.\n\nCORRECT output: `FINISH([5.4, \"2023-11-02\"])`\nWRONG output: `FINISH([\"The last HbA1C is 5.4% recorded on 2023-11-02.\"])\n\n## Success Indicators\n- The `FINISH` action contains only the requested data points in a list format.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The output contains sentences or descriptive text.\n- The output is a single string instead of a list of discrete data points.",
+        "tags": [
+          "output_formatting",
+          "finish_action"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_optimization_strategy",
+          "description": "Use _sort=-date and specific codes to retrieve the most recent clinical observations efficiently.",
+          "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nWhen searching for the most recent clinical observation (e.g., lab results, vitals), avoid broad queries that return large, unordered bundles. Instead, use the `_sort=-date` parameter to ensure the most recent record appears first in the bundle. Always use specific LOINC codes or identifiers provided in the task context rather than generic category filters to minimize data noise.\n\n## When to Use This Skill\n- When the task requires the \"most recent\" value of a lab or vital sign.\n- When a previous search returned multiple entries or an empty result set due to pagination or lack of sorting.\n- When searching for specific observations like Potassium (2823-3) or Magnesium (MG).\n\n## Common Failure Patterns\n- Omitting `_sort=-date` and manually parsing large bundles, which leads to stale data or incorrect identification of the \"most recent\" record.\n- Using broad category filters (e.g., `category=vital-signs`) instead of specific codes, resulting in excessive data retrieval.\n- Failing to handle empty search results by assuming the data doesn't exist without verifying the search parameters.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include the patient identifier and the specific code (LOINC or local code) in the initial GET request.\n\n**Pattern 2: Sorting for Recency**\nAppend `&_sort=-date` to your GET request to ensure the first entry in the bundle is the most recent.\n\n**Pattern 3: Handling No Results**\nIf the bundle `total` is 0, do not retry with broader parameters. State clearly that no record was found for the specified code.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the code: 2823-3.\n2. Construct the query: `GET http://localhost:8080/fhir/Observation?patient=S1796597&code=2823-3&_sort=-date`\n3. Inspect the first entry in the returned bundle.\n4. Extract the `valueQuantity.value`.\n\nCORRECT output: `FINISH([4.2])`\nWRONG output: `GET http://localhost:8080/fhir/Observation?patient=S1796597` (too broad)\n\n## Success Indicators\n- The agent retrieves the correct, most recent value in the first or second attempt.\n- The agent uses `_sort=-date` in its search URL.\n\n## Failure Indicators\n- The agent performs multiple redundant searches for the same code.\n- The agent returns an incorrect value because it parsed an older record from a large, unsorted bundle.",
+          "tags": [
+            "fhir",
+            "search",
+            "optimization"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 5,
+        "fixes": 5,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_action_verification_strategy",
+          "description": "Verify task conditions and data thresholds before executing state-changing actions like POST.",
+          "content": "# Conditional Action Verification Strategy\n\n## Pattern Description\nBefore performing any state-changing action (e.g., POSTing a ServiceRequest or MedicationRequest), you must explicitly verify that the action is required based on the task instructions and the retrieved data. Do not assume an action is necessary simply because a lab result is present or missing; perform a logical check against the specific threshold (e.g., time interval or clinical value) provided in the prompt.\n\n## When to Use This Skill\n- When the task includes a conditional instruction (e.g., \"If X is older than 1 year, order Y\").\n- Before executing any POST request that is contingent on the result of a previous GET request.\n- When you have retrieved data but need to confirm if it meets the criteria for an intervention.\n\n## Common Failure Patterns\n- Automatically ordering a test because a result exists, without checking if the date is actually older than the threshold.\n- Ordering a test when the retrieved data is within the acceptable range (e.g., result is < 1 year old).\n- Failing to check if the data is actually missing before concluding that a new order is required.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Threshold Comparison**\n1. Extract the `effectiveDateTime` or `issued` date from the observation.\n2. Calculate the difference between the current date (provided in context) and the observation date.\n3. If the difference is less than the threshold (e.g., 1 year), explicitly state in your reasoning that no action is required and terminate with FINISH.\n\n**Pattern 2: Data Existence Verification**\n1. If a GET request returns an empty bundle, verify if the patient has any history before assuming the data is missing.\n2. If the data is truly missing, proceed with the order; otherwise, report the existing value.\n\n**Pattern 3: Logic Documentation**\n1. Always document the comparison logic in your internal reasoning or the `note` field of the request to ensure the action is justified.\n\n## Example Application\n\n**Task:** \"If the HbA1C result is > 1 year old, order a new test.\"\n\n**Step-by-step:**\n1. GET Observation for HbA1C.\n2. Identify the most recent `effectiveDateTime` (e.g., 2022-08-09).\n3. Compare with current date (2023-11-13). The difference is > 1 year.\n4. Proceed to POST ServiceRequest.\n\nCORRECT: \"The last result is from 2022-08-09, which is > 1 year old. Ordering new test.\"\nWRONG: \"Ordering new test because I found an HbA1C result.\"\n\n## Success Indicators\n- No unnecessary POST requests are made when conditions are not met.\n- Reasoning clearly states the comparison between the retrieved data and the task threshold.\n\n## Failure Indicators\n- POST requests are executed despite the data meeting the \"no-action\" criteria.\n- Agent fails to perform the date or value comparison before acting.",
+          "tags": [
+            "conditional-logic",
+            "verification",
+            "post-request-safety"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 3,
+        "fixes": 5,
+        "regressions": 1,
+        "invalid_action_regressions": 1,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_query_deduplication_strategy",
+          "description": "Prevent redundant FHIR GET requests by tracking previously executed queries and avoiding unnecessary pagination.",
+          "content": "## Skill Title\nFHIR Query Deduplication Strategy\n\n## Pattern Description\nTo prevent excessive API calls and potential 400 errors, you must maintain a mental or scratchpad log of all GET requests already performed for a specific patient and resource type. If a search for a specific code (e.g., `code=2823-3`) has already returned a result (even if empty), do not repeat the exact same query with the same parameters.\n\nAvoid blindly iterating through paginated results (`_getpages`) if the required data has already been retrieved or if the initial search was sufficient to determine the absence of data.\n\n## When to Use This Skill\n- When you have already executed a GET request for a specific resource and code for a patient.\n- When you are tempted to repeat a search for the same `code` and `patient` identifier.\n- When you encounter a `next` link in a bundle but have already found the relevant data or confirmed the data is missing.\n\n## Common Failure Patterns\n- Repeating `GET /Observation?code=X&patient=Y` multiple times in a single task.\n- Following `_getpages` links when the initial search already returned the necessary information or confirmed the resource does not exist.\n- Triggering 400 errors by attempting to re-fetch expired or invalid pagination tokens.\n\n## Recommended Patterns\n\n**Pattern 1: Query Tracking**\nBefore issuing a GET request, check your history. If `GET /Observation?code=2823-3&patient=S123` has been called, do not call it again.\n\n**Pattern 2: Pagination Discipline**\nOnly follow `next` links if the initial search result is incomplete and you have not yet found the required data. If the `total` count is 0 or the relevant record is found, stop searching.\n\n**Pattern 3: Resource Specificity**\nIf you need a specific observation, use the most specific query possible (e.g., `code=...&patient=...`) and avoid broad queries (e.g., `GET /Observation?patient=...`) that return large, unnecessary datasets.\n\n## Example Application\n\n**Task:** \"Check patient S1635224's most recent potassium level.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=2823-3&patient=S1635224`.\n2. If the response is empty (`total: 0`), record that the data is missing.\n3. Do NOT repeat the same GET request.\n4. If the response contains data, extract the value and proceed to the next step.\n\n## Success Indicators\n- No duplicate GET requests for the same parameters in the action log.\n- No 400 errors caused by re-using pagination tokens.\n\n## Failure Indicators\n- Multiple identical GET requests in the action log.\n- Hitting the task limit due to redundant searching.",
+          "tags": [
+            "fhir",
+            "api",
+            "optimization"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 5,
+        "fixes": 5,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "finish_action_output_protocol",
+          "description": "Standardize the FINISH action output to return raw data types (numbers, lists, or strings) without natural language wrapping.",
+          "content": "## Skill Title\nFinish Action Output Protocol\n\n## Pattern Description\nWhen providing a final answer via the `FINISH` action, you must return the requested data in a clean, machine-readable format. Do not wrap the result in natural language sentences, conversational filler, or explanatory text unless explicitly requested by the task prompt.\n\n- If the task asks for a value (e.g., a lab result or age), return only the value or a list containing the value.\n- If the task asks for multiple data points, return them as a list of values.\n- Avoid adding conversational prefixes like \"The value is...\" or \"Since the result is...\" inside the `FINISH` call.\n\n## When to Use This Skill\n- When the task asks for a specific data point (e.g., \"What is the last HbA1C value?\").\n- When the task requires a numeric or list-based output for downstream processing.\n- When previous attempts resulted in `answer_format_wrong_type` or included unnecessary natural language explanations.\n\n## Common Failure Patterns\n- Returning `FINISH([\"The value is 5.4%\"])` instead of `FINISH([5.4])` or `FINISH([\"5.4%\"])`.\n- Including reasoning or status updates inside the `FINISH` argument (e.g., `FINISH([\"5.4%, recorded on 2023-11-02\"])` when only the value was requested).\n- Returning a single string containing multiple pieces of information instead of a structured list.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric or Simple Value Extraction**\nIf the task asks for a single value, return it as a single-element list containing the raw value.\nCORRECT: `FINISH([5.4])`\nWRONG: `FINISH([\"The value is 5.4%\"])\n\n**Pattern 2: Multi-Value Extraction**\nIf the task asks for multiple fields, return them as a list of discrete elements.\nCORRECT: `FINISH([5.4, \"2023-11-02\"])\nWRONG: `FINISH([\"5.4% on 2023-11-02\"])\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. Retrieve the Observation resource.\n2. Extract the `valueQuantity.value` (e.g., 5.4) and `effectiveDateTime` (e.g., 2023-11-02).\n3. Format the output as a list of these two elements.\n\nCORRECT output: `FINISH([5.4, \"2023-11-02\"])`\nWRONG output: `FINISH([\"The last HbA1C is 5.4% recorded on 2023-11-02.\"])\n\n## Success Indicators\n- The `FINISH` action contains only the requested data points in a list format.\n- No conversational text is present in the final output.\n\n## Failure Indicators\n- The output contains sentences or descriptive text.\n- The output is a single string instead of a list of discrete data points.",
+          "tags": [
+            "output_formatting",
+            "finish_action"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 5,
+        "fixes": 6,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 36,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "clinical_decision_threshold_strategy",
+        "description": "Verify clinical data against thresholds and time constraints before triggering orders.",
+        "content": "## Skill Title\nClinical Decision Threshold Strategy\n\n## Pattern Description\nWhen a task requires a conditional action (e.g., \"order a test if the result is older than X\" or \"order medication if the value is below Y\"), you must first retrieve the relevant data, evaluate the specific threshold or time constraint, and only proceed with the action if the condition is met. Do not assume an order is required without explicitly verifying the data against the provided criteria.\n\n## When to Use This Skill\n- When the task instruction includes a conditional trigger (e.g., \"If the lab value is > 1 year old, order a new test\").\n- When the task involves checking a lab result (e.g., potassium, HbA1C) and ordering a follow-up or replacement based on that value.\n\n## Common Failure Patterns\n- Ordering a test or medication despite the existing data being within the acceptable range or timeframe.\n- Failing to check the `effectiveDateTime` or `valueQuantity` before deciding to act.\n- Assuming an order is required without confirming the current status of the patient's data.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Evaluation**\n1. Fetch the relevant resource (e.g., `Observation` for the specific code).\n2. Extract the `effectiveDateTime` and `valueQuantity.value`.\n3. Compare the `effectiveDateTime` against the current date (e.g., 1 year threshold).\n4. Compare the `valueQuantity.value` against the clinical threshold (e.g., low potassium).\n\n**Pattern 2: Conditional Execution**\n- If the condition is NOT met (e.g., result is < 1 year old), do NOT perform the POST action. Report the findings and explain why no action was taken.\n- If the condition IS met, proceed with the POST action and include a clear note in the resource explaining the rationale.\n\n## Example Application\n\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Parse `effectiveDateTime` (e.g., \"2023-11-12\").\n3. Compare with current date (2023-11-13). Result is 1 day old.\n4. Since 1 day < 1 year, do NOT order. \n5. FINISH([\"The last HbA1C was recorded on 2023-11-12. As this is less than 1 year old, no new test is required.\"])\n\n## Success Indicators\n- Agent correctly identifies when a condition is not met and skips the unnecessary POST action.\n- Agent provides a clear explanation in the final response when no action is taken.\n\n## Failure Indicators\n- Agent performs a POST action even when the data does not meet the criteria for ordering.",
+        "tags": [
+          "clinical-logic",
+          "decision-making",
+          "threshold-verification"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_optimization_strategy",
+        "description": "Enforce efficient FHIR search patterns using sorting and specific codes to prevent redundant queries.",
+        "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nWhen searching for clinical data (Observations, Conditions, etc.), avoid broad, unconstrained queries that return large datasets or require pagination. Always use specific search parameters (e.g., `code`, `patient`) and sorting parameters to retrieve the most relevant data first. This prevents the agent from getting stuck in pagination loops or performing redundant, broad searches.\n\n## When to Use This Skill\n- When searching for the \"most recent\" value of a lab or vital sign.\n- When a previous search returned a large bundle or required multiple pages of results.\n- When the agent is performing multiple, increasingly broad searches for the same data point.\n\n## Common Failure Patterns\n- Searching without `_sort=-date` when the task requires the \"most recent\" value.\n- Using broad category searches (e.g., `category=vital-signs`) instead of specific LOINC codes.\n- Attempting to manually paginate through large bundles instead of refining the initial query.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Retrieval**\nAlways include the specific code and patient identifier in the initial request. If looking for the most recent value, append `_sort=-date` and `_count=1` to the query.\n\nCORRECT: `GET /Observation?patient=S123&code=2823-3&_sort=-date&_count=1`\nWRONG:   `GET /Observation?patient=S123` (followed by manual filtering)\n\n**Pattern 2: Avoid Redundant Searches**\nIf a specific search (e.g., by code) returns zero results, do not immediately retry with a broader category search unless the task explicitly requires a wider scope. Trust the initial specific result.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the patient ID (S6550473) and the target code (e.g., 2823-3 for Potassium).\n2. Construct the query: `GET /Observation?patient=S6550473&code=2823-3&_sort=-date&_count=1`\n3. Extract the value from the first entry in the bundle.\n4. If the bundle is empty, conclude no data is available rather than searching by category.\n\n## Success Indicators\n- Agent retrieves the required data in 1-2 queries.\n- No pagination-related errors or excessive `GET` requests in the trace.\n\n## Failure Indicators\n- Agent performs multiple `GET` requests for the same resource type.\n- Agent attempts to iterate through `_getpages` links.",
+        "tags": [
+          "fhir",
+          "search",
+          "optimization"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_fallback_strategy",
+        "description": "Retry failed FHIR searches by relaxing filters or using broader search parameters.",
+        "content": "# FHIR Search Fallback Strategy\n\nWhen a FHIR search returns an empty bundle (`total: 0`), do not immediately conclude that the data does not exist. The initial search parameters may be too restrictive (e.g., combining too many filters or using a specific code that is not indexed as expected).\n\n## When to Use This Skill\n\n- When a `GET` request for a resource (e.g., `Observation`, `Condition`) returns a `Bundle` with `total: 0`.\n- When you are searching for a specific lab result or clinical record and the initial query using a specific code or category fails.\n\n## Common Failure Patterns\n\n- Assuming a zero-result bundle means the patient has no record of the requested data.\n- Failing to attempt a broader search (e.g., searching by patient ID only, or removing a `category` or `code` filter) before reporting that data is missing.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden the Search**\nIf the initial search with specific filters (e.g., `code=A1C&patient=S123`) returns no results, perform a second search using only the `patient` identifier to retrieve all resources of that type for the patient. Then, manually filter the results in your reasoning step.\n\n**Pattern 2: Verify Resource Existence**\nIf a search for a specific resource type returns empty, verify the patient exists by searching for the `Patient` resource directly before concluding the data is missing.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C for patient S6488980?\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=A1C&patient=S6488980`.\n2. If the response is `total: 0`, do not stop.\n3. Issue `GET /Observation?patient=S6488980` to retrieve all observations.\n4. Scan the returned list for any `Observation` that matches the clinical description of HbA1C.\n5. If still no results, then conclude the data is missing.\n\n## Success Indicators\n\n- The agent successfully retrieves data after a second, broader search attempt.\n- The agent avoids premature \"not found\" conclusions.\n\n## Failure Indicators\n\n- The agent continues to return empty results even after broadening the search.\n- The agent enters an infinite loop of redundant, identical queries.",
+        "tags": [
+          "fhir",
+          "search",
+          "data-retrieval"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "loinc_code_validation_strategy",
+        "description": "Map clinical concepts to standard LOINC codes for reliable FHIR resource retrieval.",
+        "content": "## Skill Title\nLOINC Code Validation Strategy\n\n## Pattern Description\nWhen searching for clinical observations like laboratory results, using non-standard abbreviations (e.g., 'MG' for magnesium) often leads to empty search results or incorrect data retrieval. You must map clinical concepts to their standard LOINC codes before executing a search. This ensures the FHIR server correctly identifies the requested observation type.\n\n## When to Use This Skill\n- When a task requests a specific lab value (e.g., magnesium, potassium, HbA1c) and the provided context or instruction uses a non-standard abbreviation.\n- When a GET /Observation request returns an empty bundle or unexpected results for a common lab test.\n\n## Common Failure Patterns\n- Using abbreviations like 'MG' or 'K' in the `code` parameter of a FHIR search, which the server may not recognize.\n- Assuming the server will perform fuzzy matching on display names or local codes.\n\n## Recommended Patterns\n\n**Pattern 1: Standard Code Mapping**\nBefore searching, identify the standard LOINC code for the requested analyte. If the task does not provide one, search for the analyte by name or consult the provided context for a mapping. For example, use '19123-9' for Magnesium.\n\n**Pattern 2: Verification**\nIf a search with a code returns no results, verify if the code is correct. If you are unsure of the code, perform a broader search or check the `code.text` field of existing observations for that patient to identify the correct system-defined code.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Identify that 'MG' is an abbreviation for Magnesium.\n2. Map 'Magnesium' to the standard LOINC code '19123-9'.\n3. Issue GET: `http://localhost:8080/fhir/Observation?code=19123-9&patient=S3057899`.\n4. Extract the value from the returned resource.\n\n## Success Indicators\n- The FHIR server returns a bundle containing the requested observation.\n- The agent successfully retrieves the lab value instead of returning an empty result or error.\n\n## Failure Indicators\n- The agent continues to use non-standard abbreviations in search queries.\n- The agent reports 'no data' when data is actually present under a different, standard code.",
+        "tags": [
+          "fhir",
+          "lab-results",
+          "loinc",
+          "search-strategy"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_decision_threshold_strategy",
+          "description": "Verify clinical data against thresholds and time constraints before triggering orders.",
+          "content": "## Skill Title\nClinical Decision Threshold Strategy\n\n## Pattern Description\nWhen a task requires a conditional action (e.g., \"order a test if the result is older than X\" or \"order medication if the value is below Y\"), you must first retrieve the relevant data, evaluate the specific threshold or time constraint, and only proceed with the action if the condition is met. Do not assume an order is required without explicitly verifying the data against the provided criteria.\n\n## When to Use This Skill\n- When the task instruction includes a conditional trigger (e.g., \"If the lab value is > 1 year old, order a new test\").\n- When the task involves checking a lab result (e.g., potassium, HbA1C) and ordering a follow-up or replacement based on that value.\n\n## Common Failure Patterns\n- Ordering a test or medication despite the existing data being within the acceptable range or timeframe.\n- Failing to check the `effectiveDateTime` or `valueQuantity` before deciding to act.\n- Assuming an order is required without confirming the current status of the patient's data.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Evaluation**\n1. Fetch the relevant resource (e.g., `Observation` for the specific code).\n2. Extract the `effectiveDateTime` and `valueQuantity.value`.\n3. Compare the `effectiveDateTime` against the current date (e.g., 1 year threshold).\n4. Compare the `valueQuantity.value` against the clinical threshold (e.g., low potassium).\n\n**Pattern 2: Conditional Execution**\n- If the condition is NOT met (e.g., result is < 1 year old), do NOT perform the POST action. Report the findings and explain why no action was taken.\n- If the condition IS met, proceed with the POST action and include a clear note in the resource explaining the rationale.\n\n## Example Application\n\n**Task:** \"Check HbA1C. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. GET `Observation?code=4548-4&patient=S123`.\n2. Parse `effectiveDateTime` (e.g., \"2023-11-12\").\n3. Compare with current date (2023-11-13). Result is 1 day old.\n4. Since 1 day < 1 year, do NOT order. \n5. FINISH([\"The last HbA1C was recorded on 2023-11-12. As this is less than 1 year old, no new test is required.\"])\n\n## Success Indicators\n- Agent correctly identifies when a condition is not met and skips the unnecessary POST action.\n- Agent provides a clear explanation in the final response when no action is taken.\n\n## Failure Indicators\n- Agent performs a POST action even when the data does not meet the criteria for ordering.",
+          "tags": [
+            "clinical-logic",
+            "decision-making",
+            "threshold-verification"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_optimization_strategy",
+          "description": "Enforce efficient FHIR search patterns using sorting and specific codes to prevent redundant queries.",
+          "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nWhen searching for clinical data (Observations, Conditions, etc.), avoid broad, unconstrained queries that return large datasets or require pagination. Always use specific search parameters (e.g., `code`, `patient`) and sorting parameters to retrieve the most relevant data first. This prevents the agent from getting stuck in pagination loops or performing redundant, broad searches.\n\n## When to Use This Skill\n- When searching for the \"most recent\" value of a lab or vital sign.\n- When a previous search returned a large bundle or required multiple pages of results.\n- When the agent is performing multiple, increasingly broad searches for the same data point.\n\n## Common Failure Patterns\n- Searching without `_sort=-date` when the task requires the \"most recent\" value.\n- Using broad category searches (e.g., `category=vital-signs`) instead of specific LOINC codes.\n- Attempting to manually paginate through large bundles instead of refining the initial query.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Retrieval**\nAlways include the specific code and patient identifier in the initial request. If looking for the most recent value, append `_sort=-date` and `_count=1` to the query.\n\nCORRECT: `GET /Observation?patient=S123&code=2823-3&_sort=-date&_count=1`\nWRONG:   `GET /Observation?patient=S123` (followed by manual filtering)\n\n**Pattern 2: Avoid Redundant Searches**\nIf a specific search (e.g., by code) returns zero results, do not immediately retry with a broader category search unless the task explicitly requires a wider scope. Trust the initial specific result.\n\n## Example Application\n\n**Task:** \"Check patient S6550473's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the patient ID (S6550473) and the target code (e.g., 2823-3 for Potassium).\n2. Construct the query: `GET /Observation?patient=S6550473&code=2823-3&_sort=-date&_count=1`\n3. Extract the value from the first entry in the bundle.\n4. If the bundle is empty, conclude no data is available rather than searching by category.\n\n## Success Indicators\n- Agent retrieves the required data in 1-2 queries.\n- No pagination-related errors or excessive `GET` requests in the trace.\n\n## Failure Indicators\n- Agent performs multiple `GET` requests for the same resource type.\n- Agent attempts to iterate through `_getpages` links.",
+          "tags": [
+            "fhir",
+            "search",
+            "optimization"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_fallback_strategy",
+          "description": "Retry failed FHIR searches by relaxing filters or using broader search parameters.",
+          "content": "# FHIR Search Fallback Strategy\n\nWhen a FHIR search returns an empty bundle (`total: 0`), do not immediately conclude that the data does not exist. The initial search parameters may be too restrictive (e.g., combining too many filters or using a specific code that is not indexed as expected).\n\n## When to Use This Skill\n\n- When a `GET` request for a resource (e.g., `Observation`, `Condition`) returns a `Bundle` with `total: 0`.\n- When you are searching for a specific lab result or clinical record and the initial query using a specific code or category fails.\n\n## Common Failure Patterns\n\n- Assuming a zero-result bundle means the patient has no record of the requested data.\n- Failing to attempt a broader search (e.g., searching by patient ID only, or removing a `category` or `code` filter) before reporting that data is missing.\n\n## Recommended Patterns\n\n**Pattern 1: Broaden the Search**\nIf the initial search with specific filters (e.g., `code=A1C&patient=S123`) returns no results, perform a second search using only the `patient` identifier to retrieve all resources of that type for the patient. Then, manually filter the results in your reasoning step.\n\n**Pattern 2: Verify Resource Existence**\nIf a search for a specific resource type returns empty, verify the patient exists by searching for the `Patient` resource directly before concluding the data is missing.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C for patient S6488980?\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=A1C&patient=S6488980`.\n2. If the response is `total: 0`, do not stop.\n3. Issue `GET /Observation?patient=S6488980` to retrieve all observations.\n4. Scan the returned list for any `Observation` that matches the clinical description of HbA1C.\n5. If still no results, then conclude the data is missing.\n\n## Success Indicators\n\n- The agent successfully retrieves data after a second, broader search attempt.\n- The agent avoids premature \"not found\" conclusions.\n\n## Failure Indicators\n\n- The agent continues to return empty results even after broadening the search.\n- The agent enters an infinite loop of redundant, identical queries.",
+          "tags": [
+            "fhir",
+            "search",
+            "data-retrieval"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "loinc_code_validation_strategy",
+          "description": "Map clinical concepts to standard LOINC codes for reliable FHIR resource retrieval.",
+          "content": "## Skill Title\nLOINC Code Validation Strategy\n\n## Pattern Description\nWhen searching for clinical observations like laboratory results, using non-standard abbreviations (e.g., 'MG' for magnesium) often leads to empty search results or incorrect data retrieval. You must map clinical concepts to their standard LOINC codes before executing a search. This ensures the FHIR server correctly identifies the requested observation type.\n\n## When to Use This Skill\n- When a task requests a specific lab value (e.g., magnesium, potassium, HbA1c) and the provided context or instruction uses a non-standard abbreviation.\n- When a GET /Observation request returns an empty bundle or unexpected results for a common lab test.\n\n## Common Failure Patterns\n- Using abbreviations like 'MG' or 'K' in the `code` parameter of a FHIR search, which the server may not recognize.\n- Assuming the server will perform fuzzy matching on display names or local codes.\n\n## Recommended Patterns\n\n**Pattern 1: Standard Code Mapping**\nBefore searching, identify the standard LOINC code for the requested analyte. If the task does not provide one, search for the analyte by name or consult the provided context for a mapping. For example, use '19123-9' for Magnesium.\n\n**Pattern 2: Verification**\nIf a search with a code returns no results, verify if the code is correct. If you are unsure of the code, perform a broader search or check the `code.text` field of existing observations for that patient to identify the correct system-defined code.\n\n## Example Application\n\n**Task:** \"Check patient S3057899's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Identify that 'MG' is an abbreviation for Magnesium.\n2. Map 'Magnesium' to the standard LOINC code '19123-9'.\n3. Issue GET: `http://localhost:8080/fhir/Observation?code=19123-9&patient=S3057899`.\n4. Extract the value from the returned resource.\n\n## Success Indicators\n- The FHIR server returns a bundle containing the requested observation.\n- The agent successfully retrieves the lab value instead of returning an empty result or error.\n\n## Failure Indicators\n- The agent continues to use non-standard abbreviations in search queries.\n- The agent reports 'no data' when data is actually present under a different, standard code.",
+          "tags": [
+            "fhir",
+            "lab-results",
+            "loinc",
+            "search-strategy"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": 0,
+        "fixes": 0,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

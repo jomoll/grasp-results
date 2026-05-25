@@ -1,0 +1,306 @@
+[
+  {
+    "epoch": 2,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 35,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "observation_code_fallback_strategy",
+        "description": "Ensures clinical observations are found by searching by category when specific code parameters return no results.",
+        "content": "## Skill Title\nObservation Code Fallback Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., heart rate, TSH) using a specific code parameter, the server may return an empty bundle even if the data exists under a different code or a broader category. This skill ensures you do not prematurely conclude that data is missing by performing a broader search by category and filtering the results client-side.\n\n## When to Use This Skill\n- When a GET /Observation request with a specific `code` parameter returns a `total` of 0.\n- When you are tasked with finding a specific vital sign or lab value and the initial code-based search fails.\n\n## Common Failure Patterns\n- Relying on a single, potentially non-standard code string (e.g., `HEARTRATE`) that the server does not recognize.\n- Failing to check the `category` (e.g., `vital-signs`, `laboratory`) when the specific code search returns empty.\n- Assuming that a 0-result bundle means the patient has no data, rather than the search parameter being too restrictive.\n\n## Recommended Patterns\n\n**Pattern 1: Initial Search**\nAttempt the search using the specific code provided in the task instructions.\n\n**Pattern 2: Fallback Search**\nIf the initial search returns 0 results, perform a broader search using only the `category` and `patient` parameters. \n\n**Pattern 3: Client-Side Filtering**\nOnce you receive the broader bundle, iterate through the `entry` array and inspect the `code.coding` or `code.text` fields to identify the relevant observations. If the bundle is paginated, follow the `next` link to ensure you have retrieved all available records before concluding the data is missing.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S2161163.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S2161163&code=HEARTRATE` (Returns 0 results).\n2. GET `.../Observation?patient=S2161163&category=vital-signs` (Returns a bundle of all vital signs).\n3. Filter the bundle entries for observations where `code.text` contains 'Heart Rate' or matches known LOINC codes.\n4. Extract the `valueQuantity.value` from the matching resources.\n\n## Success Indicators\n- The agent successfully identifies the required data after the fallback search.\n- The agent avoids returning 'No data found' when data is present under a different code.\n\n## Failure Indicators\n- The agent continues to return 'No data found' after the fallback search.\n- The agent fails to handle pagination during the broader category search.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "fallback"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_resource_validation_strategy",
+        "description": "Ensures clinical resources (e.g., procedures, devices) are verified as active before initiating dependent actions.",
+        "content": "# Clinical Resource Validation Strategy\n\n## Pattern Description\nBefore initiating a clinical action (e.g., removal, discontinuation, or follow-up) based on the presence of a resource, you must verify that the resource is currently active and relevant. Do not assume that a search result implies an active, ongoing state. Always perform a cross-resource check to confirm the current status of the clinical entity.\n\n## When to Use This Skill\n- When the task requires acting on an existing clinical state (e.g., \"remove catheter\", \"discontinue medication\").\n- When a search for a resource (e.g., Procedure, Device) returns results, but you need to confirm if it is still in effect.\n- When you are about to POST a service request or update based on a previous search result.\n\n## Common Failure Patterns\n- Assuming a procedure or device is still active simply because it appears in a search result.\n- Failing to check for existing ServiceRequests that might already address the requested action (e.g., a removal order already exists).\n- Creating redundant orders because the agent did not verify the current status of the target resource.\n\n## Recommended Patterns\n\n**Pattern 1: Status Verification**\nBefore acting, inspect the `status` field of the retrieved resource. If the status is `completed`, `stopped`, or `entered-in-error`, do not proceed with a removal or discontinuation order.\n\n**Pattern 2: Cross-Resource Check**\nIf the task is to remove or discontinue, first search for existing `ServiceRequest` resources for the same patient and code to ensure a duplicate request is not created.\n\n**Pattern 3: Temporal Validation**\nIf the resource has an `occurrenceDateTime` or `performedDateTime`, calculate the duration to ensure it meets the criteria (e.g., > 48 hours) before acting.\n\n## Example Application\n\n**Task:** \"Check if patient has a urinary catheter in place for > 48 hours and order removal.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=NUR1373`.\n2. Verify the `status` is `active` and calculate the time elapsed since `performedDateTime`.\n3. GET `ServiceRequest?patient=ID&code=NUR1373` to ensure no removal order is already pending.\n4. If active and no pending order, POST `ServiceRequest` with `status: active`.\n\nCORRECT: Verify `status` and check for existing `ServiceRequest` before POSTing.\nWRONG: POSTing a removal order based solely on the existence of a `Procedure` record.\n\n## Success Indicators\n- Agent performs a secondary search (e.g., `ServiceRequest`) to verify if an action is already pending.\n- Agent checks the `status` field of the primary resource before acting.\n\n## Failure Indicators\n- Agent creates duplicate orders.\n- Agent attempts to remove a device that is already marked as `completed` or `stopped`.",
+        "tags": [
+          "validation",
+          "fhir",
+          "clinical-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_resource_status_verification_strategy",
+        "description": "Ensures existing resources are checked for status and validity before performing updates or modifications.",
+        "content": "## Skill Title\nFHIR Resource Status Verification Strategy\n\n## Pattern Description\nBefore modifying or discontinuing an existing FHIR resource (e.g., MedicationRequest, ServiceRequest), you must verify its current status. Modifying a resource that is already 'stopped', 'completed', or 'cancelled' can lead to invalid state transitions or logical errors. Always inspect the `status` field of the retrieved resource before issuing a PUT or PATCH request.\n\n## When to Use This Skill\n- When the task requires discontinuing, updating, or verifying an existing order.\n- When you have retrieved a list of resources and need to select one for modification.\n- When the task involves checking for duplicates or active orders.\n\n## Common Failure Patterns\n- Attempting to PUT a 'stopped' status on a resource that is already 'stopped'.\n- Modifying a resource without checking if it is already inactive, leading to redundant or invalid API calls.\n- Assuming all retrieved resources in a bundle are 'active' without inspecting the `status` field.\n\n## Recommended Patterns\n\n**Pattern 1: Status Inspection**\nBefore performing any write operation (PUT/PATCH), inspect the `status` field of the target resource.\n- If `status` is already 'stopped', 'cancelled', or 'completed', do not attempt to update it.\n- If the task requires discontinuing an active order, only proceed if `status` is 'active'.\n\n**Pattern 2: Resource Selection**\nWhen multiple resources are returned, filter by `status == 'active'` before applying logic to identify the 'newest' or 'duplicate' orders.\n\n## Example Application\n\n**Task:** \"Discontinue duplicate DVT prophylaxis orders.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S12345`.\n2. Iterate through the bundle entries.\n3. Filter for resources where `status == 'active'`.\n4. If multiple active orders exist, compare `authoredOn` to identify the newest.\n5. For older active orders, issue a PUT request to update `status` to 'stopped'.\n\nCORRECT: Check `status` before PUT.\nWRONG: Blindly PUT `status: stopped` on all retrieved resources.\n\n## Success Indicators\n- Agent correctly identifies only active orders for modification.\n- No attempts to update already inactive resources.\n\n## Failure Indicators\n- Agent attempts to update a resource that is already 'stopped'.\n- Agent fails to identify the correct active order due to status-blind filtering.",
+        "tags": [
+          "fhir",
+          "verification",
+          "status-check"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "comprehensive_medication_list_search_strategy",
+        "description": "Ensures medication searches use broad patient-level queries when specific code-based searches return no results.",
+        "content": "## Skill Title\nComprehensive Medication List Search Strategy\n\n## Pattern Description\nWhen searching for specific medications (e.g., opioids, anticoagulants) to verify their presence or absence, a narrow search by code or name may return empty results due to variations in how medications are documented or coded in the EHR. If a targeted search for a specific medication class returns no results, you must perform a broader search for all active medications for the patient to ensure you are not missing records due to coding discrepancies.\n\n## When to Use This Skill\n- When you are tasked with verifying the presence of a specific medication or class of medications (e.g., opioids, DVT prophylaxis).\n- When a targeted GET request (e.g., `MedicationRequest?patient=ID&code=CODE`) returns an empty bundle or zero entries.\n- When the task requires confirming the absence of a medication before taking a corrective action.\n\n## Common Failure Patterns\n- Relying solely on a single code-based search that returns zero results, leading to the false conclusion that no medications exist.\n- Failing to check the full list of active medications when a specific search fails.\n- Assuming that a lack of results for a specific code implies the patient is not on any medication of that class.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Search Fallback**\nIf your initial targeted search returns no results, perform a broad search for all active medications for the patient.\n- Action: `GET /MedicationRequest?patient=[ID]&status=active`\n- Inspect the returned bundle to see if the medication is present under a different code or description.\n\n**Pattern 2: Verification**\nBefore concluding that a medication is absent, verify the full list of active medications returned by the broad search.\n- CORRECT: Perform targeted search -> If empty, perform broad search -> If still empty, conclude absence.\n- WRONG: Perform targeted search -> If empty, immediately conclude absence.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue targeted search for opioids (if applicable).\n2. If the targeted search returns no results, issue `GET /MedicationRequest?patient=S6500497&status=active`.\n3. Parse the full list of active medications to confirm if any opioids are present.\n4. If no opioids are found in the full list, conclude that no naloxone order is required.\n\n## Success Indicators\n- The agent identifies medications that were missed by the initial narrow search.\n- The agent correctly identifies the absence of medications only after a comprehensive check.\n\n## Failure Indicators\n- The agent continues to report \"no orders found\" when the patient actually has active orders under different codes.",
+        "tags": [
+          "medication",
+          "search",
+          "fallback"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_code_fallback_strategy",
+          "description": "Ensures clinical observations are found by searching by category when specific code parameters return no results.",
+          "content": "## Skill Title\nObservation Code Fallback Strategy\n\n## Pattern Description\nWhen searching for clinical observations (e.g., heart rate, TSH) using a specific code parameter, the server may return an empty bundle even if the data exists under a different code or a broader category. This skill ensures you do not prematurely conclude that data is missing by performing a broader search by category and filtering the results client-side.\n\n## When to Use This Skill\n- When a GET /Observation request with a specific `code` parameter returns a `total` of 0.\n- When you are tasked with finding a specific vital sign or lab value and the initial code-based search fails.\n\n## Common Failure Patterns\n- Relying on a single, potentially non-standard code string (e.g., `HEARTRATE`) that the server does not recognize.\n- Failing to check the `category` (e.g., `vital-signs`, `laboratory`) when the specific code search returns empty.\n- Assuming that a 0-result bundle means the patient has no data, rather than the search parameter being too restrictive.\n\n## Recommended Patterns\n\n**Pattern 1: Initial Search**\nAttempt the search using the specific code provided in the task instructions.\n\n**Pattern 2: Fallback Search**\nIf the initial search returns 0 results, perform a broader search using only the `category` and `patient` parameters. \n\n**Pattern 3: Client-Side Filtering**\nOnce you receive the broader bundle, iterate through the `entry` array and inspect the `code.coding` or `code.text` fields to identify the relevant observations. If the bundle is paginated, follow the `next` link to ensure you have retrieved all available records before concluding the data is missing.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate for patient S2161163.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S2161163&code=HEARTRATE` (Returns 0 results).\n2. GET `.../Observation?patient=S2161163&category=vital-signs` (Returns a bundle of all vital signs).\n3. Filter the bundle entries for observations where `code.text` contains 'Heart Rate' or matches known LOINC codes.\n4. Extract the `valueQuantity.value` from the matching resources.\n\n## Success Indicators\n- The agent successfully identifies the required data after the fallback search.\n- The agent avoids returning 'No data found' when data is present under a different code.\n\n## Failure Indicators\n- The agent continues to return 'No data found' after the fallback search.\n- The agent fails to handle pagination during the broader category search.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "fallback"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_resource_validation_strategy",
+          "description": "Ensures clinical resources (e.g., procedures, devices) are verified as active before initiating dependent actions.",
+          "content": "# Clinical Resource Validation Strategy\n\n## Pattern Description\nBefore initiating a clinical action (e.g., removal, discontinuation, or follow-up) based on the presence of a resource, you must verify that the resource is currently active and relevant. Do not assume that a search result implies an active, ongoing state. Always perform a cross-resource check to confirm the current status of the clinical entity.\n\n## When to Use This Skill\n- When the task requires acting on an existing clinical state (e.g., \"remove catheter\", \"discontinue medication\").\n- When a search for a resource (e.g., Procedure, Device) returns results, but you need to confirm if it is still in effect.\n- When you are about to POST a service request or update based on a previous search result.\n\n## Common Failure Patterns\n- Assuming a procedure or device is still active simply because it appears in a search result.\n- Failing to check for existing ServiceRequests that might already address the requested action (e.g., a removal order already exists).\n- Creating redundant orders because the agent did not verify the current status of the target resource.\n\n## Recommended Patterns\n\n**Pattern 1: Status Verification**\nBefore acting, inspect the `status` field of the retrieved resource. If the status is `completed`, `stopped`, or `entered-in-error`, do not proceed with a removal or discontinuation order.\n\n**Pattern 2: Cross-Resource Check**\nIf the task is to remove or discontinue, first search for existing `ServiceRequest` resources for the same patient and code to ensure a duplicate request is not created.\n\n**Pattern 3: Temporal Validation**\nIf the resource has an `occurrenceDateTime` or `performedDateTime`, calculate the duration to ensure it meets the criteria (e.g., > 48 hours) before acting.\n\n## Example Application\n\n**Task:** \"Check if patient has a urinary catheter in place for > 48 hours and order removal.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=ID&code=NUR1373`.\n2. Verify the `status` is `active` and calculate the time elapsed since `performedDateTime`.\n3. GET `ServiceRequest?patient=ID&code=NUR1373` to ensure no removal order is already pending.\n4. If active and no pending order, POST `ServiceRequest` with `status: active`.\n\nCORRECT: Verify `status` and check for existing `ServiceRequest` before POSTing.\nWRONG: POSTing a removal order based solely on the existence of a `Procedure` record.\n\n## Success Indicators\n- Agent performs a secondary search (e.g., `ServiceRequest`) to verify if an action is already pending.\n- Agent checks the `status` field of the primary resource before acting.\n\n## Failure Indicators\n- Agent creates duplicate orders.\n- Agent attempts to remove a device that is already marked as `completed` or `stopped`.",
+          "tags": [
+            "validation",
+            "fhir",
+            "clinical-logic"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_status_verification_strategy",
+          "description": "Ensures existing resources are checked for status and validity before performing updates or modifications.",
+          "content": "## Skill Title\nFHIR Resource Status Verification Strategy\n\n## Pattern Description\nBefore modifying or discontinuing an existing FHIR resource (e.g., MedicationRequest, ServiceRequest), you must verify its current status. Modifying a resource that is already 'stopped', 'completed', or 'cancelled' can lead to invalid state transitions or logical errors. Always inspect the `status` field of the retrieved resource before issuing a PUT or PATCH request.\n\n## When to Use This Skill\n- When the task requires discontinuing, updating, or verifying an existing order.\n- When you have retrieved a list of resources and need to select one for modification.\n- When the task involves checking for duplicates or active orders.\n\n## Common Failure Patterns\n- Attempting to PUT a 'stopped' status on a resource that is already 'stopped'.\n- Modifying a resource without checking if it is already inactive, leading to redundant or invalid API calls.\n- Assuming all retrieved resources in a bundle are 'active' without inspecting the `status` field.\n\n## Recommended Patterns\n\n**Pattern 1: Status Inspection**\nBefore performing any write operation (PUT/PATCH), inspect the `status` field of the target resource.\n- If `status` is already 'stopped', 'cancelled', or 'completed', do not attempt to update it.\n- If the task requires discontinuing an active order, only proceed if `status` is 'active'.\n\n**Pattern 2: Resource Selection**\nWhen multiple resources are returned, filter by `status == 'active'` before applying logic to identify the 'newest' or 'duplicate' orders.\n\n## Example Application\n\n**Task:** \"Discontinue duplicate DVT prophylaxis orders.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S12345`.\n2. Iterate through the bundle entries.\n3. Filter for resources where `status == 'active'`.\n4. If multiple active orders exist, compare `authoredOn` to identify the newest.\n5. For older active orders, issue a PUT request to update `status` to 'stopped'.\n\nCORRECT: Check `status` before PUT.\nWRONG: Blindly PUT `status: stopped` on all retrieved resources.\n\n## Success Indicators\n- Agent correctly identifies only active orders for modification.\n- No attempts to update already inactive resources.\n\n## Failure Indicators\n- Agent attempts to update a resource that is already 'stopped'.\n- Agent fails to identify the correct active order due to status-blind filtering.",
+          "tags": [
+            "fhir",
+            "verification",
+            "status-check"
+          ]
+        },
+        "net": -2,
+        "score": -2,
+        "raw_score": 1,
+        "fixes": 2,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "comprehensive_medication_list_search_strategy",
+          "description": "Ensures medication searches use broad patient-level queries when specific code-based searches return no results.",
+          "content": "## Skill Title\nComprehensive Medication List Search Strategy\n\n## Pattern Description\nWhen searching for specific medications (e.g., opioids, anticoagulants) to verify their presence or absence, a narrow search by code or name may return empty results due to variations in how medications are documented or coded in the EHR. If a targeted search for a specific medication class returns no results, you must perform a broader search for all active medications for the patient to ensure you are not missing records due to coding discrepancies.\n\n## When to Use This Skill\n- When you are tasked with verifying the presence of a specific medication or class of medications (e.g., opioids, DVT prophylaxis).\n- When a targeted GET request (e.g., `MedicationRequest?patient=ID&code=CODE`) returns an empty bundle or zero entries.\n- When the task requires confirming the absence of a medication before taking a corrective action.\n\n## Common Failure Patterns\n- Relying solely on a single code-based search that returns zero results, leading to the false conclusion that no medications exist.\n- Failing to check the full list of active medications when a specific search fails.\n- Assuming that a lack of results for a specific code implies the patient is not on any medication of that class.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Search Fallback**\nIf your initial targeted search returns no results, perform a broad search for all active medications for the patient.\n- Action: `GET /MedicationRequest?patient=[ID]&status=active`\n- Inspect the returned bundle to see if the medication is present under a different code or description.\n\n**Pattern 2: Verification**\nBefore concluding that a medication is absent, verify the full list of active medications returned by the broad search.\n- CORRECT: Perform targeted search -> If empty, perform broad search -> If still empty, conclude absence.\n- WRONG: Perform targeted search -> If empty, immediately conclude absence.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue targeted search for opioids (if applicable).\n2. If the targeted search returns no results, issue `GET /MedicationRequest?patient=S6500497&status=active`.\n3. Parse the full list of active medications to confirm if any opioids are present.\n4. If no opioids are found in the full list, conclude that no naloxone order is required.\n\n## Success Indicators\n- The agent identifies medications that were missed by the initial narrow search.\n- The agent correctly identifies the absence of medications only after a comprehensive check.\n\n## Failure Indicators\n- The agent continues to report \"no orders found\" when the patient actually has active orders under different codes.",
+          "tags": [
+            "medication",
+            "search",
+            "fallback"
+          ]
+        },
+        "net": -4,
+        "score": -4,
+        "raw_score": -1,
+        "fixes": 0,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 3,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 32,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Ensures accurate time-based filtering and weighted average calculation for longitudinal observation data.",
+        "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 or 12 hours), you must first retrieve all relevant observations without restrictive date filters to ensure the full dataset is available. Once retrieved, you must manually filter the observations based on the `effectiveDateTime` field relative to the current time. If multiple observations exist, calculate the average using all values within the window, rather than relying on a single or arbitrary record.\n\n## When to Use This Skill\n- When a task requires calculating an average, trend, or status over a specific lookback period (e.g., \"past 6 hours\").\n- When initial searches return no results, but you suspect historical data exists outside a narrow query.\n- When multiple observations are present and a simple average of all valid data points is required.\n\n## Common Failure Patterns\n- Relying on the server to filter by date in the initial GET request, which often misses records if the date format is slightly off or the server index is incomplete.\n- Selecting only the most recent record instead of averaging all records within the specified window.\n- Failing to account for the current time context provided in the task description when calculating the window boundaries.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Retrieval**\nAlways perform an initial search for the observation category or code without date parameters to ensure you capture the full history.\n\n**Pattern 2: Local Filtering**\nAfter receiving the bundle, iterate through the `entry` list. For each `Observation`, parse the `effectiveDateTime`. Compare this timestamp against the calculated start time (e.g., `current_time - 6 hours`).\n\n**Pattern 3: Calculation**\nCollect all `valueQuantity.value` fields for observations where the `effectiveDateTime` falls within the window. Calculate the arithmetic mean: `sum(values) / count(values)`.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=HEARTRATE` (no date filter).\n2. Filter the returned list: keep only observations where `effectiveDateTime` >= `2023-11-07T16:47:00`.\n3. Extract `valueQuantity.value` for all kept observations.\n4. If 3 values are found (e.g., 80, 84, 76), calculate `(80+84+76)/3 = 80`.\n5. FINISH([\"The average heart rate is 80 bpm.\"])\n\n## Success Indicators\n- Agent performs a broad search first.\n- Agent explicitly calculates the mean of multiple values found within the window.\n\n## Failure Indicators\n- Agent returns \"no records found\" despite data being present in the bundle.\n- Agent uses only the single most recent value instead of an average.",
+        "tags": [
+          "observation",
+          "time-window",
+          "calculation"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "observation_time_window_calculation_strategy",
+        "description": "Ensures accurate time-based filtering and weighted average calculation for longitudinal observation data.",
+        "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 or 12 hours), you must first retrieve all relevant observations without restrictive date filters to ensure the full dataset is available. Once retrieved, you must manually filter the observations based on the `effectiveDateTime` field relative to the current time. If multiple observations exist, calculate the average using all values within the window, rather than relying on a single or arbitrary record.\n\n## When to Use This Skill\n- When a task requires calculating an average, trend, or status over a specific lookback period (e.g., \"past 6 hours\").\n- When initial searches return no results, but you suspect historical data exists outside a narrow query.\n- When multiple observations are present and a simple average of all valid data points is required.\n\n## Common Failure Patterns\n- Relying on the server to filter by date in the initial GET request, which often misses records if the date format is slightly off or the server index is incomplete.\n- Selecting only the most recent record instead of averaging all records within the specified window.\n- Failing to account for the current time context provided in the task description when calculating the window boundaries.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Retrieval**\nAlways perform an initial search for the observation category or code without date parameters to ensure you capture the full history.\n\n**Pattern 2: Local Filtering**\nAfter receiving the bundle, iterate through the `entry` list. For each `Observation`, parse the `effectiveDateTime`. Compare this timestamp against the calculated start time (e.g., `current_time - 6 hours`).\n\n**Pattern 3: Calculation**\nCollect all `valueQuantity.value` fields for observations where the `effectiveDateTime` falls within the window. Calculate the arithmetic mean: `sum(values) / count(values)`.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=HEARTRATE` (no date filter).\n2. Filter the returned list: keep only observations where `effectiveDateTime` >= `2023-11-07T16:47:00`.\n3. Extract `valueQuantity.value` for all kept observations.\n4. If 3 values are found (e.g., 80, 84, 76), calculate `(80+84+76)/3 = 80`.\n5. FINISH([\"The average heart rate is 80 bpm.\"])\n\n## Success Indicators\n- Agent performs a broad search first.\n- Agent explicitly calculates the mean of multiple values found within the window.\n\n## Failure Indicators\n- Agent returns \"no records found\" despite data being present in the bundle.\n- Agent uses only the single most recent value instead of an average.",
+        "tags": [
+          "observation",
+          "time-window",
+          "calculation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "catheter_removal_validation_strategy",
+        "description": "Ensures accurate duration calculation and status verification before ordering catheter removal.",
+        "content": "# Catheter Removal Validation Strategy\n\n## Pattern Description\nWhen tasked with removing a medical device like a urinary catheter, you must verify both the duration of placement and the current status of the device. A common failure is assuming a procedure record implies an active device or failing to calculate the exact time elapsed since the procedure's `authoredOn` or `performedDateTime`.\n\n## When to Use This Skill\n- When the task requires checking if a device (e.g., urinary catheter) has been in place for a specific duration (e.g., > 48 hours).\n- When you need to distinguish between a historical, one-time procedure and an active, ongoing device placement.\n\n## Common Failure Patterns\n- Assuming any procedure record for a catheter implies an active, currently placed device.\n- Failing to calculate the exact time difference between the procedure date and the current time, leading to premature or unnecessary removal orders.\n- Ignoring existing `ServiceRequest` records that might already address the removal.\n\n## Recommended Patterns\n\n**Pattern 1: Verification of Active Status**\nBefore ordering removal, search for the procedure and verify it is not a historical, completed event. Check for any existing `ServiceRequest` with `status='active'` for the same patient to avoid duplicate orders.\n\n**Pattern 2: Duration Calculation**\nExtract the `authoredOn` or `performedDateTime` from the procedure resource. Calculate the duration: `Current Time - Procedure Time`. Only proceed if the result is strictly greater than the threshold (e.g., 48 hours).\n\n**Pattern 3: Order Construction**\nWhen creating the `ServiceRequest`, ensure the `authoredOn` is set to the current time and the `note` explicitly states the duration calculation that justifies the removal.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place > 48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6540602&code=NUR1373`.\n2. Parse the `authoredOn` date. If the date is > 48 hours ago, proceed.\n3. GET `ServiceRequest?patient=S6540602&status=active` to ensure no removal order exists.\n4. If no active removal order exists, POST a new `ServiceRequest` with `status='active'` and a clear note.\n\nCORRECT output: `FINISH` with confirmation of duration and order creation.\nWRONG output: `FINISH` without verifying if the procedure was historical or if an order already existed.",
+        "tags": [
+          "catheter",
+          "validation",
+          "duration",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_reconciliation_strategy",
+        "description": "Ensures active medication orders are reconciled by identifying and discontinuing duplicates or conflicting orders.",
+        "content": "# Medication Order Reconciliation Strategy\n\n## Pattern Description\nWhen tasked with maintaining a specific number of active medication orders (e.g., DVT prophylaxis), you must first perform a comprehensive search for all existing active orders for that patient. If you find multiple active orders or orders that conflict with the new requirement (e.g., different dosage frequencies), you must discontinue the existing ones before creating a new, correct order.\n\n## When to Use This Skill\n- When the task requires maintaining exactly one active order for a specific medication or class.\n- When you identify existing active orders that are duplicates or have conflicting dosage instructions (e.g., q8h vs q12h).\n- Before creating a new order, if the patient already has an active order for the same medication.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders, leading to duplication.\n- Failing to discontinue old, conflicting orders (e.g., leaving a q12h order active when a q8h order is required).\n- Assuming that a search for a specific medication name will return all relevant active orders; always search broadly by patient ID first.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\n1. Perform a GET request for all `MedicationRequest` resources for the patient: `GET /MedicationRequest?patient={id}`.\n2. Filter the results for `status=active`.\n3. If an active order exists, compare its dosage and frequency with the required order.\n\n**Pattern 2: Reconciliation**\n1. If a duplicate or conflicting order is found, issue a `PUT` or `PATCH` request to update the `status` of the existing `MedicationRequest` to `stopped` or `entered-in-error`.\n2. Only after the existing order is successfully discontinued, proceed to `POST` the new, correct order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. `GET /MedicationRequest?patient=S6539215`\n2. Identify an active order for \"heparin 5000 units SC q12h\".\n3. `PUT /MedicationRequest/{id}` with `status: \"stopped\"`.\n4. `POST /MedicationRequest` with the correct \"heparin 5000 units SC q8h\" order.\n5. `FINISH`.\n\n## Success Indicators\n- The patient's active medication list contains only the single, correct order.\n- No duplicate or conflicting orders remain active.\n\n## Failure Indicators\n- Multiple active orders for the same medication remain in the patient's record.\n- The agent creates a new order without addressing the existing ones.",
+        "tags": [
+          "medication",
+          "reconciliation",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "medication_order_discontinuation_strategy",
+        "description": "Enforces a 'discontinue-before-create' workflow when managing duplicate active medication orders.",
+        "content": "# Medication Order Discontinuation Strategy\n\n## Pattern Description\nWhen a task requires maintaining exactly one active order for a specific medication, you must first identify all existing active orders. If multiple active orders exist, you must discontinue all but the newest one before creating any new orders. This prevents the accumulation of redundant or conflicting prescriptions.\n\n## When to Use This Skill\n- When the task instruction specifies \"exactly one active order\" for a medication.\n- When you identify multiple active `MedicationRequest` resources for the same patient and medication type.\n- When you need to resolve duplicates by keeping only the most recent order.\n\n## Common Failure Patterns\n- Updating only one order while leaving duplicates active.\n- Creating a new order without first stopping existing duplicates.\n- Failing to check the `authoredOn` field to determine which order is the \"newest\".\n- Using the wrong status (e.g., `cancelled` instead of `stopped`) when discontinuing.\n\n## Recommended Patterns\n\n**Pattern 1: Identification and Sorting**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. Filter for the specific medication type requested.\n3. Sort the identified resources by `authoredOn` in descending order.\n\n**Pattern 2: Discontinuation**\n1. If more than one order exists, iterate through all orders except the newest one.\n2. For each redundant order, perform a `PUT` request to update the `status` field to `stopped`.\n3. Ensure the `id` in the URL matches the resource being updated.\n\n**Pattern 3: Verification**\n1. After discontinuation, verify that only one active order remains.\n2. If zero active orders remain after cleanup, proceed to create the required order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates keeping only the newest.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6315806`.\n2. Identify two active orders: ID 785625 (authored 2023-11-10) and ID 785626 (authored 2023-11-11).\n3. Determine 785626 is the newest.\n4. PUT `MedicationRequest/785625` with `status: \"stopped\"`.\n5. FINISH with confirmation that only the newest order remains.\n\n## Success Indicators\n- The agent performs `PUT` requests to set `status` to `stopped` for all identified duplicates.\n- The final state of the patient's medication list contains exactly one active order for the requested medication.\n\n## Failure Indicators\n- Multiple active orders remain after the agent reports completion.\n- The agent creates a new order without addressing the existing duplicates.",
+        "tags": [
+          "medication",
+          "discontinuation",
+          "fhir",
+          "duplication"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_time_window_calculation_strategy",
+          "description": "Ensures accurate time-based filtering and weighted average calculation for longitudinal observation data.",
+          "content": "# Observation Time Window Calculation Strategy\n\n## Pattern Description\nWhen calculating metrics over specific time windows (e.g., 6 or 12 hours), you must first retrieve all relevant observations without restrictive date filters to ensure the full dataset is available. Once retrieved, you must manually filter the observations based on the `effectiveDateTime` field relative to the current time. If multiple observations exist, calculate the average using all values within the window, rather than relying on a single or arbitrary record.\n\n## When to Use This Skill\n- When a task requires calculating an average, trend, or status over a specific lookback period (e.g., \"past 6 hours\").\n- When initial searches return no results, but you suspect historical data exists outside a narrow query.\n- When multiple observations are present and a simple average of all valid data points is required.\n\n## Common Failure Patterns\n- Relying on the server to filter by date in the initial GET request, which often misses records if the date format is slightly off or the server index is incomplete.\n- Selecting only the most recent record instead of averaging all records within the specified window.\n- Failing to account for the current time context provided in the task description when calculating the window boundaries.\n\n## Recommended Patterns\n\n**Pattern 1: Broad Retrieval**\nAlways perform an initial search for the observation category or code without date parameters to ensure you capture the full history.\n\n**Pattern 2: Local Filtering**\nAfter receiving the bundle, iterate through the `entry` list. For each `Observation`, parse the `effectiveDateTime`. Compare this timestamp against the calculated start time (e.g., `current_time - 6 hours`).\n\n**Pattern 3: Calculation**\nCollect all `valueQuantity.value` fields for observations where the `effectiveDateTime` falls within the window. Calculate the arithmetic mean: `sum(values) / count(values)`.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours.\"\n\n**Step-by-step:**\n1. GET `.../Observation?patient=S123&code=HEARTRATE` (no date filter).\n2. Filter the returned list: keep only observations where `effectiveDateTime` >= `2023-11-07T16:47:00`.\n3. Extract `valueQuantity.value` for all kept observations.\n4. If 3 values are found (e.g., 80, 84, 76), calculate `(80+84+76)/3 = 80`.\n5. FINISH([\"The average heart rate is 80 bpm.\"])\n\n## Success Indicators\n- Agent performs a broad search first.\n- Agent explicitly calculates the mean of multiple values found within the window.\n\n## Failure Indicators\n- Agent returns \"no records found\" despite data being present in the bundle.\n- Agent uses only the single most recent value instead of an average.",
+          "tags": [
+            "observation",
+            "time-window",
+            "calculation"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "catheter_removal_validation_strategy",
+          "description": "Ensures accurate duration calculation and status verification before ordering catheter removal.",
+          "content": "# Catheter Removal Validation Strategy\n\n## Pattern Description\nWhen tasked with removing a medical device like a urinary catheter, you must verify both the duration of placement and the current status of the device. A common failure is assuming a procedure record implies an active device or failing to calculate the exact time elapsed since the procedure's `authoredOn` or `performedDateTime`.\n\n## When to Use This Skill\n- When the task requires checking if a device (e.g., urinary catheter) has been in place for a specific duration (e.g., > 48 hours).\n- When you need to distinguish between a historical, one-time procedure and an active, ongoing device placement.\n\n## Common Failure Patterns\n- Assuming any procedure record for a catheter implies an active, currently placed device.\n- Failing to calculate the exact time difference between the procedure date and the current time, leading to premature or unnecessary removal orders.\n- Ignoring existing `ServiceRequest` records that might already address the removal.\n\n## Recommended Patterns\n\n**Pattern 1: Verification of Active Status**\nBefore ordering removal, search for the procedure and verify it is not a historical, completed event. Check for any existing `ServiceRequest` with `status='active'` for the same patient to avoid duplicate orders.\n\n**Pattern 2: Duration Calculation**\nExtract the `authoredOn` or `performedDateTime` from the procedure resource. Calculate the duration: `Current Time - Procedure Time`. Only proceed if the result is strictly greater than the threshold (e.g., 48 hours).\n\n**Pattern 3: Order Construction**\nWhen creating the `ServiceRequest`, ensure the `authoredOn` is set to the current time and the `note` explicitly states the duration calculation that justifies the removal.\n\n## Example Application\n\n**Task:** \"Check if patient S6540602 has a urinary catheter in place > 48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S6540602&code=NUR1373`.\n2. Parse the `authoredOn` date. If the date is > 48 hours ago, proceed.\n3. GET `ServiceRequest?patient=S6540602&status=active` to ensure no removal order exists.\n4. If no active removal order exists, POST a new `ServiceRequest` with `status='active'` and a clear note.\n\nCORRECT output: `FINISH` with confirmation of duration and order creation.\nWRONG output: `FINISH` without verifying if the procedure was historical or if an order already existed.",
+          "tags": [
+            "catheter",
+            "validation",
+            "duration",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_reconciliation_strategy",
+          "description": "Ensures active medication orders are reconciled by identifying and discontinuing duplicates or conflicting orders.",
+          "content": "# Medication Order Reconciliation Strategy\n\n## Pattern Description\nWhen tasked with maintaining a specific number of active medication orders (e.g., DVT prophylaxis), you must first perform a comprehensive search for all existing active orders for that patient. If you find multiple active orders or orders that conflict with the new requirement (e.g., different dosage frequencies), you must discontinue the existing ones before creating a new, correct order.\n\n## When to Use This Skill\n- When the task requires maintaining exactly one active order for a specific medication or class.\n- When you identify existing active orders that are duplicates or have conflicting dosage instructions (e.g., q8h vs q12h).\n- Before creating a new order, if the patient already has an active order for the same medication.\n\n## Common Failure Patterns\n- Creating a new order without checking for existing active orders, leading to duplication.\n- Failing to discontinue old, conflicting orders (e.g., leaving a q12h order active when a q8h order is required).\n- Assuming that a search for a specific medication name will return all relevant active orders; always search broadly by patient ID first.\n\n## Recommended Patterns\n\n**Pattern 1: Pre-order Verification**\n1. Perform a GET request for all `MedicationRequest` resources for the patient: `GET /MedicationRequest?patient={id}`.\n2. Filter the results for `status=active`.\n3. If an active order exists, compare its dosage and frequency with the required order.\n\n**Pattern 2: Reconciliation**\n1. If a duplicate or conflicting order is found, issue a `PUT` or `PATCH` request to update the `status` of the existing `MedicationRequest` to `stopped` or `entered-in-error`.\n2. Only after the existing order is successfully discontinued, proceed to `POST` the new, correct order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6539215 has exactly one active DVT prophylaxis order (heparin 5000 units SC q8h).\"\n\n**Step-by-step:**\n1. `GET /MedicationRequest?patient=S6539215`\n2. Identify an active order for \"heparin 5000 units SC q12h\".\n3. `PUT /MedicationRequest/{id}` with `status: \"stopped\"`.\n4. `POST /MedicationRequest` with the correct \"heparin 5000 units SC q8h\" order.\n5. `FINISH`.\n\n## Success Indicators\n- The patient's active medication list contains only the single, correct order.\n- No duplicate or conflicting orders remain active.\n\n## Failure Indicators\n- Multiple active orders for the same medication remain in the patient's record.\n- The agent creates a new order without addressing the existing ones.",
+          "tags": [
+            "medication",
+            "reconciliation",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 2,
+        "fixes": 4,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "medication_order_discontinuation_strategy",
+          "description": "Enforces a 'discontinue-before-create' workflow when managing duplicate active medication orders.",
+          "content": "# Medication Order Discontinuation Strategy\n\n## Pattern Description\nWhen a task requires maintaining exactly one active order for a specific medication, you must first identify all existing active orders. If multiple active orders exist, you must discontinue all but the newest one before creating any new orders. This prevents the accumulation of redundant or conflicting prescriptions.\n\n## When to Use This Skill\n- When the task instruction specifies \"exactly one active order\" for a medication.\n- When you identify multiple active `MedicationRequest` resources for the same patient and medication type.\n- When you need to resolve duplicates by keeping only the most recent order.\n\n## Common Failure Patterns\n- Updating only one order while leaving duplicates active.\n- Creating a new order without first stopping existing duplicates.\n- Failing to check the `authoredOn` field to determine which order is the \"newest\".\n- Using the wrong status (e.g., `cancelled` instead of `stopped`) when discontinuing.\n\n## Recommended Patterns\n\n**Pattern 1: Identification and Sorting**\n1. Retrieve all active `MedicationRequest` resources for the patient.\n2. Filter for the specific medication type requested.\n3. Sort the identified resources by `authoredOn` in descending order.\n\n**Pattern 2: Discontinuation**\n1. If more than one order exists, iterate through all orders except the newest one.\n2. For each redundant order, perform a `PUT` request to update the `status` field to `stopped`.\n3. Ensure the `id` in the URL matches the resource being updated.\n\n**Pattern 3: Verification**\n1. After discontinuation, verify that only one active order remains.\n2. If zero active orders remain after cleanup, proceed to create the required order.\n\n## Example Application\n\n**Task:** \"Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are multiple, discontinue duplicates keeping only the newest.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient=S6315806`.\n2. Identify two active orders: ID 785625 (authored 2023-11-10) and ID 785626 (authored 2023-11-11).\n3. Determine 785626 is the newest.\n4. PUT `MedicationRequest/785625` with `status: \"stopped\"`.\n5. FINISH with confirmation that only the newest order remains.\n\n## Success Indicators\n- The agent performs `PUT` requests to set `status` to `stopped` for all identified duplicates.\n- The final state of the patient's medication list contains exactly one active order for the requested medication.\n\n## Failure Indicators\n- Multiple active orders remain after the agent reports completion.\n- The agent creates a new order without addressing the existing duplicates.",
+          "tags": [
+            "medication",
+            "discontinuation",
+            "fhir",
+            "duplication"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

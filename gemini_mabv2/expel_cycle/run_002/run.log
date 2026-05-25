@@ -1,0 +1,116 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+[Baseline] Val: 51.2%
+[BestCheckpoint] New best: epoch=baseline, val=51.2% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 0] Dev: 40/96 (41.7%) | Val: 62.5% | Rules: 20 (pairs critiqued: 56)
+[BestCheckpoint] New best: epoch=0, val=62.5% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Rate limited (attempt 1/6), waiting 5.1s...
+Rate limited (attempt 1/6), waiting 4.9s...
+
+  [Val] evaluating 80 samples...
+needs booster
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 1] Dev: 54/96 (56.2%) | Val: 62.5% | Rules: 20 (pairs critiqued: 98)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 1/6), waiting 5.1s...
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 5.2s...
+Rate limited (attempt 2/6), waiting 9.2s...
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 5.0s...
+Rate limited (attempt 1/6), waiting 4.7s...
+Rate limited (attempt 1/6), waiting 4.5s...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 2] Dev: 51/96 (53.1%) | Val: 60.0% | Rules: 20 (pairs critiqued: 143)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+[Epoch 3] Dev: 52/96 (54.2%) | Val: 62.5% | Rules: 20 (pairs critiqued: 187)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+Warning (attempt 1): HTTPSConnectionPool(host='aiplatform.googleapis.com', port=443): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+Rate limited (attempt 1/6), waiting 4.5s...
+needs booster
+
+[Epoch 4] Dev: 56/96 (58.3%) | Val: 62.5% | Rules: 20 (pairs critiqued: 227)
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 51.2%  ██████████
+         0: 62.5%  ████████████
+         1: 62.5%  ████████████
+         2: 60.0%  ████████████
+         3: 62.5%  ████████████
+         4: 62.5%  ████████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20
+[Resume] Baseline already done (val=51.2%), skipping
+[Resume] Epoch 0 already done (val=62.5%), skipping
+[Resume] Epoch 1 already done (val=62.5%), skipping
+[Resume] Epoch 2 already done (val=60.0%), skipping
+[Resume] Epoch 3 already done (val=62.5%), skipping
+[Resume] Epoch 4 already done (val=62.5%), skipping
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 51.2%  ██████████
+         0: 62.5%  ████████████
+         1: 62.5%  ████████████
+         2: 60.0%  ████████████
+         3: 62.5%  ████████████
+         4: 62.5%  ████████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

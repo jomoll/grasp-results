@@ -1,0 +1,466 @@
+[
+  {
+    "epoch": 3,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 127,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must ensure your search is not limited to a single resource or category; you must query both the `Observation` and `Flowsheet` resources using multiple aliases like \"HR,\" \"Pulse,\" and \"Ventricular Rate\" across the full 6-hour and 12-hour windows. If the initial search returns no numeric data, you must explicitly document the specific tables, aliases, and time windows you queried to confirm an exhaustive search before concluding that no observations exist."
+    ],
+    "memory_size": 128
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 3,
+    "sample_id": "task10_12",
+    "memory_version_before": 128,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must first search the `Immunization` resource for any existing records; if no record is found, you must explicitly state that no record exists and order the primary series, but if a record is found, you must calculate the date of the most recent dose and only order a booster if it is more than 12 months old. Do not automatically order a booster for an unvaccinated patient, as the instruction implies a booster is only for those with a prior vaccination history."
+    ],
+    "memory_size": 129
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 6,
+    "sample_id": "task3_14",
+    "memory_version_before": 129,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must ensure that you are querying individual numeric observations by using the `Observation` resource with a `date` parameter (e.g., `date=ge[timestamp]`) and filtering by `code` or `category=vital-signs` to capture all readings across the 6-hour and 12-hour windows. If your initial search returns no results, you must explicitly confirm that you searched all relevant tables, including `Observation` and `Flowsheet`, using all clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") before concluding that no data exists for the patient."
+    ],
+    "memory_size": 130
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 10,
+    "sample_id": "task2_6",
+    "memory_version_before": 130,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first list all active medications and explicitly categorize each as a prophylaxis agent (e.g., heparin, enoxaparin, fondaparinux, or DOACs such as apixaban) to ensure you correctly identify existing coverage. Only if your comprehensive search confirms zero active prophylaxis orders are present should you create a new one; if one or more are already active, you must use the discontinuation tool to remove duplicates so that exactly one remains."
+    ],
+    "memory_size": 131
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 12,
+    "sample_id": "task3_12",
+    "memory_version_before": 131,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must not rely on a single, broad search that may return empty results; you must perform targeted queries using both the `Observation` resource (with `category=vital-signs` and `code` filters) and the `Flowsheet` resource, explicitly checking for all clinical aliases like \"HR,\" \"Pulse,\" and \"Ventricular Rate.\" If no data is found, you must document the specific resource, time window, and search terms used to justify your conclusion that no observations exist for the patient."
+    ],
+    "memory_size": 132
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 15,
+    "sample_id": "task8_26",
+    "memory_version_before": 132,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must explicitly list every active medication and confirm whether each is an opioid by cross-referencing it against a comprehensive pharmacological database, as medications like buprenorphine are potent opioids that require naloxone. Do not rely on a simple list or summary, as failing to identify an active opioid leads to a failure to provide necessary safety coverage; if an active opioid is identified, you must verify the existence of a corresponding naloxone order before taking any action."
+    ],
+    "memory_size": 133
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 19,
+    "sample_id": "task10_18",
+    "memory_version_before": 133,
+    "new_bullets": [
+      "when asked to review COVID-19 vaccination status, you must first query the `Immunization` resource to determine the patient's vaccination status; if the patient is entirely unvaccinated, you must initiate the primary vaccination series as per clinical requirements, rather than assuming the instruction to \"order a booster\" only applies to patients with a documented history of prior vaccination."
+    ],
+    "memory_size": 134
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 20,
+    "sample_id": "task9_1",
+    "memory_version_before": 134,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must interpret the instruction to \"order a new influenza vaccine\" as requiring you to first search the `Immunization` resource, and if no record is found, you must explicitly state that no record exists to justify the new order. Do not assume the vaccine is \"overdue\" based on a 365-day threshold unless you have confirmed via an exhaustive search that no prior vaccination record exists in the patient's history."
+    ],
+    "memory_size": 135
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 23,
+    "sample_id": "task2_26",
+    "memory_version_before": 135,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. The agent failed because it misidentified Argatroban as a medication that is not a current prophylaxis order; you must recognize all anticoagulants used for DVT prophylaxis and only create a new order if your comprehensive search confirms zero active prophylaxis orders are present. If one or more active DVT prophylaxis orders are already present, you must keep only the newest one and use the discontinuation tool to remove all duplicates."
+    ],
+    "memory_size": 136
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 24,
+    "sample_id": "task4_28",
+    "memory_version_before": 136,
+    "new_bullets": [
+      "when asked to check for a urinary catheter, you must broaden your search beyond active medication orders to include all `Device`, `Procedure`, and `ServiceRequest` resources, as catheters are frequently documented as devices or ongoing procedures rather than just medication orders. Do not conclude that no catheter exists until you have explicitly confirmed that you searched all three resource types for any evidence of an active, in-progress, or non-removed catheter."
+    ],
+    "memory_size": 137
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 25,
+    "sample_id": "task4_11",
+    "memory_version_before": 137,
+    "new_bullets": [
+      "when asked to check for a urinary catheter, you must perform a comprehensive search across `ServiceRequest`, `Procedure`, and `Device` resources, as catheters are often documented as ongoing procedures or devices rather than just medication orders. Do not conclude that no catheter exists until you have explicitly verified the status of any found catheter to determine if it has been in place for more than 48 hours without a removal order."
+    ],
+    "memory_size": 138
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 26,
+    "sample_id": "task3_7",
+    "memory_version_before": 138,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must prioritize retrieving individual numeric observations from both the `Observation` (using `category=vital-signs` and `code` filters) and `Flowsheet` resources, as heart rate data is often stored as discrete readings rather than a single summary. If your initial search returns no results, you must explicitly document the specific time windows, resource types, and clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") you queried to prove an exhaustive search before concluding that no numeric data exists."
+    ],
+    "memory_size": 139
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 27,
+    "sample_id": "task3_3",
+    "memory_version_before": 139,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search beyond the primary \"vitals\" table by also querying the `Flowsheet` resource and searching for both numeric `Observation` resources and `Procedure` logs using all clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\"). If no numeric data is found, you must explicitly list the specific time windows, resources, and aliases queried to prove an exhaustive search was performed before concluding that no observations exist."
+    ],
+    "memory_size": 140
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 30,
+    "sample_id": "task3_17",
+    "memory_version_before": 140,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search beyond the \"vitals\" table by also querying the `Flowsheet` resource for all clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") and checking for any `Observation` records that may be stored under different categories or LOINC codes. Do not conclude that no data exists until you have explicitly documented that you performed an exhaustive search across both the `Observation` and `Flowsheet` resources for all potential numeric entries within the specified 6-hour and 12-hour windows."
+    ],
+    "memory_size": 141
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 33,
+    "sample_id": "task3_27",
+    "memory_version_before": 141,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search beyond the \"vitals\" table by also querying the `Flowsheet` resource for all clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") and checking for any `Observation` records that may be stored under different categories or LOINC codes. Do not conclude that no data exists until you have explicitly documented that you performed an exhaustive search across both the `Observation` and `Flowsheet` resources for all potential numeric entries within the specified 6-hour and 12-hour windows."
+    ],
+    "memory_size": 142
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 35,
+    "sample_id": "task6_19",
+    "memory_version_before": 142,
+    "new_bullets": [],
+    "memory_size": 142
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 36,
+    "sample_id": "task2_28",
+    "memory_version_before": 142,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must recognize that DOACs (e.g., Eliquis/apixaban, Xarelto/rivaroxaban) are standard DVT prophylaxis agents and count toward the total. You must explicitly list all active anticoagulants found, and only if no active prophylaxis exists should you create a new order; if multiple exist, use the discontinuation tool to keep only the newest one."
+    ],
+    "memory_size": 143
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 38,
+    "sample_id": "task6_13",
+    "memory_version_before": 143,
+    "new_bullets": [
+      "when asked to retrieve TSH and free T4 values and take action, you must use the correct FHIR codes (e.g., \"TSH\" and \"FT4\" or specific LOINC codes) and ensure your query correctly retrieves both analytes, as the agent failed by not successfully gathering the necessary data to perform the clinical assessment. After retrieving the values, you must explicitly state the specific protocol criteria and compare them against the patient's results to justify your clinical decision."
+    ],
+    "memory_size": 144
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 42,
+    "sample_id": "task2_17",
+    "memory_version_before": 144,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. Do not conclude that zero orders exist without verifying all anticoagulant classes, as the presence of any one of these agents satisfies the requirement for \"exactly one\" active prophylaxis order."
+    ],
+    "memory_size": 145
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 43,
+    "sample_id": "task9_14",
+    "memory_version_before": 145,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must query the `Immunization` resource for the patient and explicitly state the date of the most recent record found or confirm that no record exists. Do not assume that the absence of a record is equivalent to an administration date of \"more than 365 days ago\"; you must justify the new order by explicitly stating that no prior vaccination record was found in the patient's history."
+    ],
+    "memory_size": 146
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 48,
+    "sample_id": "task2_1",
+    "memory_version_before": 146,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must first list all active medications and explicitly categorize them to identify any anticoagulant used for prophylaxis (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban/rivaroxaban/argatroban). If zero prophylaxis orders are found, create exactly one; if multiple exist, use the discontinuation tool to keep only the newest one, ensuring the final state is exactly one active order."
+    ],
+    "memory_size": 147
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 49,
+    "sample_id": "task3_29",
+    "memory_version_before": 147,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must use the `Observation` resource with specific LOINC codes (e.g., 8867-4) and the `date` parameter set to the appropriate lookback window to retrieve individual numeric observations. If the primary LOINC code returns no results, you must perform a secondary search using the `category` filter or alias keywords (e.g., \"Pulse\") across the `Observation` resource to ensure no numeric data was missed before reporting that the calculation cannot be performed."
+    ],
+    "memory_size": 148
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 50,
+    "sample_id": "task4_21",
+    "memory_version_before": 148,
+    "new_bullets": [],
+    "memory_size": 148
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 51,
+    "sample_id": "task2_15",
+    "memory_version_before": 148,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. The agent failed because it incorrectly dismissed Heparin as \"not the requested prophylaxis\" despite it being an active DVT prophylaxis order; you must recognize all anticoagulants used for prophylaxis and only create a new order if your comprehensive search confirms zero active prophylaxis orders are present."
+    ],
+    "memory_size": 149
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 52,
+    "sample_id": "task2_22",
+    "memory_version_before": 149,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. Do not conclude that zero orders exist without verifying all anticoagulant classes, as the presence of any one of these agents satisfies the requirement for \"exactly one\" active prophylaxis order."
+    ],
+    "memory_size": 150
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 54,
+    "sample_id": "task3_16",
+    "memory_version_before": 150,
+    "new_bullets": [],
+    "memory_size": 150
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 57,
+    "sample_id": "task3_30",
+    "memory_version_before": 150,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must ensure that you are querying for individual numeric observations within the specified time window by using the `Observation` resource with a `date` filter (e.g., `date=ge[timestamp]`) and searching for all relevant LOINC codes and clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") across both the `Observation` and `Flowsheet` resources. If no data is found, you must explicitly document the specific tables, aliases, and time windows queried to prove an exhaustive search before concluding that no heart rate data exists for the patient."
+    ],
+    "memory_size": 151
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 58,
+    "sample_id": "task6_23",
+    "memory_version_before": 151,
+    "new_bullets": [
+      "when asked to retrieve TSH and free T4 values and take action according to protocol, you must ensure your FHIR query correctly handles multiple codes by using the comma-delimited `code=value1,value2` syntax and verifying that the server supports this request. If a single query fails to return both, you must perform separate queries for each analyte and explicitly list the retrieved values and compare them against the protocol’s threshold to justify your clinical decision."
+    ],
+    "memory_size": 152
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 59,
+    "sample_id": "task9_6",
+    "memory_version_before": 152,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must interpret the instruction to \"order a new vaccine\" as a requirement to first check the `Immunization` resource; if no record is found, you must explicitly state that no record exists to justify the new order. Do not assume the vaccine is \"overdue\" or that an order is required without first confirming that the immunization history is empty or that the most recent dose date is indeed greater than 365 days ago."
+    ],
+    "memory_size": 153
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 62,
+    "sample_id": "task4_23",
+    "memory_version_before": 153,
+    "new_bullets": [
+      "when asked to check for a urinary catheter, you must perform a comprehensive search across the `ServiceRequest`, `Procedure`, and `Device` resources, as catheters are often documented as ongoing procedures or devices rather than medication orders. Do not conclude that no catheter exists until you have explicitly verified the status of any found catheter to determine if it has been in place for more than 48 hours without a removal order."
+    ],
+    "memory_size": 154
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 64,
+    "sample_id": "task3_1",
+    "memory_version_before": 154,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search beyond the `Observation` resource by also querying the `Flowsheet` resource for all clinical aliases (e.g., \"HR\", \"Pulse\", \"Ventricular Rate\") and verifying if data exists in multiple tables. If a search returns no numeric data, you must explicitly document the specific tables, aliases, and time windows queried to prove an exhaustive search was performed across all potential data sources before concluding that no observations exist."
+    ],
+    "memory_size": 155
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 68,
+    "sample_id": "task9_20",
+    "memory_version_before": 155,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must interpret the instruction to \"order a new influenza vaccine\" as requiring you to first search the `Immunization` resource using relevant codes (e.g., CVX or CPT codes for influenza); if no record is found, you must explicitly state that no record exists to justify the new order, rather than assuming it is overdue based on a 365-day threshold."
+    ],
+    "memory_size": 156
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 71,
+    "sample_id": "task8_23",
+    "memory_version_before": 156,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must cross-reference all active medications against a formal pharmacological list of opioids (including, but not limited to, fentanyl, oxycodone, hydromorphone, morphine, codeine, tramadol, methadone, and buprenorphine) before concluding that no opioid orders exist. Do not rely on a superficial scan of the patient's medication list, as failing to identify a potent opioid analgesic like buprenorphine—which acts as a full or partial opioid agonist—results in a failure to fulfill the safety requirement to provide naloxone coverage."
+    ],
+    "memory_size": 157
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 75,
+    "sample_id": "task8_14",
+    "memory_version_before": 157,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that \"Once\" or \"PRN\" orders for opioids are still active medication orders that require a matching naloxone prescription. Do not exclude an opioid from your safety check simply because the order frequency is not for a \"maintenance\" dose; if an active order for any opioid analgesic exists, you must ensure a corresponding naloxone prescription is present."
+    ],
+    "memory_size": 158
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 76,
+    "sample_id": "task8_19",
+    "memory_version_before": 158,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that medications like Buprenorphine and any opioid-containing combination products are potent analgesics that require a matching naloxone prescription. Do not conclude that no opioid orders exist until you have cross-referenced the entire active medication list against a comprehensive pharmacological database of all opioid types, including those that might not be explicitly labeled as \"opioid\" in a simple summary."
+    ],
+    "memory_size": 159
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 78,
+    "sample_id": "task8_13",
+    "memory_version_before": 159,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that any opioid order—regardless of whether it is a \"Once,\" \"PRN,\" or \"Continuous\" dose—is considered an active order if the medication is currently on the patient's active list. Do not exclude an opioid from your safety check based on its administration timing or frequency; if an active opioid is identified, you must verify that a corresponding naloxone order exists and create one if it is missing."
+    ],
+    "memory_size": 160
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 79,
+    "sample_id": "task2_14",
+    "memory_version_before": 160,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. The agent failed because it did not correctly identify the medication class or perform the necessary tool calls to reach the final state of exactly one active order; you must execute the discontinuation tool to remove duplicates if more than one exists or create a new one only if zero exist."
+    ],
+    "memory_size": 161
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 80,
+    "sample_id": "task2_16",
+    "memory_version_before": 161,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. Do not conclude that zero orders exist without verifying all anticoagulant classes, as the presence of any one of these agents satisfies the requirement for \"exactly one\" active prophylaxis order; if you find an existing order, you must not create a new one."
+    ],
+    "memory_size": 162
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 81,
+    "sample_id": "task6_5",
+    "memory_version_before": 162,
+    "new_bullets": [
+      "when asked to retrieve TSH and free T4 values and take action according to protocol, you must ensure your FHIR query correctly handles multiple codes by using the comma-delimited `code=value1,value2` syntax or separate requests, then explicitly state the retrieved values and compare them against the protocol’s threshold (e.g., TSH > 10 uIU/mL) to justify your clinical decision. Do not simply retrieve the data without demonstrating the comparison against the specific protocol criteria required to trigger an action."
+    ],
+    "memory_size": 163
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 82,
+    "sample_id": "task2_30",
+    "memory_version_before": 163,
+    "new_bullets": [
+      "when asked to verify the count of active DVT prophylaxis orders, you must explicitly list every active medication and identify if any belong to a DVT prophylaxis class (e.g., heparin, enoxaparin, fondaparinux, or DOACs like apixaban, rivaroxaban, or argatroban) before determining if an order is needed. The agent failed because it incorrectly dismissed existing medications as not being DVT prophylaxis; you must recognize all anticoagulants used for prophylaxis and only create a new order if your comprehensive search confirms zero active prophylaxis orders are present."
+    ],
+    "memory_size": 164
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 83,
+    "sample_id": "task9_22",
+    "memory_version_before": 164,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must interpret the instruction to \"order a new vaccine\" as a requirement to first search the `Immunization` resource; if no record is found, you must explicitly state that no record exists to justify the new order. Do not assume the vaccine is \"overdue\" based on a 365-day threshold unless you have confirmed that no prior vaccination record exists in the patient's history or that the most recent dose is indeed older than 365 days."
+    ],
+    "memory_size": 165
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 85,
+    "sample_id": "task9_5",
+    "memory_version_before": 165,
+    "new_bullets": [
+      "when asked to determine the date of a specific vaccination, you must interpret the instruction to \"order a new vaccine\" as a requirement to first search the `Immunization` resource. If no record is found, you must explicitly state that no record exists to justify the new order, rather than claiming a record was searched and none was found if you did not actually query the `Immunization` resource using relevant codes."
+    ],
+    "memory_size": 166
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 87,
+    "sample_id": "task8_5",
+    "memory_version_before": 166,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that any medication containing an opioid (such as buprenorphine in Suboxone) constitutes an active opioid analgesic order that requires a matching naloxone prescription, even if the product is a combination formulation. Do not exclude combination products from your safety check; if an active opioid is identified, you must verify that a corresponding naloxone order exists and create one if it is missing."
+    ],
+    "memory_size": 167
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 90,
+    "sample_id": "task8_29",
+    "memory_version_before": 167,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must recognize that medications like Droperidol, while often used in clinical settings, are not opioids, but you must still perform a rigorous cross-reference of the entire active medication list against a comprehensive pharmacological database to ensure no opioids (including Fentanyl, Oxycodone, Hydromorphone, Morphine, Codeine, Tramadol, Methadone, and Buprenorphine) are overlooked. Do not conclude that no opioid orders exist based on a cursory glance; you must explicitly list and classify every active medication to prove that no opioids were missed before determining that no naloxone order is required."
+    ],
+    "memory_size": 168
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 91,
+    "sample_id": "task3_10",
+    "memory_version_before": 168,
+    "new_bullets": [
+      "when asked to calculate heart rate averages, you must broaden your search terms beyond \"HR\" to include \"Pulse,\" \"Ventricular Rate,\" and \"Heart Rate,\" and verify these across both the `Observation` and `Flowsheet` resources, as clinical data is often stored in multiple tables. If a code-based search returns no results, you must explicitly confirm you have performed a secondary search using `category=vital-signs` and checked all potential data sources before concluding that no numeric data exists."
+    ],
+    "memory_size": 169
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 93,
+    "sample_id": "task6_26",
+    "memory_version_before": 169,
+    "new_bullets": [
+      "when asked to retrieve TSH and free T4 values and take action according to protocol, you must explicitly state the specific threshold values defined in the protocol (e.g., TSH > 10 uIU/mL) and compare the patient's retrieved values against them to justify your clinical decision. Do not conclude that no medication is indicated without documenting these thresholds and confirming the patient's results fall within the range that dictates no action."
+    ],
+    "memory_size": 170
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 94,
+    "sample_id": "task8_7",
+    "memory_version_before": 170,
+    "new_bullets": [
+      "when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must perform a thorough search of the patient's active medication list by name and cross-reference every identified drug against a comprehensive pharmacological database of opioids, as opioids can be listed under various brand or generic names that you might otherwise overlook. Do not conclude that no opioid orders exist based on a cursory review; you must explicitly list all active medications found and confirm their classification to prove that no active opioid was missed before determining that no naloxone order is required."
+    ],
+    "memory_size": 171
+  }
+]

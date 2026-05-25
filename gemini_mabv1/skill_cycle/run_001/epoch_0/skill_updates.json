@@ -1,0 +1,257 @@
+[
+  {
+    "epoch": 0,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 22,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_subject_reference_formatting",
+        "description": "Ensures subject.reference in POST requests uses the 'Patient/{id}' format instead of raw MRN.",
+        "content": "## Skill Title\nFHIR Subject Reference Formatting\n\n## Pattern Description\nWhen creating FHIR resources that require a link to a patient (such as `Observation` or `ServiceRequest`), the `subject.reference` field must be a relative reference in the format `Patient/{id}`. Using only the MRN string as the reference value is a common error that causes the resource to be improperly linked or rejected by the server.\n\n## When to Use This Skill\n- When constructing a POST request for a resource that contains a `subject` field.\n- Whenever you have retrieved a patient's details via a GET request and need to link a new resource to that patient.\n\n## Common Failure Patterns\n- Using `\"reference\": \"{MRN}\"` (e.g., `\"reference\": \"S1234567\"`) instead of the required `\"reference\": \"Patient/{id}\"`.\n- Assuming the MRN is the resource ID; always use the ID found in the `fullUrl` or the `id` field of the Patient resource returned by the search.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting the ID**\nAfter performing a `GET /Patient?identifier={MRN}`, inspect the `entry[0].resource.id` or the `fullUrl` field. The ID is the unique identifier for that patient resource.\n\n**Pattern 2: Formatting the Reference**\nConstruct the `subject` object using the string literal `Patient/` concatenated with the extracted ID.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S1234567\" }`\nWRONG:   `\"subject\": { \"reference\": \"S1234567\" }`\n\n## Example Application\n\n**Task:** \"Record blood pressure for patient S6534835.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Patient?identifier=S6534835`.\n2. Identify the patient ID from the response (e.g., `S6534835`).\n3. Construct the POST body for the `Observation`.\n4. Set `subject.reference` to `\"Patient/S6534835\"`.\n\nCORRECT output: `\"subject\": { \"reference\": \"Patient/S6534835\" }`\nWRONG output: `\"subject\": { \"reference\": \"S6534835\" }`\n\n## Success Indicators\n- The POST request is accepted by the server without reference errors.\n- The resource is correctly linked to the patient in the FHIR store.\n\n## Failure Indicators\n- Server returns a 400 Bad Request or 422 Unprocessable Entity error regarding the reference field.\n- The resource is created but does not appear when querying for the patient's observations.",
+        "tags": [
+          "fhir",
+          "post",
+          "reference",
+          "patient"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "observation_search_and_null_handling",
+        "description": "Standardizes retrieval of the most recent observation and mandates explicit reporting for missing data.",
+        "content": "# Observation Search and Null Handling\n\n## Pattern Description\nWhen searching for the most recent clinical observation (e.g., lab results, vitals), you must use efficient FHIR search parameters to ensure you retrieve the latest record. If the search returns no results, you must explicitly state that the data is unavailable rather than returning placeholder values like -1 or empty arrays.\n\n## When to Use This Skill\n- When the task requires the \"most recent\" value of a specific observation.\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you need to determine if a lab value is outdated (e.g., > 1 year old) and the initial search returns no data.\n\n## Common Failure Patterns\n- Using broad GET requests without sorting, leading to potential retrieval of stale or irrelevant data.\n- Returning \"-1\", \"[-1]\", or \"N/A\" when the data is missing, which confuses downstream logic.\n- Defaulting to ordering a new test when the initial search fails, even if the task does not explicitly mandate an order upon missing data.\n\n## Recommended Patterns\n\n**Pattern 1: Efficient Retrieval**\nAlways use `_sort=-date` and `_count=1` to retrieve the single most recent observation in one request.\n- CORRECT: `GET /Observation?code=A1C&patient=S123&_sort=-date&_count=1`\n\n**Pattern 2: Handling Missing Data**\nIf the search returns `total: 0`, do not invent a value. State clearly that the data was not found.\n- CORRECT: `FINISH([\"No HbA1C value found in records.\"])`\n- WRONG: `FINISH([-1])`\n\n**Pattern 3: Logic Branching**\nOnly order a new test if the search returns a result that is confirmed to be older than the threshold (e.g., 1 year).\n\n## Example Application\n\n**Task:** \"Get the most recent HbA1C for patient S6550627. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=A1C&patient=S6550627&_sort=-date&_count=1`\n2. If `total` is 0, `FINISH([\"No HbA1C record found for patient S6550627.\"])`\n3. If `total` > 0, check `effectiveDateTime` of the entry.\n4. If date is > 1 year old, proceed to `POST /ServiceRequest`.\n\n## Success Indicators\n- Agent performs a single, sorted search query.\n- Agent provides a clear, human-readable explanation when data is missing.\n\n## Failure Indicators\n- Agent returns \"-1\" or other numeric placeholders.\n- Agent performs multiple redundant GET requests.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "null-handling"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_order_verification_strategy",
+        "description": "Ensures clinical logic (e.g., date thresholds) is validated against retrieved data before executing POST requests.",
+        "content": "## Skill Title\nConditional Order Verification Strategy\n\n## Pattern Description\nWhen a task requires an action (like ordering a lab test) based on a conditional check (e.g., \"if older than 1 year\"), you must perform a two-step process: first, retrieve and evaluate the existing data; second, explicitly verify the condition before proceeding with any POST request. Do not assume the condition is met simply because the task mentions it.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger (e.g., \"If X is older than Y, do Z\").\n- When you have retrieved data (e.g., via GET) and need to decide whether to perform a follow-up action (e.g., POST).\n\n## Common Failure Patterns\n- Proceeding to POST without checking the date or value against the threshold.\n- Miscalculating the time difference (e.g., treating a recent date as \"older than 1 year\").\n- Failing to document the reasoning for the decision (or lack thereof) in the final response.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Evaluation**\n1. Perform the GET request to fetch the relevant resource.\n2. Identify the `effectiveDateTime` or `issued` field of the most recent entry.\n3. Compare this date against the current date provided in the context.\n\n**Pattern 2: Conditional Decision**\n1. If the condition is met (e.g., date difference > 365 days), proceed to construct the POST request.\n2. If the condition is NOT met, do not perform the POST request. Instead, proceed directly to the FINISH step.\n\n**Pattern 3: Justification**\n1. In your final response, explicitly state the value found, the date found, and why the action was or was not taken.\n\n## Example Application\n\n**Task:** \"If the last HbA1C is older than 1 year, order a new one.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S6521727`\n2. Observe `effectiveDateTime`: \"2022-09-09\".\n3. Compare with current date \"2023-11-13\".\n4. Calculate: 2023-11-13 minus 2022-09-09 is > 1 year.\n5. Execute POST `.../ServiceRequest`.\n6. FINISH([\"Last HbA1C was 5.8% on 2022-09-09. Since this is > 1 year old, a new test was ordered.\"])\n\n## Success Indicators\n- No unnecessary POST requests are made when the condition is not met.\n- The final response clearly explains the logic used to trigger or skip the order.\n\n## Failure Indicators\n- POST requests are executed even when the data shows the condition is not met.\n- The agent fails to perform the date comparison and orders tests indiscriminately.",
+        "tags": [
+          "clinical-logic",
+          "verification",
+          "fhir-order"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_subject_reference_formatting",
+          "description": "Ensures subject.reference in POST requests uses the 'Patient/{id}' format instead of raw MRN.",
+          "content": "## Skill Title\nFHIR Subject Reference Formatting\n\n## Pattern Description\nWhen creating FHIR resources that require a link to a patient (such as `Observation` or `ServiceRequest`), the `subject.reference` field must be a relative reference in the format `Patient/{id}`. Using only the MRN string as the reference value is a common error that causes the resource to be improperly linked or rejected by the server.\n\n## When to Use This Skill\n- When constructing a POST request for a resource that contains a `subject` field.\n- Whenever you have retrieved a patient's details via a GET request and need to link a new resource to that patient.\n\n## Common Failure Patterns\n- Using `\"reference\": \"{MRN}\"` (e.g., `\"reference\": \"S1234567\"`) instead of the required `\"reference\": \"Patient/{id}\"`.\n- Assuming the MRN is the resource ID; always use the ID found in the `fullUrl` or the `id` field of the Patient resource returned by the search.\n\n## Recommended Patterns\n\n**Pattern 1: Extracting the ID**\nAfter performing a `GET /Patient?identifier={MRN}`, inspect the `entry[0].resource.id` or the `fullUrl` field. The ID is the unique identifier for that patient resource.\n\n**Pattern 2: Formatting the Reference**\nConstruct the `subject` object using the string literal `Patient/` concatenated with the extracted ID.\n\nCORRECT: `\"subject\": { \"reference\": \"Patient/S1234567\" }`\nWRONG:   `\"subject\": { \"reference\": \"S1234567\" }`\n\n## Example Application\n\n**Task:** \"Record blood pressure for patient S6534835.\"\n\n**Step-by-step:**\n1. GET `http://localhost:8080/fhir/Patient?identifier=S6534835`.\n2. Identify the patient ID from the response (e.g., `S6534835`).\n3. Construct the POST body for the `Observation`.\n4. Set `subject.reference` to `\"Patient/S6534835\"`.\n\nCORRECT output: `\"subject\": { \"reference\": \"Patient/S6534835\" }`\nWRONG output: `\"subject\": { \"reference\": \"S6534835\" }`\n\n## Success Indicators\n- The POST request is accepted by the server without reference errors.\n- The resource is correctly linked to the patient in the FHIR store.\n\n## Failure Indicators\n- Server returns a 400 Bad Request or 422 Unprocessable Entity error regarding the reference field.\n- The resource is created but does not appear when querying for the patient's observations.",
+          "tags": [
+            "fhir",
+            "post",
+            "reference",
+            "patient"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "observation_search_and_null_handling",
+          "description": "Standardizes retrieval of the most recent observation and mandates explicit reporting for missing data.",
+          "content": "# Observation Search and Null Handling\n\n## Pattern Description\nWhen searching for the most recent clinical observation (e.g., lab results, vitals), you must use efficient FHIR search parameters to ensure you retrieve the latest record. If the search returns no results, you must explicitly state that the data is unavailable rather than returning placeholder values like -1 or empty arrays.\n\n## When to Use This Skill\n- When the task requires the \"most recent\" value of a specific observation.\n- When a GET request for an Observation returns a `total: 0` or an empty `entry` array.\n- When you need to determine if a lab value is outdated (e.g., > 1 year old) and the initial search returns no data.\n\n## Common Failure Patterns\n- Using broad GET requests without sorting, leading to potential retrieval of stale or irrelevant data.\n- Returning \"-1\", \"[-1]\", or \"N/A\" when the data is missing, which confuses downstream logic.\n- Defaulting to ordering a new test when the initial search fails, even if the task does not explicitly mandate an order upon missing data.\n\n## Recommended Patterns\n\n**Pattern 1: Efficient Retrieval**\nAlways use `_sort=-date` and `_count=1` to retrieve the single most recent observation in one request.\n- CORRECT: `GET /Observation?code=A1C&patient=S123&_sort=-date&_count=1`\n\n**Pattern 2: Handling Missing Data**\nIf the search returns `total: 0`, do not invent a value. State clearly that the data was not found.\n- CORRECT: `FINISH([\"No HbA1C value found in records.\"])`\n- WRONG: `FINISH([-1])`\n\n**Pattern 3: Logic Branching**\nOnly order a new test if the search returns a result that is confirmed to be older than the threshold (e.g., 1 year).\n\n## Example Application\n\n**Task:** \"Get the most recent HbA1C for patient S6550627. If > 1 year old, order new test.\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?code=A1C&patient=S6550627&_sort=-date&_count=1`\n2. If `total` is 0, `FINISH([\"No HbA1C record found for patient S6550627.\"])`\n3. If `total` > 0, check `effectiveDateTime` of the entry.\n4. If date is > 1 year old, proceed to `POST /ServiceRequest`.\n\n## Success Indicators\n- Agent performs a single, sorted search query.\n- Agent provides a clear, human-readable explanation when data is missing.\n\n## Failure Indicators\n- Agent returns \"-1\" or other numeric placeholders.\n- Agent performs multiple redundant GET requests.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "null-handling"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 1,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_order_verification_strategy",
+          "description": "Ensures clinical logic (e.g., date thresholds) is validated against retrieved data before executing POST requests.",
+          "content": "## Skill Title\nConditional Order Verification Strategy\n\n## Pattern Description\nWhen a task requires an action (like ordering a lab test) based on a conditional check (e.g., \"if older than 1 year\"), you must perform a two-step process: first, retrieve and evaluate the existing data; second, explicitly verify the condition before proceeding with any POST request. Do not assume the condition is met simply because the task mentions it.\n\n## When to Use This Skill\n- When the task instruction contains a conditional trigger (e.g., \"If X is older than Y, do Z\").\n- When you have retrieved data (e.g., via GET) and need to decide whether to perform a follow-up action (e.g., POST).\n\n## Common Failure Patterns\n- Proceeding to POST without checking the date or value against the threshold.\n- Miscalculating the time difference (e.g., treating a recent date as \"older than 1 year\").\n- Failing to document the reasoning for the decision (or lack thereof) in the final response.\n\n## Recommended Patterns\n\n**Pattern 1: Data Retrieval and Evaluation**\n1. Perform the GET request to fetch the relevant resource.\n2. Identify the `effectiveDateTime` or `issued` field of the most recent entry.\n3. Compare this date against the current date provided in the context.\n\n**Pattern 2: Conditional Decision**\n1. If the condition is met (e.g., date difference > 365 days), proceed to construct the POST request.\n2. If the condition is NOT met, do not perform the POST request. Instead, proceed directly to the FINISH step.\n\n**Pattern 3: Justification**\n1. In your final response, explicitly state the value found, the date found, and why the action was or was not taken.\n\n## Example Application\n\n**Task:** \"If the last HbA1C is older than 1 year, order a new one.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=A1C&patient=S6521727`\n2. Observe `effectiveDateTime`: \"2022-09-09\".\n3. Compare with current date \"2023-11-13\".\n4. Calculate: 2023-11-13 minus 2022-09-09 is > 1 year.\n5. Execute POST `.../ServiceRequest`.\n6. FINISH([\"Last HbA1C was 5.8% on 2022-09-09. Since this is > 1 year old, a new test was ordered.\"])\n\n## Success Indicators\n- No unnecessary POST requests are made when the condition is not met.\n- The final response clearly explains the logic used to trigger or skip the order.\n\n## Failure Indicators\n- POST requests are executed even when the data shows the condition is not met.\n- The agent fails to perform the date comparison and orders tests indiscriminately.",
+          "tags": [
+            "clinical-logic",
+            "verification",
+            "fhir-order"
+          ]
+        },
+        "net": -6,
+        "score": -6,
+        "raw_score": -6,
+        "fixes": 1,
+        "regressions": 7,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 0,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 26,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "clinical_logic_threshold_validation",
+        "description": "Enforce explicit threshold validation against FHIR Observation values and temporal constraints.",
+        "content": "## Skill Title\nClinical Logic Threshold Validation\n\n## Pattern Description\nWhen performing clinical tasks that involve evaluating lab results against thresholds (e.g., \"low\" magnesium, \"greater than 1 year old\" HbA1C), you must not rely on internal assumptions or general knowledge of normal ranges. You must explicitly extract the numeric value from the FHIR `Observation` resource and compare it against the specific criteria provided in the task instructions.\n\nFor temporal tasks, you must parse the `effectiveDateTime` or `issued` field from the resource and calculate the time difference relative to the current system time provided in the context. Do not assume a result is \"recent\" or \"within range\" without performing the arithmetic comparison.\n\n## When to Use This Skill\n- When a task requires evaluating if a lab result is \"low\", \"high\", or \"abnormal\".\n- When a task requires checking if a lab result is older than a specific duration (e.g., 1 year, 24 hours).\n- When the task provides specific dosing or re-ordering instructions contingent on a threshold.\n\n## Common Failure Patterns\n- Relying on internal knowledge of \"normal\" ranges instead of checking the specific task criteria.\n- Failing to parse the `effectiveDateTime` string into a comparable date object, leading to incorrect temporal logic.\n- Assuming a result is within range without explicitly comparing the `valueQuantity.value` to the threshold.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Threshold Comparison**\n1. Extract `valueQuantity.value` from the `Observation` resource.\n2. Identify the threshold provided in the prompt (e.g., \"low\" = < 2.0 mg/dL).\n3. Perform the comparison: `if value < threshold: proceed_to_action() else: finish_with_no_action()`.\n\n**Pattern 2: Temporal Threshold Comparison**\n1. Extract `effectiveDateTime` from the `Observation` resource.\n2. Convert the current time (from context) and the `effectiveDateTime` to a common format (e.g., ISO 8601).\n3. Calculate the delta. If `current_time - effectiveDateTime > threshold`, trigger the re-order logic.\n\n## Example Application\n\n**Task:** \"Check if magnesium is low (< 2.0 mg/dL).\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S123`.\n2. Parse `valueQuantity.value` (e.g., 1.9).\n3. Compare: 1.9 < 2.0 is True.\n4. Execute the order logic.\n\nCORRECT output: `FINISH([\"Magnesium is 1.9 mg/dL, which is low. Ordering replacement.\"])`\nWRONG output: `FINISH([\"Magnesium is 1.9 mg/dL, which is normal.\"])`\n\n## Success Indicators\n- The agent explicitly mentions the extracted value and the threshold used for comparison in the final output.\n- The agent correctly identifies when no action is needed based on the threshold.\n\n## Failure Indicators\n- The agent makes a clinical decision without referencing the specific numeric value found in the FHIR resource.\n- The agent incorrectly calculates the time elapsed since the last lab result.",
+        "tags": [
+          "clinical-logic",
+          "fhir",
+          "validation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_value_unit_enforcement",
+        "description": "Ensures all numerical clinical values (labs, demographics) include appropriate units in the final output.",
+        "content": "## Skill Title\nClinical Value Unit Enforcement\n\n## Pattern Description\nWhen reporting clinical data such as laboratory results, vital signs, or patient demographics (like age), you must always include the relevant unit of measurement. Providing a raw number without context is clinically ambiguous and often leads to incorrect interpretations or failed validations.\n\n## When to Use This Skill\n- When the task asks for a numerical value (e.g., age, lab result, weight).\n- When the task context or clinical standard implies a specific unit (e.g., 'years' for age, 'mg/dL' for magnesium).\n- When you are about to call the `FINISH` function with a numerical result.\n\n## Common Failure Patterns\n- Returning `FINISH([\"75\"])` instead of `FINISH([\"75 years\"])`.\n- Returning `FINISH([\"2.5\"])` for a lab result instead of `FINISH([\"2.5 mg/dL\"])`.\n- Omitting units when the prompt explicitly requests a specific unit or format.\n\n## Recommended Patterns\n\n**Pattern 1: Unit Identification**\nBefore finalizing, identify the standard unit for the requested data point. If the prompt specifies a unit (e.g., 'mg/dL'), you must append it to the value.\n\n**Pattern 2: Formatting the Output**\nAlways format the final string to include the unit. \n\nCORRECT: `FINISH([\"75 years\"])`\nWRONG: `FINISH([\"75\"])`\n\nCORRECT: `FINISH([\"2.5 mg/dL\"])`\nWRONG: `FINISH([\"2.5\"])`\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S2450227?\"\n\n**Step-by-step:**\n1. Retrieve the patient resource.\n2. Calculate the age based on the birthDate field.\n3. Format the result as an integer followed by the unit 'years'.\n4. Call `FINISH([\"75 years\"])`.\n\n## Success Indicators\n- The final output contains both the numerical value and the correct clinical unit.\n\n## Failure Indicators\n- The final output contains only a number without a unit.",
+        "tags": [
+          "data-formatting",
+          "clinical-accuracy"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "clinical_threshold_validation_strategy",
+        "description": "Ensures clinical actions are only taken after verifying lab results against defined thresholds.",
+        "content": "# Clinical Threshold Validation Strategy\n\n## Pattern Description\nBefore performing any clinical action (such as ordering medication or follow-up tests) based on a lab result, you must explicitly verify that the retrieved value meets the clinical criteria defined in the task. Do not assume an order is required simply because a lab value was retrieved; you must compare the value against the threshold provided in the instructions.\n\n## When to Use This Skill\n- When the task instruction includes a conditional logic (e.g., \"If low, then order...\").\n- When you have retrieved a lab value and need to decide whether to proceed with a POST request.\n- When the task requires a follow-up order only if the primary condition is met.\n\n## Common Failure Patterns\n- Ordering medication or follow-up tests without checking if the lab value is actually outside the normal range.\n- Proceeding with an order when the lab value is within normal limits.\n- Failing to explicitly state the comparison logic in the final output.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Comparison**\n1. Retrieve the lab value.\n2. Compare the value against the threshold (e.g., 3.5 mmol/L for potassium).\n3. If the value is within the normal range, stop and report that no action is required.\n4. If the value is outside the range, proceed with the order.\n\n**Pattern 2: Explicit Verification**\n- Always include the comparison in your reasoning: \"The value is X, which is [below/above] the threshold of Y. Therefore, [action] is required.\"\n\n## Example Application\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET /Observation?code=2823-3&patient=S6550473\n2. Result: 4.3 mmol/L.\n3. Compare: 4.3 is not < 3.5.\n4. Decision: Do not order. \n5. Output: FINISH([\"Potassium is 4.3 mmol/L, which is above the 3.5 mmol/L threshold. No replacement ordered.\"])\n\n## Success Indicators\n- Agent correctly identifies when no action is needed based on lab results.\n- Final output clearly explains the clinical reasoning behind the decision to order or not order.\n\n## Failure Indicators\n- Agent orders medication despite the lab value being within normal range.\n- Agent fails to perform the comparison and orders medication by default.",
+        "tags": [
+          "clinical-logic",
+          "validation",
+          "decision-making"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_search_optimization_strategy",
+        "description": "Prevents redundant API calls and 400 errors by enforcing search limits and cache-like verification.",
+        "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nTo prevent excessive, redundant, or malformed API requests, you must adopt a disciplined approach to searching FHIR resources. Avoid broad, unconstrained queries that return large datasets or trigger pagination errors. Instead, use specific search parameters (e.g., `code`, `patient`, `date`) and limit the number of attempts to retrieve data.\n\n## When to Use This Skill\n- When a search returns an empty bundle or an error.\n- When you are tempted to perform broad searches (e.g., `GET /Observation?patient=...`) without specific filters.\n- When you have already performed two search attempts for the same data and failed to find the target resource.\n\n## Common Failure Patterns\n- Repeatedly calling the same endpoint with the same parameters after receiving an empty result.\n- Attempting to follow `_getpages` or `_getpagesoffset` links manually, which often leads to 400 errors.\n- Failing to use specific codes or date ranges, resulting in massive, unmanageable bundles.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include specific search parameters. If searching for a lab, use `code` and `patient`. If searching for a time-bound event, use `date` with prefixes like `ge` (greater than or equal).\n\n**Pattern 2: Limit Search Attempts**\nIf a search returns `total: 0` or an empty `entry` array, do not retry with broader parameters. Conclude that the data is unavailable and report this clearly.\n\n**Pattern 3: Avoid Manual Pagination**\nDo not attempt to follow `_getpages` or `_getpagesoffset` links. If the initial search does not yield the required data, refine the query parameters rather than iterating through pages.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the specific code for potassium (e.g., 2823-3).\n2. Issue a single, targeted GET: `GET /Observation?code=2823-3&patient=S1796597`.\n3. If the response is empty, do not try `category=laboratory` or other broad searches. \n4. Conclude: `FINISH([\"No potassium level found for patient S1796597.\"])\n\n## Success Indicators\n- Fewer than 3 GET requests per task.\n- No 400 Client Error responses in the action log.\n\n## Failure Indicators\n- Multiple identical or near-identical GET requests in the log.\n- 400 errors caused by invalid pagination parameters.",
+        "tags": [
+          "fhir",
+          "api",
+          "optimization"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_logic_threshold_validation",
+          "description": "Enforce explicit threshold validation against FHIR Observation values and temporal constraints.",
+          "content": "## Skill Title\nClinical Logic Threshold Validation\n\n## Pattern Description\nWhen performing clinical tasks that involve evaluating lab results against thresholds (e.g., \"low\" magnesium, \"greater than 1 year old\" HbA1C), you must not rely on internal assumptions or general knowledge of normal ranges. You must explicitly extract the numeric value from the FHIR `Observation` resource and compare it against the specific criteria provided in the task instructions.\n\nFor temporal tasks, you must parse the `effectiveDateTime` or `issued` field from the resource and calculate the time difference relative to the current system time provided in the context. Do not assume a result is \"recent\" or \"within range\" without performing the arithmetic comparison.\n\n## When to Use This Skill\n- When a task requires evaluating if a lab result is \"low\", \"high\", or \"abnormal\".\n- When a task requires checking if a lab result is older than a specific duration (e.g., 1 year, 24 hours).\n- When the task provides specific dosing or re-ordering instructions contingent on a threshold.\n\n## Common Failure Patterns\n- Relying on internal knowledge of \"normal\" ranges instead of checking the specific task criteria.\n- Failing to parse the `effectiveDateTime` string into a comparable date object, leading to incorrect temporal logic.\n- Assuming a result is within range without explicitly comparing the `valueQuantity.value` to the threshold.\n\n## Recommended Patterns\n\n**Pattern 1: Numeric Threshold Comparison**\n1. Extract `valueQuantity.value` from the `Observation` resource.\n2. Identify the threshold provided in the prompt (e.g., \"low\" = < 2.0 mg/dL).\n3. Perform the comparison: `if value < threshold: proceed_to_action() else: finish_with_no_action()`.\n\n**Pattern 2: Temporal Threshold Comparison**\n1. Extract `effectiveDateTime` from the `Observation` resource.\n2. Convert the current time (from context) and the `effectiveDateTime` to a common format (e.g., ISO 8601).\n3. Calculate the delta. If `current_time - effectiveDateTime > threshold`, trigger the re-order logic.\n\n## Example Application\n\n**Task:** \"Check if magnesium is low (< 2.0 mg/dL).\"\n\n**Step-by-step:**\n1. GET `Observation?code=MG&patient=S123`.\n2. Parse `valueQuantity.value` (e.g., 1.9).\n3. Compare: 1.9 < 2.0 is True.\n4. Execute the order logic.\n\nCORRECT output: `FINISH([\"Magnesium is 1.9 mg/dL, which is low. Ordering replacement.\"])`\nWRONG output: `FINISH([\"Magnesium is 1.9 mg/dL, which is normal.\"])`\n\n## Success Indicators\n- The agent explicitly mentions the extracted value and the threshold used for comparison in the final output.\n- The agent correctly identifies when no action is needed based on the threshold.\n\n## Failure Indicators\n- The agent makes a clinical decision without referencing the specific numeric value found in the FHIR resource.\n- The agent incorrectly calculates the time elapsed since the last lab result.",
+          "tags": [
+            "clinical-logic",
+            "fhir",
+            "validation"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 1,
+        "regressions": 2,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_value_unit_enforcement",
+          "description": "Ensures all numerical clinical values (labs, demographics) include appropriate units in the final output.",
+          "content": "## Skill Title\nClinical Value Unit Enforcement\n\n## Pattern Description\nWhen reporting clinical data such as laboratory results, vital signs, or patient demographics (like age), you must always include the relevant unit of measurement. Providing a raw number without context is clinically ambiguous and often leads to incorrect interpretations or failed validations.\n\n## When to Use This Skill\n- When the task asks for a numerical value (e.g., age, lab result, weight).\n- When the task context or clinical standard implies a specific unit (e.g., 'years' for age, 'mg/dL' for magnesium).\n- When you are about to call the `FINISH` function with a numerical result.\n\n## Common Failure Patterns\n- Returning `FINISH([\"75\"])` instead of `FINISH([\"75 years\"])`.\n- Returning `FINISH([\"2.5\"])` for a lab result instead of `FINISH([\"2.5 mg/dL\"])`.\n- Omitting units when the prompt explicitly requests a specific unit or format.\n\n## Recommended Patterns\n\n**Pattern 1: Unit Identification**\nBefore finalizing, identify the standard unit for the requested data point. If the prompt specifies a unit (e.g., 'mg/dL'), you must append it to the value.\n\n**Pattern 2: Formatting the Output**\nAlways format the final string to include the unit. \n\nCORRECT: `FINISH([\"75 years\"])`\nWRONG: `FINISH([\"75\"])`\n\nCORRECT: `FINISH([\"2.5 mg/dL\"])`\nWRONG: `FINISH([\"2.5\"])`\n\n## Example Application\n\n**Task:** \"What's the age of the patient with MRN of S2450227?\"\n\n**Step-by-step:**\n1. Retrieve the patient resource.\n2. Calculate the age based on the birthDate field.\n3. Format the result as an integer followed by the unit 'years'.\n4. Call `FINISH([\"75 years\"])`.\n\n## Success Indicators\n- The final output contains both the numerical value and the correct clinical unit.\n\n## Failure Indicators\n- The final output contains only a number without a unit.",
+          "tags": [
+            "data-formatting",
+            "clinical-accuracy"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 0,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "clinical_threshold_validation_strategy",
+          "description": "Ensures clinical actions are only taken after verifying lab results against defined thresholds.",
+          "content": "# Clinical Threshold Validation Strategy\n\n## Pattern Description\nBefore performing any clinical action (such as ordering medication or follow-up tests) based on a lab result, you must explicitly verify that the retrieved value meets the clinical criteria defined in the task. Do not assume an order is required simply because a lab value was retrieved; you must compare the value against the threshold provided in the instructions.\n\n## When to Use This Skill\n- When the task instruction includes a conditional logic (e.g., \"If low, then order...\").\n- When you have retrieved a lab value and need to decide whether to proceed with a POST request.\n- When the task requires a follow-up order only if the primary condition is met.\n\n## Common Failure Patterns\n- Ordering medication or follow-up tests without checking if the lab value is actually outside the normal range.\n- Proceeding with an order when the lab value is within normal limits.\n- Failing to explicitly state the comparison logic in the final output.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Comparison**\n1. Retrieve the lab value.\n2. Compare the value against the threshold (e.g., 3.5 mmol/L for potassium).\n3. If the value is within the normal range, stop and report that no action is required.\n4. If the value is outside the range, proceed with the order.\n\n**Pattern 2: Explicit Verification**\n- Always include the comparison in your reasoning: \"The value is X, which is [below/above] the threshold of Y. Therefore, [action] is required.\"\n\n## Example Application\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET /Observation?code=2823-3&patient=S6550473\n2. Result: 4.3 mmol/L.\n3. Compare: 4.3 is not < 3.5.\n4. Decision: Do not order. \n5. Output: FINISH([\"Potassium is 4.3 mmol/L, which is above the 3.5 mmol/L threshold. No replacement ordered.\"])\n\n## Success Indicators\n- Agent correctly identifies when no action is needed based on lab results.\n- Final output clearly explains the clinical reasoning behind the decision to order or not order.\n\n## Failure Indicators\n- Agent orders medication despite the lab value being within normal range.\n- Agent fails to perform the comparison and orders medication by default.",
+          "tags": [
+            "clinical-logic",
+            "validation",
+            "decision-making"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_search_optimization_strategy",
+          "description": "Prevents redundant API calls and 400 errors by enforcing search limits and cache-like verification.",
+          "content": "## Skill Title\nFHIR Search Optimization Strategy\n\n## Pattern Description\nTo prevent excessive, redundant, or malformed API requests, you must adopt a disciplined approach to searching FHIR resources. Avoid broad, unconstrained queries that return large datasets or trigger pagination errors. Instead, use specific search parameters (e.g., `code`, `patient`, `date`) and limit the number of attempts to retrieve data.\n\n## When to Use This Skill\n- When a search returns an empty bundle or an error.\n- When you are tempted to perform broad searches (e.g., `GET /Observation?patient=...`) without specific filters.\n- When you have already performed two search attempts for the same data and failed to find the target resource.\n\n## Common Failure Patterns\n- Repeatedly calling the same endpoint with the same parameters after receiving an empty result.\n- Attempting to follow `_getpages` or `_getpagesoffset` links manually, which often leads to 400 errors.\n- Failing to use specific codes or date ranges, resulting in massive, unmanageable bundles.\n\n## Recommended Patterns\n\n**Pattern 1: Targeted Search**\nAlways include specific search parameters. If searching for a lab, use `code` and `patient`. If searching for a time-bound event, use `date` with prefixes like `ge` (greater than or equal).\n\n**Pattern 2: Limit Search Attempts**\nIf a search returns `total: 0` or an empty `entry` array, do not retry with broader parameters. Conclude that the data is unavailable and report this clearly.\n\n**Pattern 3: Avoid Manual Pagination**\nDo not attempt to follow `_getpages` or `_getpagesoffset` links. If the initial search does not yield the required data, refine the query parameters rather than iterating through pages.\n\n## Example Application\n\n**Task:** \"Check patient S1796597's most recent potassium level.\"\n\n**Step-by-step:**\n1. Identify the specific code for potassium (e.g., 2823-3).\n2. Issue a single, targeted GET: `GET /Observation?code=2823-3&patient=S1796597`.\n3. If the response is empty, do not try `category=laboratory` or other broad searches. \n4. Conclude: `FINISH([\"No potassium level found for patient S1796597.\"])\n\n## Success Indicators\n- Fewer than 3 GET requests per task.\n- No 400 Client Error responses in the action log.\n\n## Failure Indicators\n- Multiple identical or near-identical GET requests in the log.\n- 400 errors caused by invalid pagination parameters.",
+          "tags": [
+            "fhir",
+            "api",
+            "optimization"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]

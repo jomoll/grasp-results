@@ -1,0 +1,294 @@
+[
+  {
+    "epoch": 3,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "fhir_resource_status_verification_strategy",
+        "description": "Verify resource status and lifecycle dates before concluding that a resource is missing or that an action is required.",
+        "content": "# fhir_resource_status_verification_strategy\n\n## Pattern Description\nWhen searching for active orders or procedures, you must not assume that a lack of results in a simple GET request means the resource does not exist. You must explicitly verify the `status` field of all returned resources and, for time-sensitive tasks (like catheter removal), validate the `authoredOn` or `occurrenceDateTime` against the current system time to ensure you are not acting on stale or misinterpreted data.\n\n## When to Use This Skill\n- When a task requires verifying the existence of an \"active\" order (e.g., DVT prophylaxis, catheter removal).\n- When you need to determine if a procedure or order is \"stale\" (e.g., > 48 hours for catheters, > 12 months for vaccines).\n- When a search returns zero results, but you suspect the resource might exist under a different status or date range.\n\n## Common Failure Patterns\n- Assuming a `total: 0` response means no order exists without checking other statuses (e.g., `on-hold`, `stopped`).\n- Failing to compare `authoredOn` or `occurrenceDateTime` against the current time, leading to incorrect assumptions about the duration of a procedure.\n- Using `POST` to update a resource status instead of `PUT` or `PATCH` with the full resource body.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search**\nIf a search for `status=active` returns no results, perform a broader search including `status=on-hold,completed,stopped` to ensure you have the full history before concluding that no active order exists.\n\n**Pattern 2: Date Validation**\nAlways extract the `authoredOn` or `occurrenceDateTime` from the resource. Calculate the duration between that date and the current time. If the task involves a threshold (e.g., 48 hours), explicitly state the calculation in your reasoning.\n\n**Pattern 3: Correct Update Logic**\nWhen changing the status of an existing resource, retrieve the full resource first, update the `status` field in the JSON body, and perform a `PUT` request to the resource endpoint (e.g., `PUT /MedicationRequest/{id}`). Never `POST` a partial status update to the base collection endpoint.\n\n## Example Application\n\n**Task:** \"Verify patient has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient={id}`.\n2. Filter the returned bundle for resources where `status` is `active`.\n3. If multiple active orders exist, identify the one with the most recent `authoredOn` date.\n4. For all other active orders, perform a `PUT` request to update their `status` to `stopped`.\n\n## Success Indicators\n- Agent correctly identifies existing orders that were previously missed due to status filtering.\n- Agent performs accurate date math before triggering removal or follow-up orders.\n\n## Failure Indicators\n- Agent continues to create duplicate orders because it failed to identify existing `on-hold` or `stopped` orders that should have been managed.\n- Agent triggers actions based on incorrect time calculations.",
+        "tags": [
+          "fhir",
+          "verification",
+          "status-management"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_time_bound_search_strategy",
+        "description": "Enforce time-bound searches using date parameters when retrieving longitudinal clinical data.",
+        "content": "# fhir_time_bound_search_strategy\n\n## Pattern Description\nWhen a task requires data over a specific lookback period (e.g., \"past 6 hours\", \"past 12 hours\", \"last 365 days\"), you must apply time-bound filters to your FHIR search queries. Relying on broad searches and filtering in memory often leads to false negatives if the server truncates results or if the data volume is high. Always use the `date` or `effective` search parameters with prefixes like `ge` (greater than or equal to) to constrain the server-side response.\n\n## When to Use This Skill\n- When a task specifies a time window (e.g., \"past 6 hours\", \"last 12 months\").\n- When a broad search returns no results, but you suspect data exists outside the default server page limit.\n- When calculating averages or trends over specific time intervals.\n\n## Common Failure Patterns\n- Searching without a `date` parameter, causing the agent to miss recent records or hit pagination limits.\n- Using incorrect date formats (e.g., `date=2023-11-07` instead of `date=ge2023-11-07T16:47:00Z`).\n- Failing to calculate the relative timestamp based on the \"Current time\" provided in the task context.\n\n## Recommended Patterns\n\n**Pattern 1: Calculate the threshold**\nBefore issuing the GET request, calculate the exact ISO-8601 timestamp for the start of the window. If the current time is `2023-11-07T22:47:00Z` and the window is 6 hours, the threshold is `2023-11-07T16:47:00Z`.\n\n**Pattern 2: Apply the filter**\nAppend the `date` or `effective` parameter to your query.\nCORRECT: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`\nWRONG:   `GET /Observation?patient=S123&code=HEARTRATE` (and then filtering manually)\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours for patient S6352985. Current time: 2023-11-07T22:47:00Z.\"\n\n**Step-by-step:**\n1. Calculate the start time: 22:47 - 6 hours = 16:47.\n2. Construct the query: `GET /Observation?patient=S6352985&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`.\n3. Extract the `valueQuantity.value` from the returned resources.\n4. Calculate the average and `FINISH`.\n\n## Success Indicators\n- Agent includes `date=ge...` in the initial GET request.\n- Agent successfully retrieves data within the specified window.\n\n## Failure Indicators\n- Agent returns \"No data found\" despite the presence of records in the system.\n- Agent attempts to fetch all records and filter them manually, leading to pagination errors or timeouts.",
+        "tags": [
+          "fhir",
+          "search",
+          "time-bound"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "device_resource_search_strategy",
+        "description": "Search Device resources for medical equipment like catheters that are not tracked as Procedures.",
+        "content": "# Device Resource Search Strategy\n\n## Pattern Description\nMany medical devices, such as urinary catheters, are tracked in the `Device` FHIR resource rather than `Procedure` or `ServiceRequest`. When a task involves checking the status or duration of a physical medical device, you must search the `Device` resource to avoid false negatives.\n\n## When to Use This Skill\n- When searching for the presence or duration of a medical device (e.g., urinary catheter, central line, pacemaker).\n- When a search for a device-related code in `Procedure` or `ServiceRequest` returns no results, but the clinical context suggests the device should be present.\n\n## Common Failure Patterns\n- Searching only `Procedure` for device-related codes (e.g., NUR1373 for urinary catheters).\n- Assuming a device is absent because it is not listed in `Procedure` or `ServiceRequest` bundles.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Device Search**\nWhen checking for a device, always include a search on the `Device` resource.\n- GET `Device?patient={patient_id}`\n\n**Pattern 2: Cross-Resource Verification**\nIf the `Device` resource is empty, check `DeviceAssociation` (if supported) or verify if the device is linked to a `Procedure` via the `device` reference field.\n\n## Example Application\n\n**Task:** \"Check if patient S3241217 has a urinary catheter in place.\"\n\n**Step-by-step:**\n1. Issue GET `Procedure?patient=S3241217&code=NUR1373`.\n2. If empty, issue GET `Device?patient=S3241217`.\n3. Inspect the `Device` bundle for entries matching the catheter code.\n4. If found, calculate duration using `manufactureDate` or `status` change timestamps.\n\nCORRECT output: `FINISH([\"Found urinary catheter (Device/123) placed on 2023-11-05.\"])`\nWRONG output: `FINISH([\"No catheter found in Procedure records.\"])`\n\n## Success Indicators\n- Agent successfully identifies devices by querying the `Device` resource.\n- Reduction in false negatives for device-related status checks.\n\n## Failure Indicators\n- Agent continues to ignore `Device` resources when searching for equipment.",
+        "tags": [
+          "fhir",
+          "search",
+          "device"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "medication_request_opioid_search_strategy",
+        "description": "Expand opioid search to include MedicationStatement resources to capture all active medication usage.",
+        "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying active medication therapy, such as opioid analgesics, you must search both `MedicationRequest` and `MedicationStatement` resources. Relying solely on `MedicationRequest` leads to false negatives because active therapy is often documented in `MedicationStatement` resources.\n\n## When to Use This Skill\n- When verifying active opioid analgesic orders (e.g., hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n- When a search for `MedicationRequest` returns no active orders but the task requires confirming active therapy.\n\n## Common Failure Patterns\n- Searching only `MedicationRequest` and assuming the absence of a record means the patient is not on the medication.\n- Failing to check `MedicationStatement` for long-term or chronic active medications.\n\n## Recommended Patterns\n\n**Pattern 1: Dual Resource Search**\nAlways perform two parallel searches when checking for active medications:\n1. `GET /MedicationRequest?patient={id}&status=active`\n2. `GET /MedicationStatement?patient={id}&status=active`\n\n**Pattern 2: Verification**\nIf either search returns a match for the target medication, treat the patient as having an active order. Do not conclude the patient is not on the medication until both resources have been exhausted.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue `GET /MedicationRequest?patient=S6530532&status=active`.\n2. Issue `GET /MedicationStatement?patient=S6530532&status=active`.\n3. Aggregate results from both bundles.\n4. If an opioid is found in either, check for a corresponding naloxone order.\n\nCORRECT output: `FINISH([\"Found active opioid in MedicationStatement, checking for naloxone...\"])`\nWRONG output: `FINISH([\"No active opioid orders found in MedicationRequest.\"])`\n\n## Success Indicators\n- Agent identifies active medications that were previously missed by only checking `MedicationRequest`.\n- Naloxone orders are correctly created when opioids are found in `MedicationStatement`.\n\n## Failure Indicators\n- Agent reports no active medications despite the patient having active `MedicationStatement` records.",
+        "tags": [
+          "medication",
+          "opioid",
+          "search",
+          "medication-statement"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_resource_status_verification_strategy",
+          "description": "Verify resource status and lifecycle dates before concluding that a resource is missing or that an action is required.",
+          "content": "# fhir_resource_status_verification_strategy\n\n## Pattern Description\nWhen searching for active orders or procedures, you must not assume that a lack of results in a simple GET request means the resource does not exist. You must explicitly verify the `status` field of all returned resources and, for time-sensitive tasks (like catheter removal), validate the `authoredOn` or `occurrenceDateTime` against the current system time to ensure you are not acting on stale or misinterpreted data.\n\n## When to Use This Skill\n- When a task requires verifying the existence of an \"active\" order (e.g., DVT prophylaxis, catheter removal).\n- When you need to determine if a procedure or order is \"stale\" (e.g., > 48 hours for catheters, > 12 months for vaccines).\n- When a search returns zero results, but you suspect the resource might exist under a different status or date range.\n\n## Common Failure Patterns\n- Assuming a `total: 0` response means no order exists without checking other statuses (e.g., `on-hold`, `stopped`).\n- Failing to compare `authoredOn` or `occurrenceDateTime` against the current time, leading to incorrect assumptions about the duration of a procedure.\n- Using `POST` to update a resource status instead of `PUT` or `PATCH` with the full resource body.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search**\nIf a search for `status=active` returns no results, perform a broader search including `status=on-hold,completed,stopped` to ensure you have the full history before concluding that no active order exists.\n\n**Pattern 2: Date Validation**\nAlways extract the `authoredOn` or `occurrenceDateTime` from the resource. Calculate the duration between that date and the current time. If the task involves a threshold (e.g., 48 hours), explicitly state the calculation in your reasoning.\n\n**Pattern 3: Correct Update Logic**\nWhen changing the status of an existing resource, retrieve the full resource first, update the `status` field in the JSON body, and perform a `PUT` request to the resource endpoint (e.g., `PUT /MedicationRequest/{id}`). Never `POST` a partial status update to the base collection endpoint.\n\n## Example Application\n\n**Task:** \"Verify patient has exactly one active DVT prophylaxis order.\"\n\n**Step-by-step:**\n1. GET `MedicationRequest?patient={id}`.\n2. Filter the returned bundle for resources where `status` is `active`.\n3. If multiple active orders exist, identify the one with the most recent `authoredOn` date.\n4. For all other active orders, perform a `PUT` request to update their `status` to `stopped`.\n\n## Success Indicators\n- Agent correctly identifies existing orders that were previously missed due to status filtering.\n- Agent performs accurate date math before triggering removal or follow-up orders.\n\n## Failure Indicators\n- Agent continues to create duplicate orders because it failed to identify existing `on-hold` or `stopped` orders that should have been managed.\n- Agent triggers actions based on incorrect time calculations.",
+          "tags": [
+            "fhir",
+            "verification",
+            "status-management"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_time_bound_search_strategy",
+          "description": "Enforce time-bound searches using date parameters when retrieving longitudinal clinical data.",
+          "content": "# fhir_time_bound_search_strategy\n\n## Pattern Description\nWhen a task requires data over a specific lookback period (e.g., \"past 6 hours\", \"past 12 hours\", \"last 365 days\"), you must apply time-bound filters to your FHIR search queries. Relying on broad searches and filtering in memory often leads to false negatives if the server truncates results or if the data volume is high. Always use the `date` or `effective` search parameters with prefixes like `ge` (greater than or equal to) to constrain the server-side response.\n\n## When to Use This Skill\n- When a task specifies a time window (e.g., \"past 6 hours\", \"last 12 months\").\n- When a broad search returns no results, but you suspect data exists outside the default server page limit.\n- When calculating averages or trends over specific time intervals.\n\n## Common Failure Patterns\n- Searching without a `date` parameter, causing the agent to miss recent records or hit pagination limits.\n- Using incorrect date formats (e.g., `date=2023-11-07` instead of `date=ge2023-11-07T16:47:00Z`).\n- Failing to calculate the relative timestamp based on the \"Current time\" provided in the task context.\n\n## Recommended Patterns\n\n**Pattern 1: Calculate the threshold**\nBefore issuing the GET request, calculate the exact ISO-8601 timestamp for the start of the window. If the current time is `2023-11-07T22:47:00Z` and the window is 6 hours, the threshold is `2023-11-07T16:47:00Z`.\n\n**Pattern 2: Apply the filter**\nAppend the `date` or `effective` parameter to your query.\nCORRECT: `GET /Observation?patient=S123&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`\nWRONG:   `GET /Observation?patient=S123&code=HEARTRATE` (and then filtering manually)\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate over the past 6 hours for patient S6352985. Current time: 2023-11-07T22:47:00Z.\"\n\n**Step-by-step:**\n1. Calculate the start time: 22:47 - 6 hours = 16:47.\n2. Construct the query: `GET /Observation?patient=S6352985&code=HEARTRATE&date=ge2023-11-07T16:47:00Z`.\n3. Extract the `valueQuantity.value` from the returned resources.\n4. Calculate the average and `FINISH`.\n\n## Success Indicators\n- Agent includes `date=ge...` in the initial GET request.\n- Agent successfully retrieves data within the specified window.\n\n## Failure Indicators\n- Agent returns \"No data found\" despite the presence of records in the system.\n- Agent attempts to fetch all records and filter them manually, leading to pagination errors or timeouts.",
+          "tags": [
+            "fhir",
+            "search",
+            "time-bound"
+          ]
+        },
+        "net": -6,
+        "score": -6,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "device_resource_search_strategy",
+          "description": "Search Device resources for medical equipment like catheters that are not tracked as Procedures.",
+          "content": "# Device Resource Search Strategy\n\n## Pattern Description\nMany medical devices, such as urinary catheters, are tracked in the `Device` FHIR resource rather than `Procedure` or `ServiceRequest`. When a task involves checking the status or duration of a physical medical device, you must search the `Device` resource to avoid false negatives.\n\n## When to Use This Skill\n- When searching for the presence or duration of a medical device (e.g., urinary catheter, central line, pacemaker).\n- When a search for a device-related code in `Procedure` or `ServiceRequest` returns no results, but the clinical context suggests the device should be present.\n\n## Common Failure Patterns\n- Searching only `Procedure` for device-related codes (e.g., NUR1373 for urinary catheters).\n- Assuming a device is absent because it is not listed in `Procedure` or `ServiceRequest` bundles.\n\n## Recommended Patterns\n\n**Pattern 1: Primary Device Search**\nWhen checking for a device, always include a search on the `Device` resource.\n- GET `Device?patient={patient_id}`\n\n**Pattern 2: Cross-Resource Verification**\nIf the `Device` resource is empty, check `DeviceAssociation` (if supported) or verify if the device is linked to a `Procedure` via the `device` reference field.\n\n## Example Application\n\n**Task:** \"Check if patient S3241217 has a urinary catheter in place.\"\n\n**Step-by-step:**\n1. Issue GET `Procedure?patient=S3241217&code=NUR1373`.\n2. If empty, issue GET `Device?patient=S3241217`.\n3. Inspect the `Device` bundle for entries matching the catheter code.\n4. If found, calculate duration using `manufactureDate` or `status` change timestamps.\n\nCORRECT output: `FINISH([\"Found urinary catheter (Device/123) placed on 2023-11-05.\"])`\nWRONG output: `FINISH([\"No catheter found in Procedure records.\"])`\n\n## Success Indicators\n- Agent successfully identifies devices by querying the `Device` resource.\n- Reduction in false negatives for device-related status checks.\n\n## Failure Indicators\n- Agent continues to ignore `Device` resources when searching for equipment.",
+          "tags": [
+            "fhir",
+            "search",
+            "device"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 4,
+        "fixes": 5,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_opioid_search_strategy",
+          "description": "Expand opioid search to include MedicationStatement resources to capture all active medication usage.",
+          "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying active medication therapy, such as opioid analgesics, you must search both `MedicationRequest` and `MedicationStatement` resources. Relying solely on `MedicationRequest` leads to false negatives because active therapy is often documented in `MedicationStatement` resources.\n\n## When to Use This Skill\n- When verifying active opioid analgesic orders (e.g., hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n- When a search for `MedicationRequest` returns no active orders but the task requires confirming active therapy.\n\n## Common Failure Patterns\n- Searching only `MedicationRequest` and assuming the absence of a record means the patient is not on the medication.\n- Failing to check `MedicationStatement` for long-term or chronic active medications.\n\n## Recommended Patterns\n\n**Pattern 1: Dual Resource Search**\nAlways perform two parallel searches when checking for active medications:\n1. `GET /MedicationRequest?patient={id}&status=active`\n2. `GET /MedicationStatement?patient={id}&status=active`\n\n**Pattern 2: Verification**\nIf either search returns a match for the target medication, treat the patient as having an active order. Do not conclude the patient is not on the medication until both resources have been exhausted.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue `GET /MedicationRequest?patient=S6530532&status=active`.\n2. Issue `GET /MedicationStatement?patient=S6530532&status=active`.\n3. Aggregate results from both bundles.\n4. If an opioid is found in either, check for a corresponding naloxone order.\n\nCORRECT output: `FINISH([\"Found active opioid in MedicationStatement, checking for naloxone...\"])`\nWRONG output: `FINISH([\"No active opioid orders found in MedicationRequest.\"])`\n\n## Success Indicators\n- Agent identifies active medications that were previously missed by only checking `MedicationRequest`.\n- Naloxone orders are correctly created when opioids are found in `MedicationStatement`.\n\n## Failure Indicators\n- Agent reports no active medications despite the patient having active `MedicationStatement` records.",
+          "tags": [
+            "medication",
+            "opioid",
+            "search",
+            "medication-statement"
+          ]
+        },
+        "net": -1,
+        "score": -1,
+        "raw_score": 4,
+        "fixes": 4,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 5,
+        "baseline_regressions": 0,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  },
+  {
+    "epoch": 3,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 26,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "medication_request_opioid_search_strategy",
+        "description": "Ensure exhaustive search for opioid medication orders by checking all relevant statuses, while avoiding over-application to non-medication resources.",
+        "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying the presence of specific medication orders (like opioids), a simple search by patient ID is often insufficient because the FHIR server may default to returning only 'active' status resources. You must perform an exhaustive search across all relevant statuses to ensure no orders are missed.\n\n## When to Use This Skill\n- Specifically when searching for `MedicationRequest` resources.\n- When the task requires verifying the existence of an active medication order (e.g., opioid analgesics).\n- When a search for a medication returns an empty bundle, but the task implies an order should exist.\n\n## Guard Clauses (Avoid applying to these)\n- Do NOT apply this exhaustive status search pattern to `Procedure`, `Immunization`, or `Observation` resources, as these resources often do not support the same `status` parameter logic as `MedicationRequest` and may lead to unnecessary API calls or errors.\n- For `Procedure` or `Immunization` searches, rely on date-based filtering or standard code-based lookups.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search (MedicationRequest ONLY)**\nAlways include the `status` parameter in your GET request for `MedicationRequest` to cover all potentially relevant states.\n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active,on-hold,stopped`\n\n**Pattern 2: Verification of Results**\nIf the initial search returns no results, do not immediately conclude the order is missing. Verify if the search parameters were too restrictive or if a broader search is needed.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status parameters: `GET /MedicationRequest?patient=S1796597&status=active,on-hold,stopped`\n2. Review the returned bundle for any opioid medications.\n3. If an opioid is found, check the bundle for a corresponding naloxone order.\n\n## Success Indicators\n- The agent retrieves a comprehensive list of medications across all statuses.\n- The agent correctly identifies the presence or absence of the required medication.\n\n## Failure Indicators\n- The agent returns a false negative when an order exists in a non-active status.\n- The agent applies status-based filtering to non-medication resources (e.g., Procedure), causing search failures.",
+        "tags": [
+          "medication",
+          "fhir",
+          "search-strategy"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "MODIFY",
+        "name": "fhir_observation_search_strategy",
+        "description": "Expand observation searches to include specific LOINC codes and handle pagination when category-based searches return empty results.",
+        "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for clinical observations (like heart rate, TSH, or FT4), a broad category search (e.g., `category=vital-signs` or `category=laboratory`) is often insufficient because the specific resource may not be tagged with that category or the server may return incomplete results. You must supplement category searches with direct code-based searches using known LOINC codes or specific identifiers.\n\nIf a search returns an empty bundle, do not immediately conclude that the data is missing. You must perform a secondary search using the specific code provided in the task context. If that also returns empty, verify if the resource exists by searching without filters or by checking related resource types.\n\n## When to Use This Skill\n- When a `GET /Observation` with a `category` filter returns an empty `entry` array.\n- When the task requires a specific measurement (e.g., heart rate, TSH) and the initial broad search fails to yield results.\n- When you suspect data exists but the initial search parameters were too restrictive.\n\n## Common Failure Patterns\n- Relying solely on `category=vital-signs` or `category=laboratory`.\n- Failing to search by specific `code` when the category search is empty.\n- Assuming a zero-result search means the data does not exist without attempting a broader search (e.g., removing the category filter).\n- Ignoring the `next` link in a bundle when the initial page is empty or incomplete.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Stage Search**\n1. Start with the most specific search: `GET /Observation?patient={id}&code={code}`.\n2. If that returns no results, try the category search: `GET /Observation?patient={id}&category={category}`.\n3. If both fail, perform a broad search: `GET /Observation?patient={id}` and manually filter the results in your context window.\n\n**Pattern 2: Handling Empty Results**\n- If a search returns `total: 0`, do not stop. Try a different combination of parameters (e.g., remove the category, use a different code alias).\n- Always check the `link` array for a `next` relation. If present, follow it to ensure you haven't missed data on subsequent pages.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate...\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S2161163&code=HEARTRATE`.\n2. If empty, issue `GET /Observation?patient=S2161163&category=vital-signs`.\n3. If still empty, issue `GET /Observation?patient=S2161163` to retrieve all observations and filter for heart rate codes manually.\n4. If data is found, extract `valueQuantity.value` and calculate the average.\n\n## Success Indicators\n- Agent successfully retrieves the required observation after an initial empty search.\n- Agent correctly identifies that data is missing only after exhausting multiple search strategies (code, category, and broad patient search).\n\n## Failure Indicators\n- Agent returns \"No data found\" after only one or two narrow search attempts.\n- Agent enters an infinite loop of identical GET requests.",
+        "tags": [
+          "fhir",
+          "observation",
+          "search",
+          "vital-signs"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "medication_request_opioid_search_strategy",
+        "description": "Ensure exhaustive search for opioid orders by checking all relevant statuses and verifying medication lists.",
+        "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying the presence of specific medication orders (like opioids), a simple search by patient ID is often insufficient because the FHIR server may default to returning only 'active' status resources, or the medication may be listed under a different status (e.g., 'on-hold', 'stopped'). You must perform an exhaustive search across all relevant statuses to ensure no orders are missed.\n\n## When to Use This Skill\n- When the task requires verifying the existence of an active medication order (e.g., opioid analgesics).\n- When a search for a medication returns an empty bundle, but the task implies an order should exist or requires a definitive check.\n- When checking for matching prescriptions (e.g., naloxone for opioid patients).\n\n## Common Failure Patterns\n- Searching only with `patient=ID` without specifying `status` parameters, leading to incomplete results.\n- Assuming that an empty result for a default search means no order exists.\n- Failing to check for 'on-hold' or 'stopped' statuses when the task requires verifying the current state of a patient's medication list.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search**\nAlways include the `status` parameter in your GET request to cover all potentially relevant states. \n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active,on-hold,stopped`\nWRONG: `GET /MedicationRequest?patient=S123`\n\n**Pattern 2: Verification of Results**\nIf the initial search returns no results, do not immediately conclude the order is missing. Verify if the search parameters were too restrictive or if a broader search is needed.\n\n**Pattern 3: Medication Identification**\nWhen searching for specific classes of drugs (e.g., opioids), ensure you are aware of the specific names or codes provided in the task context. If the search returns a large list, filter the results by the medication names provided in the instructions.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status parameters: `GET /MedicationRequest?patient=S1796597&status=active,on-hold,stopped`\n2. Review the returned bundle for any opioid medications (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n3. If an opioid is found, check the bundle for a corresponding naloxone order.\n4. If no naloxone is found for an active opioid, proceed to create the order.\n\n## Success Indicators\n- The agent retrieves a comprehensive list of medications across all statuses.\n- The agent correctly identifies the presence or absence of the required medication.\n\n## Failure Indicators\n- The agent returns a false negative (e.g., \"No orders found\") when an order exists in a non-active status.\n- The agent fails to check for the specific medications listed in the task context.",
+        "tags": [
+          "medication",
+          "opioid",
+          "search",
+          "fhir"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "temporal_duration_verification_strategy",
+        "description": "Calculate time elapsed between a resource's start date and current time before triggering time-sensitive interventions.",
+        "content": "## Skill Title\nTemporal Duration Verification Strategy\n\n## Pattern Description\nWhen a task requires an intervention based on the duration of a procedure or order (e.g., 'in place for >48 hours'), you must explicitly calculate the time elapsed between the resource's start date (`performedDateTime`, `authoredOn`, or `occurrenceDateTime`) and the current system time. Do not assume a duration based on the mere existence of a record.\n\n## When to Use This Skill\n- When a task requires checking if a procedure or device has been active for a specific threshold (e.g., >48 hours).\n- When you must decide whether to create a new order based on the age of a previous event.\n- When the task implies a time-based condition that is not explicitly stated in the resource status.\n\n## Common Failure Patterns\n- Assuming a procedure is 'old enough' just because it exists in the search results.\n- Failing to parse the `performedDateTime` or `authoredOn` field into a comparable timestamp.\n- Creating a new ServiceRequest without verifying the exact duration, leading to premature interventions.\n\n## Recommended Patterns\n\n**Pattern 1: Time Calculation**\n1. Retrieve the resource (e.g., Procedure, ServiceRequest).\n2. Extract the start date field (e.g., `performedDateTime`).\n3. Compare this date against the current time provided in the task context.\n4. Calculate the difference in hours or days.\n\n**Pattern 2: Threshold Verification**\n- If `(CurrentTime - StartTime) > Threshold`, proceed with the intervention.\n- If `(CurrentTime - StartTime) <= Threshold`, do not create the order; report the current duration instead.\n\n## Example Application\n\n**Task:** \"Check if patient has a urinary catheter in place for >48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=NUR1373`.\n2. Extract `performedDateTime`: `2023-11-06T08:00:00Z`.\n3. Current time: `2023-11-07T22:47:00Z`.\n4. Calculate: `2023-11-07T22:47:00 - 2023-11-06T08:00:00` = ~38 hours.\n5. Decision: 38 hours < 48 hours. Do not create removal order.\n\n## Success Indicators\n- Agent correctly identifies that a procedure has not yet met the time threshold.\n- Agent reports the calculated duration in the final response.\n\n## Failure Indicators\n- Agent creates a ServiceRequest for a procedure that has been in place for less than the required time.",
+        "tags": [
+          "temporal",
+          "verification",
+          "procedure"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "fhir_observation_search_strategy",
+          "description": "Expand observation searches to include specific LOINC codes and handle pagination when category-based searches return empty results.",
+          "content": "## Skill Title\nFHIR Observation Search Strategy\n\n## Pattern Description\nWhen searching for clinical observations (like heart rate, TSH, or FT4), a broad category search (e.g., `category=vital-signs` or `category=laboratory`) is often insufficient because the specific resource may not be tagged with that category or the server may return incomplete results. You must supplement category searches with direct code-based searches using known LOINC codes or specific identifiers.\n\nIf a search returns an empty bundle, do not immediately conclude that the data is missing. You must perform a secondary search using the specific code provided in the task context. If that also returns empty, verify if the resource exists by searching without filters or by checking related resource types.\n\n## When to Use This Skill\n- When a `GET /Observation` with a `category` filter returns an empty `entry` array.\n- When the task requires a specific measurement (e.g., heart rate, TSH) and the initial broad search fails to yield results.\n- When you suspect data exists but the initial search parameters were too restrictive.\n\n## Common Failure Patterns\n- Relying solely on `category=vital-signs` or `category=laboratory`.\n- Failing to search by specific `code` when the category search is empty.\n- Assuming a zero-result search means the data does not exist without attempting a broader search (e.g., removing the category filter).\n- Ignoring the `next` link in a bundle when the initial page is empty or incomplete.\n\n## Recommended Patterns\n\n**Pattern 1: Multi-Stage Search**\n1. Start with the most specific search: `GET /Observation?patient={id}&code={code}`.\n2. If that returns no results, try the category search: `GET /Observation?patient={id}&category={category}`.\n3. If both fail, perform a broad search: `GET /Observation?patient={id}` and manually filter the results in your context window.\n\n**Pattern 2: Handling Empty Results**\n- If a search returns `total: 0`, do not stop. Try a different combination of parameters (e.g., remove the category, use a different code alias).\n- Always check the `link` array for a `next` relation. If present, follow it to ensure you haven't missed data on subsequent pages.\n\n## Example Application\n\n**Task:** \"Calculate the average heart rate...\"\n\n**Step-by-step:**\n1. Issue `GET /Observation?patient=S2161163&code=HEARTRATE`.\n2. If empty, issue `GET /Observation?patient=S2161163&category=vital-signs`.\n3. If still empty, issue `GET /Observation?patient=S2161163` to retrieve all observations and filter for heart rate codes manually.\n4. If data is found, extract `valueQuantity.value` and calculate the average.\n\n## Success Indicators\n- Agent successfully retrieves the required observation after an initial empty search.\n- Agent correctly identifies that data is missing only after exhausting multiple search strategies (code, category, and broad patient search).\n\n## Failure Indicators\n- Agent returns \"No data found\" after only one or two narrow search attempts.\n- Agent enters an infinite loop of identical GET requests.",
+          "tags": [
+            "fhir",
+            "observation",
+            "search",
+            "vital-signs"
+          ]
+        },
+        "net": 0,
+        "score": 0,
+        "raw_score": -2,
+        "fixes": 2,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_opioid_search_strategy",
+          "description": "Ensure exhaustive search for opioid orders by checking all relevant statuses and verifying medication lists.",
+          "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying the presence of specific medication orders (like opioids), a simple search by patient ID is often insufficient because the FHIR server may default to returning only 'active' status resources, or the medication may be listed under a different status (e.g., 'on-hold', 'stopped'). You must perform an exhaustive search across all relevant statuses to ensure no orders are missed.\n\n## When to Use This Skill\n- When the task requires verifying the existence of an active medication order (e.g., opioid analgesics).\n- When a search for a medication returns an empty bundle, but the task implies an order should exist or requires a definitive check.\n- When checking for matching prescriptions (e.g., naloxone for opioid patients).\n\n## Common Failure Patterns\n- Searching only with `patient=ID` without specifying `status` parameters, leading to incomplete results.\n- Assuming that an empty result for a default search means no order exists.\n- Failing to check for 'on-hold' or 'stopped' statuses when the task requires verifying the current state of a patient's medication list.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search**\nAlways include the `status` parameter in your GET request to cover all potentially relevant states. \n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active,on-hold,stopped`\nWRONG: `GET /MedicationRequest?patient=S123`\n\n**Pattern 2: Verification of Results**\nIf the initial search returns no results, do not immediately conclude the order is missing. Verify if the search parameters were too restrictive or if a broader search is needed.\n\n**Pattern 3: Medication Identification**\nWhen searching for specific classes of drugs (e.g., opioids), ensure you are aware of the specific names or codes provided in the task context. If the search returns a large list, filter the results by the medication names provided in the instructions.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status parameters: `GET /MedicationRequest?patient=S1796597&status=active,on-hold,stopped`\n2. Review the returned bundle for any opioid medications (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine).\n3. If an opioid is found, check the bundle for a corresponding naloxone order.\n4. If no naloxone is found for an active opioid, proceed to create the order.\n\n## Success Indicators\n- The agent retrieves a comprehensive list of medications across all statuses.\n- The agent correctly identifies the presence or absence of the required medication.\n\n## Failure Indicators\n- The agent returns a false negative (e.g., \"No orders found\") when an order exists in a non-active status.\n- The agent fails to check for the specific medications listed in the task context.",
+          "tags": [
+            "medication",
+            "opioid",
+            "search",
+            "fhir"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "temporal_duration_verification_strategy",
+          "description": "Calculate time elapsed between a resource's start date and current time before triggering time-sensitive interventions.",
+          "content": "## Skill Title\nTemporal Duration Verification Strategy\n\n## Pattern Description\nWhen a task requires an intervention based on the duration of a procedure or order (e.g., 'in place for >48 hours'), you must explicitly calculate the time elapsed between the resource's start date (`performedDateTime`, `authoredOn`, or `occurrenceDateTime`) and the current system time. Do not assume a duration based on the mere existence of a record.\n\n## When to Use This Skill\n- When a task requires checking if a procedure or device has been active for a specific threshold (e.g., >48 hours).\n- When you must decide whether to create a new order based on the age of a previous event.\n- When the task implies a time-based condition that is not explicitly stated in the resource status.\n\n## Common Failure Patterns\n- Assuming a procedure is 'old enough' just because it exists in the search results.\n- Failing to parse the `performedDateTime` or `authoredOn` field into a comparable timestamp.\n- Creating a new ServiceRequest without verifying the exact duration, leading to premature interventions.\n\n## Recommended Patterns\n\n**Pattern 1: Time Calculation**\n1. Retrieve the resource (e.g., Procedure, ServiceRequest).\n2. Extract the start date field (e.g., `performedDateTime`).\n3. Compare this date against the current time provided in the task context.\n4. Calculate the difference in hours or days.\n\n**Pattern 2: Threshold Verification**\n- If `(CurrentTime - StartTime) > Threshold`, proceed with the intervention.\n- If `(CurrentTime - StartTime) <= Threshold`, do not create the order; report the current duration instead.\n\n## Example Application\n\n**Task:** \"Check if patient has a urinary catheter in place for >48 hours.\"\n\n**Step-by-step:**\n1. GET `Procedure?patient=S123&code=NUR1373`.\n2. Extract `performedDateTime`: `2023-11-06T08:00:00Z`.\n3. Current time: `2023-11-07T22:47:00Z`.\n4. Calculate: `2023-11-07T22:47:00 - 2023-11-06T08:00:00` = ~38 hours.\n5. Decision: 38 hours < 48 hours. Do not create removal order.\n\n## Success Indicators\n- Agent correctly identifies that a procedure has not yet met the time threshold.\n- Agent reports the calculated duration in the final response.\n\n## Failure Indicators\n- Agent creates a ServiceRequest for a procedure that has been in place for less than the required time.",
+          "tags": [
+            "temporal",
+            "verification",
+            "procedure"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": -1,
+        "fixes": 2,
+        "regressions": 3,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 3,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "medication_request_opioid_search_strategy",
+          "description": "Ensure exhaustive search for opioid medication orders by checking all relevant statuses, while avoiding over-application to non-medication resources.",
+          "content": "# Medication Request Opioid Search Strategy\n\n## Pattern Description\nWhen verifying the presence of specific medication orders (like opioids), a simple search by patient ID is often insufficient because the FHIR server may default to returning only 'active' status resources. You must perform an exhaustive search across all relevant statuses to ensure no orders are missed.\n\n## When to Use This Skill\n- Specifically when searching for `MedicationRequest` resources.\n- When the task requires verifying the existence of an active medication order (e.g., opioid analgesics).\n- When a search for a medication returns an empty bundle, but the task implies an order should exist.\n\n## Guard Clauses (Avoid applying to these)\n- Do NOT apply this exhaustive status search pattern to `Procedure`, `Immunization`, or `Observation` resources, as these resources often do not support the same `status` parameter logic as `MedicationRequest` and may lead to unnecessary API calls or errors.\n- For `Procedure` or `Immunization` searches, rely on date-based filtering or standard code-based lookups.\n\n## Recommended Patterns\n\n**Pattern 1: Exhaustive Status Search (MedicationRequest ONLY)**\nAlways include the `status` parameter in your GET request for `MedicationRequest` to cover all potentially relevant states.\n\nCORRECT: `GET /MedicationRequest?patient=S123&status=active,on-hold,stopped`\n\n**Pattern 2: Verification of Results**\nIf the initial search returns no results, do not immediately conclude the order is missing. Verify if the search parameters were too restrictive or if a broader search is needed.\n\n## Example Application\n\n**Task:** \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription.\"\n\n**Step-by-step:**\n1. Issue GET with status parameters: `GET /MedicationRequest?patient=S1796597&status=active,on-hold,stopped`\n2. Review the returned bundle for any opioid medications.\n3. If an opioid is found, check the bundle for a corresponding naloxone order.\n\n## Success Indicators\n- The agent retrieves a comprehensive list of medications across all statuses.\n- The agent correctly identifies the presence or absence of the required medication.\n\n## Failure Indicators\n- The agent returns a false negative when an order exists in a non-active status.\n- The agent applies status-based filtering to non-medication resources (e.g., Procedure), causing search failures.",
+          "tags": [
+            "medication",
+            "fhir",
+            "search-strategy"
+          ]
+        },
+        "net": 4,
+        "score": 4,
+        "fixes": 2,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 3,
+        "contrastive_revision": true
+      }
+    ]
+  }
+]

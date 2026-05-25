@@ -1,0 +1,288 @@
+[
+  {
+    "epoch": 6,
+    "update_cycle": 0,
+    "batch_size": 48,
+    "batch_correct": 33,
+    "applied": [
+      {
+        "action": "ADD",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce conditional logic to prevent unnecessary POST requests when clinical thresholds are not met.",
+        "content": "# Conditional Action Threshold Strategy\n\n## Pattern Description\nWhen a task requires an action (e.g., ordering a medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the data meets the specific criteria defined in the instruction.\n\n## When to Use This Skill\n- When a task includes a conditional trigger (e.g., \"If low, then order...\").\n- When you are about to perform a `POST` request (MedicationRequest, ServiceRequest) based on a lab value.\n- When you have retrieved a lab value but have not yet verified if it meets the threshold for action.\n\n## Common Failure Patterns\n- Executing a `POST` request automatically after a `GET` request, regardless of the retrieved value.\n- Failing to compare the retrieved `valueQuantity.value` against the threshold (e.g., 3.5 mmol/L for potassium).\n- Ordering redundant tests or medications when the clinical data indicates no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Evaluation**\n1. Retrieve the most recent observation using `_sort=-date`.\n2. Extract the `valueQuantity.value`.\n3. Compare the value against the threshold specified in the prompt.\n4. If the value does not meet the threshold, stop and report the finding without performing the action.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to `POST` if the threshold condition is met.\n- If the condition is not met, call `FINISH` with a clear explanation (e.g., \"Level is 3.8, which is not low; no replacement ordered\").\n\n## Example Application\n\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Receive value: `3.8`.\n3. Evaluate: `3.8 < 3.5` is `False`.\n4. Action: Do not POST `MedicationRequest`.\n5. Output: `FINISH([\"Potassium is 3.8, not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical data does not meet the criteria.\n- The final output explicitly states why no action was taken.\n\n## Failure Indicators\n- `POST` requests are sent even when the lab value is within normal range.\n- The agent performs redundant actions despite the data indicating they are unnecessary.",
+        "tags": [
+          "conditional-logic",
+          "fhir",
+          "threshold-check"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce conditional logic to prevent unnecessary POST requests when clinical thresholds are not met.",
+        "content": "# Conditional Action Threshold Strategy\n\n## Pattern Description\nWhen a task requires an action (e.g., ordering a medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the data meets the specific criteria defined in the instruction.\n\n## When to Use This Skill\n- When a task includes a conditional trigger (e.g., \"If low, then order...\").\n- When you are about to perform a `POST` request (MedicationRequest, ServiceRequest) based on a lab value.\n- When you have retrieved a lab value but have not yet verified if it meets the threshold for action.\n\n## Common Failure Patterns\n- Executing a `POST` request automatically after a `GET` request, regardless of the retrieved value.\n- Failing to compare the retrieved `valueQuantity.value` against the threshold (e.g., 3.5 mmol/L for potassium).\n- Ordering redundant tests or medications when the clinical data indicates no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Evaluation**\n1. Retrieve the most recent observation using `_sort=-date`.\n2. Extract the `valueQuantity.value`.\n3. Compare the value against the threshold specified in the prompt.\n4. If the value does not meet the threshold, stop and report the finding without performing the action.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to `POST` if the threshold condition is met.\n- If the condition is not met, call `FINISH` with a clear explanation (e.g., \"Level is 3.8, which is not low; no replacement ordered\").\n\n## Example Application\n\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Receive value: `3.8`.\n3. Evaluate: `3.8 < 3.5` is `False`.\n4. Action: Do not POST `MedicationRequest`.\n5. Output: `FINISH([\"Potassium is 3.8, not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical data does not meet the criteria.\n- The final output explicitly states why no action was taken.\n\n## Failure Indicators\n- `POST` requests are sent even when the lab value is within normal range.\n- The agent performs redundant actions despite the data indicating they are unnecessary.",
+        "tags": [
+          "conditional-logic",
+          "fhir",
+          "threshold-check"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_observation_value_validation_strategy",
+        "description": "Validate lab values against clinical thresholds before determining if an intervention is required.",
+        "content": "## Skill Title\n\nFHIR Observation Value Validation Strategy\n\n## Pattern Description\n\nWhen evaluating laboratory results to determine if a clinical intervention (like medication replacement) is necessary, you must explicitly compare the extracted value against the provided clinical reference range or threshold. Do not assume a value is \"normal\" or \"low\" based on general knowledge; always use the specific thresholds provided in the task context.\n\n## When to Use This Skill\n\n- When a task requires checking a lab value (e.g., Potassium, Magnesium) to decide if an order is needed.\n- When the task provides specific \"low\" or \"normal\" range thresholds.\n- When you are tempted to conclude \"no order required\" based on a value that is near a threshold.\n\n## Common Failure Patterns\n\n- Assuming a value like 3.5 mmol/L is \"not low\" without verifying if the threshold for replacement is exactly 3.5 or lower.\n- Failing to account for the specific units (e.g., mg/dL vs mmol/L) when comparing against provided thresholds.\n- Stopping the task prematurely because a value is \"within range\" without explicitly stating the comparison logic.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Threshold Comparison**\n1. Extract the `valueQuantity.value` from the Observation resource.\n2. Identify the threshold provided in the task instructions (e.g., \"If low, where low is < 1.5 mg/dL\").\n3. Perform a direct comparison: `if value < threshold: order_intervention() else: finish_with_explanation()`.\n4. State the comparison in your final output to confirm the logic used.\n\n**Pattern 2: Handling Borderline Values**\n- If the value is exactly at the threshold, re-read the instructions. If the instruction says \"If low\", and the threshold is \"< 3.5\", then 3.5 is not low. If it says \"<= 3.5\", then 3.5 is low.\n\n## Example Application\n\n**Task:** \"Check patient's potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for Potassium.\n2. Extract value: 3.5.\n3. Compare: Is 3.5 < 3.5? No.\n4. Output: FINISH([\"The potassium level is 3.5 mmol/L. Since the threshold for replacement is < 3.5, no replacement is required.\"])\n\n## Success Indicators\n\n- The agent explicitly references the threshold and the measured value in the final output.\n- The decision to order or not order is clearly linked to the comparison result.\n\n## Failure Indicators\n\n- The agent makes a decision without mentioning the threshold.\n- The agent incorrectly interprets \"at the threshold\" as \"low\" when the instruction specified \"less than\".",
+        "tags": [
+          "fhir",
+          "lab-results",
+          "decision-logic"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "missing_data_handling_strategy",
+        "description": "Standardize the response format when requested data is not found in the FHIR server.",
+        "content": "# Missing Data Handling Strategy\n\n## Pattern Description\nWhen a search query (e.g., GET /Observation) returns a bundle with `total: 0`, you must not return arbitrary placeholders like `-1` or error strings. Instead, you must explicitly acknowledge the absence of data in a structured, machine-readable format that indicates the search was performed but yielded no results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with `total: 0`.\n- When the task requires a specific value (e.g., lab result) and that value is not present in the patient's record.\n- When you have exhausted all search aliases (e.g., different LOINC codes) and still found no data.\n\n## Common Failure Patterns\n- Returning `-1` or `\"Not available\"` as a numeric value, which breaks downstream processing.\n- Guessing or hallucinating a value when the search returns empty.\n- Failing to report that the search was completed but empty.\n\n## Recommended Patterns\n\n**Pattern 1: Empty Result Reporting**\nIf the search returns no entries, return an empty list `[]` or a specific null indicator `[null]` to signify the absence of data, rather than an arbitrary integer.\n\n**Pattern 2: Verification**\nBefore calling `FINISH`, ensure you have checked all relevant codes provided in the task context. If all searches return `total: 0`, conclude the task by stating the data is missing.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value?\"\n\n**Step-by-step:**\n1. Perform GET for primary code.\n2. If `total: 0`, perform GET for secondary/LOINC codes.\n3. If all searches return `total: 0`, call `FINISH` with an empty list or a clear null indicator.\n\nCORRECT output: `FINISH([])`\nWRONG output:   `FINISH([-1])`\n\n## Success Indicators\n- Agent consistently returns `[]` or `[null]` when data is missing.\n- Agent stops attempting further searches once all defined codes are exhausted.\n\n## Failure Indicators\n- Agent returns `-1`, `0`, or conversational text like \"I couldn't find it\" when a structured list is expected.",
+        "tags": [
+          "fhir",
+          "data-handling",
+          "error-correction"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "conditional_action_threshold_strategy",
+        "description": "Enforce conditional logic to prevent unnecessary POST requests when clinical thresholds are not met.",
+        "content": "# Conditional Action Threshold Strategy\n\n## Pattern Description\nWhen a task requires an action (e.g., ordering a medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the data meets the specific criteria defined in the instruction.\n\n## When to Use This Skill\n- When a task includes a conditional trigger (e.g., \"If low, then order...\").\n- When you are about to perform a `POST` request (MedicationRequest, ServiceRequest) based on a lab value.\n- When you have retrieved a lab value but have not yet verified if it meets the threshold for action.\n\n## Common Failure Patterns\n- Executing a `POST` request automatically after a `GET` request, regardless of the retrieved value.\n- Failing to compare the retrieved `valueQuantity.value` against the threshold (e.g., 3.5 mmol/L for potassium).\n- Ordering redundant tests or medications when the clinical data indicates no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Evaluation**\n1. Retrieve the most recent observation using `_sort=-date`.\n2. Extract the `valueQuantity.value`.\n3. Compare the value against the threshold specified in the prompt.\n4. If the value does not meet the threshold, stop and report the finding without performing the action.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to `POST` if the threshold condition is met.\n- If the condition is not met, call `FINISH` with a clear explanation (e.g., \"Level is 3.8, which is not low; no replacement ordered\").\n\n## Example Application\n\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Receive value: `3.8`.\n3. Evaluate: `3.8 < 3.5` is `False`.\n4. Action: Do not POST `MedicationRequest`.\n5. Output: `FINISH([\"Potassium is 3.8, not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical data does not meet the criteria.\n- The final output explicitly states why no action was taken.\n\n## Failure Indicators\n- `POST` requests are sent even when the lab value is within normal range.\n- The agent performs redundant actions despite the data indicating they are unnecessary.",
+        "tags": [
+          "conditional-logic",
+          "fhir",
+          "threshold-check"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_action_threshold_strategy",
+          "description": "Enforce conditional logic to prevent unnecessary POST requests when clinical thresholds are not met.",
+          "content": "# Conditional Action Threshold Strategy\n\n## Pattern Description\nWhen a task requires an action (e.g., ordering a medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the data meets the specific criteria defined in the instruction.\n\n## When to Use This Skill\n- When a task includes a conditional trigger (e.g., \"If low, then order...\").\n- When you are about to perform a `POST` request (MedicationRequest, ServiceRequest) based on a lab value.\n- When you have retrieved a lab value but have not yet verified if it meets the threshold for action.\n\n## Common Failure Patterns\n- Executing a `POST` request automatically after a `GET` request, regardless of the retrieved value.\n- Failing to compare the retrieved `valueQuantity.value` against the threshold (e.g., 3.5 mmol/L for potassium).\n- Ordering redundant tests or medications when the clinical data indicates no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Evaluation**\n1. Retrieve the most recent observation using `_sort=-date`.\n2. Extract the `valueQuantity.value`.\n3. Compare the value against the threshold specified in the prompt.\n4. If the value does not meet the threshold, stop and report the finding without performing the action.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to `POST` if the threshold condition is met.\n- If the condition is not met, call `FINISH` with a clear explanation (e.g., \"Level is 3.8, which is not low; no replacement ordered\").\n\n## Example Application\n\n**Task:** \"Check potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET `.../Observation?code=K&_sort=-date`\n2. Receive value: `3.8`.\n3. Evaluate: `3.8 < 3.5` is `False`.\n4. Action: Do not POST `MedicationRequest`.\n5. Output: `FINISH([\"Potassium is 3.8, not low. No replacement ordered.\"])`\n\n## Success Indicators\n- No `POST` requests are sent when the clinical data does not meet the criteria.\n- The final output explicitly states why no action was taken.\n\n## Failure Indicators\n- `POST` requests are sent even when the lab value is within normal range.\n- The agent performs redundant actions despite the data indicating they are unnecessary.",
+          "tags": [
+            "conditional-logic",
+            "fhir",
+            "threshold-check"
+          ]
+        },
+        "net": 4,
+        "score": 4,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_observation_value_validation_strategy",
+          "description": "Validate lab values against clinical thresholds before determining if an intervention is required.",
+          "content": "## Skill Title\n\nFHIR Observation Value Validation Strategy\n\n## Pattern Description\n\nWhen evaluating laboratory results to determine if a clinical intervention (like medication replacement) is necessary, you must explicitly compare the extracted value against the provided clinical reference range or threshold. Do not assume a value is \"normal\" or \"low\" based on general knowledge; always use the specific thresholds provided in the task context.\n\n## When to Use This Skill\n\n- When a task requires checking a lab value (e.g., Potassium, Magnesium) to decide if an order is needed.\n- When the task provides specific \"low\" or \"normal\" range thresholds.\n- When you are tempted to conclude \"no order required\" based on a value that is near a threshold.\n\n## Common Failure Patterns\n\n- Assuming a value like 3.5 mmol/L is \"not low\" without verifying if the threshold for replacement is exactly 3.5 or lower.\n- Failing to account for the specific units (e.g., mg/dL vs mmol/L) when comparing against provided thresholds.\n- Stopping the task prematurely because a value is \"within range\" without explicitly stating the comparison logic.\n\n## Recommended Patterns\n\n**Pattern 1: Explicit Threshold Comparison**\n1. Extract the `valueQuantity.value` from the Observation resource.\n2. Identify the threshold provided in the task instructions (e.g., \"If low, where low is < 1.5 mg/dL\").\n3. Perform a direct comparison: `if value < threshold: order_intervention() else: finish_with_explanation()`.\n4. State the comparison in your final output to confirm the logic used.\n\n**Pattern 2: Handling Borderline Values**\n- If the value is exactly at the threshold, re-read the instructions. If the instruction says \"If low\", and the threshold is \"< 3.5\", then 3.5 is not low. If it says \"<= 3.5\", then 3.5 is low.\n\n## Example Application\n\n**Task:** \"Check patient's potassium. If < 3.5, order replacement.\"\n\n**Step-by-step:**\n1. GET Observation for Potassium.\n2. Extract value: 3.5.\n3. Compare: Is 3.5 < 3.5? No.\n4. Output: FINISH([\"The potassium level is 3.5 mmol/L. Since the threshold for replacement is < 3.5, no replacement is required.\"])\n\n## Success Indicators\n\n- The agent explicitly references the threshold and the measured value in the final output.\n- The decision to order or not order is clearly linked to the comparison result.\n\n## Failure Indicators\n\n- The agent makes a decision without mentioning the threshold.\n- The agent incorrectly interprets \"at the threshold\" as \"low\" when the instruction specified \"less than\".",
+          "tags": [
+            "fhir",
+            "lab-results",
+            "decision-logic"
+          ]
+        },
+        "net": 2,
+        "score": 2,
+        "raw_score": 0,
+        "fixes": 1,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "missing_data_handling_strategy",
+          "description": "Standardize the response format when requested data is not found in the FHIR server.",
+          "content": "# Missing Data Handling Strategy\n\n## Pattern Description\nWhen a search query (e.g., GET /Observation) returns a bundle with `total: 0`, you must not return arbitrary placeholders like `-1` or error strings. Instead, you must explicitly acknowledge the absence of data in a structured, machine-readable format that indicates the search was performed but yielded no results.\n\n## When to Use This Skill\n- When a GET request returns a Bundle with `total: 0`.\n- When the task requires a specific value (e.g., lab result) and that value is not present in the patient's record.\n- When you have exhausted all search aliases (e.g., different LOINC codes) and still found no data.\n\n## Common Failure Patterns\n- Returning `-1` or `\"Not available\"` as a numeric value, which breaks downstream processing.\n- Guessing or hallucinating a value when the search returns empty.\n- Failing to report that the search was completed but empty.\n\n## Recommended Patterns\n\n**Pattern 1: Empty Result Reporting**\nIf the search returns no entries, return an empty list `[]` or a specific null indicator `[null]` to signify the absence of data, rather than an arbitrary integer.\n\n**Pattern 2: Verification**\nBefore calling `FINISH`, ensure you have checked all relevant codes provided in the task context. If all searches return `total: 0`, conclude the task by stating the data is missing.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value?\"\n\n**Step-by-step:**\n1. Perform GET for primary code.\n2. If `total: 0`, perform GET for secondary/LOINC codes.\n3. If all searches return `total: 0`, call `FINISH` with an empty list or a clear null indicator.\n\nCORRECT output: `FINISH([])`\nWRONG output:   `FINISH([-1])`\n\n## Success Indicators\n- Agent consistently returns `[]` or `[null]` when data is missing.\n- Agent stops attempting further searches once all defined codes are exhausted.\n\n## Failure Indicators\n- Agent returns `-1`, `0`, or conversational text like \"I couldn't find it\" when a structured list is expected.",
+          "tags": [
+            "fhir",
+            "data-handling",
+            "error-correction"
+          ]
+        },
+        "net": 4,
+        "score": 4,
+        "raw_score": 2,
+        "fixes": 3,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "conditional_action_threshold_strategy",
+          "description": "Enforce conditional logic to prevent unnecessary POST requests when clinical thresholds are not met, while allowing direct recording of patient-provided data.",
+          "content": "# Conditional Action Threshold Strategy\n\n## Pattern Description\nWhen a task requires an action (e.g., ordering a medication or a follow-up test) contingent on a clinical threshold (e.g., \"if low\"), you must first retrieve and evaluate the relevant data. Do not proceed with any POST requests until you have confirmed that the data meets the specific criteria defined in the instruction. \n\n**Note:** This strategy applies to *conditional* clinical decisions. It does not apply to tasks where the user explicitly requests to record or document a specific value (e.g., \"Record this blood pressure\").\n\n## When to Use This Skill\n- When a task includes a conditional trigger (e.g., \"If low, then order...\").\n- When you are about to perform a `POST` request (MedicationRequest, ServiceRequest) based on a lab value.\n- When you have retrieved a lab value but have not yet verified if it meets the threshold for action.\n\n## Common Failure Patterns\n- Executing a `POST` request automatically after a `GET` request, regardless of the retrieved value.\n- Failing to compare the retrieved `valueQuantity.value` against the threshold.\n- Ordering redundant tests or medications when the clinical data indicates no action is required.\n\n## Recommended Patterns\n\n**Pattern 1: Threshold Evaluation**\n1. Retrieve the most recent observation using `_sort=-date`.\n2. Extract the `valueQuantity.value`.\n3. Compare the value against the threshold specified in the prompt.\n4. If the value does not meet the threshold, stop and report the finding without performing the action.\n\n**Pattern 2: Conditional Execution**\n- Only proceed to `POST` if the threshold condition is met.\n- If the condition is not met, call `FINISH` with a clear explanation (e.g., \"Level is 3.8, which is not low; no replacement ordered\").\n\n## Exception\n- If the user instruction is to record or document a specific value provided in the prompt (e.g., \"Record this BP\"), proceed directly to the `POST` request after verifying the patient identity, as this is a data entry task, not a conditional clinical decision task.",
+          "tags": [
+            "clinical-logic",
+            "safety",
+            "threshold-evaluation"
+          ]
+        },
+        "net": 3,
+        "score": 3,
+        "fixes": 2,
+        "regressions": 1,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 0,
+        "baseline_regressions": 2,
+        "contrastive_revision": true
+      }
+    ]
+  },
+  {
+    "epoch": 6,
+    "update_cycle": 1,
+    "batch_size": 48,
+    "batch_correct": 31,
+    "applied": [
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+        "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen providing a final answer to a task, you must output only a machine-readable format (a list or tuple). Do not include conversational filler, explanations, or natural language summaries. The goal is to ensure that downstream systems or evaluators can parse your output programmatically without needing to strip away text.\n\n## When to Use This Skill\n\n- Always, when calling the `FINISH` function.\n- When the task asks for a specific value, a list of values, or a confirmation of an action.\n- When the task involves checking clinical thresholds or lab values.\n\n## Common Failure Patterns\n\n- Including conversational text like \"The value is...\" or \"No replacement was ordered.\"\n- Returning a string instead of a list or tuple (e.g., `FINISH(\"3.5\")` instead of `FINISH([3.5])`).\n- Providing a mix of data and explanation in the same list element.\n\n## Recommended Patterns\n\n**Pattern 1: Single Value Output**\nIf the task asks for a single number or result, return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG:   `FINISH([\"The value is 3.5\"])`\n\n**Pattern 2: Multiple Data Points**\nIf the task asks for multiple pieces of information (e.g., a value and a date), return them as a tuple or list.\nCORRECT: `FINISH([5.8, \"2022-09-09T15:33:00+00:00\"])\n\n**Pattern 3: Action Confirmation**\nIf the task asks to perform an action and report the result, return a status code or a minimal confirmation string in a list.\nCORRECT: `FINISH([\"SUCCESS\"])\nWRONG:   `FINISH([\"The order was placed successfully.\"])\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Retrieve the value (e.g., 2.0).\n2. Format the output as a list containing only the value.\n3. Call `FINISH([2.0])`.\n\n## Success Indicators\n\n- The `FINISH` call contains only raw data structures (lists, numbers, strings) without conversational prose.\n\n## Failure Indicators\n\n- The `FINISH` call contains sentences or paragraphs.\n- The output is not parsable as a standard JSON list.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      }
+    ],
+    "raw_proposals": [
+      {
+        "action": "ADD",
+        "name": "structured_lab_result_output_strategy",
+        "description": "Enforce strict machine-readable list format for lab results and dates to prevent conversational text or mixed types.",
+        "content": "## Skill Title\nStructured Lab Result Output Strategy\n\n## Pattern Description\nWhen a task requires retrieving a lab value and its associated date, you must return the data in a strictly formatted list containing only the raw numeric value and the ISO-8601 date string. Do not include units (e.g., '%', 'mmol/L'), conversational text, or additional status messages in the final output. If no data is found, return an empty list `[]` or `null` to indicate the absence of results.\n\n## When to Use This Skill\n- When the task asks for a lab value and its recording date.\n- When the task requires checking if a lab result is older than a specific threshold (e.g., 1 year).\n- When the previous output was rejected for containing conversational text, units, or incorrect data types.\n\n## Common Failure Patterns\n- Including units in the value (e.g., `\"5.9%\"` instead of `5.9`).\n- Returning conversational strings (e.g., `\"Most recent level: 3.1\"`).\n- Using placeholders like `[-1, -1]` or `[-1]` when no data is found.\n- Mixing types in the list (e.g., `[5.0, \"2023-11-09\"]` is correct, but adding extra strings is not).\n\n## Recommended Patterns\n\n**Pattern 1: Extraction**\nExtract the `valueQuantity.value` as a number and `effectiveDateTime` as an ISO-8601 string.\n\n**Pattern 2: Completion**\nIf a value is found, return `FINISH([value, \"date_string\"])`.\nIf no value is found, return `FINISH([])`.\n\n**Pattern 3: Formatting**\nStrip all units from the numeric value. Ensure the date is a valid ISO-8601 string.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. GET the Observation resource.\n2. Extract `valueQuantity.value` (e.g., 5.7) and `effectiveDateTime` (e.g., \"2023-07-07T10:00:00Z\").\n3. Format as `[5.7, \"2023-07-07T10:00:00Z\"]`.\n4. Call `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`.\n\nCORRECT output: `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`\nWRONG output: `FINISH([\"5.7%\", \"2023-07-07\"])`\n\n## Success Indicators\n- Final output is a clean list of `[number, string]`.\n- No conversational text or units are present in the `FINISH` call.\n\n## Failure Indicators\n- `answer_format_wrong_type` error.\n- Inclusion of units or descriptive text in the final list.",
+        "tags": [
+          "formatting",
+          "lab-results",
+          "output-control"
+        ]
+      },
+      {
+        "action": "MODIFY",
+        "name": "structured_final_output_strategy",
+        "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+        "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen providing a final answer to a task, you must output only a machine-readable format (a list or tuple). Do not include conversational filler, explanations, or natural language summaries. The goal is to ensure that downstream systems or evaluators can parse your output programmatically without needing to strip away text.\n\n## When to Use This Skill\n\n- Always, when calling the `FINISH` function.\n- When the task asks for a specific value, a list of values, or a confirmation of an action.\n- When the task involves checking clinical thresholds or lab values.\n\n## Common Failure Patterns\n\n- Including conversational text like \"The value is...\" or \"No replacement was ordered.\"\n- Returning a string instead of a list or tuple (e.g., `FINISH(\"3.5\")` instead of `FINISH([3.5])`).\n- Providing a mix of data and explanation in the same list element.\n\n## Recommended Patterns\n\n**Pattern 1: Single Value Output**\nIf the task asks for a single number or result, return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG:   `FINISH([\"The value is 3.5\"])`\n\n**Pattern 2: Multiple Data Points**\nIf the task asks for multiple pieces of information (e.g., a value and a date), return them as a tuple or list.\nCORRECT: `FINISH([5.8, \"2022-09-09T15:33:00+00:00\"])\n\n**Pattern 3: Action Confirmation**\nIf the task asks to perform an action and report the result, return a status code or a minimal confirmation string in a list.\nCORRECT: `FINISH([\"SUCCESS\"])\nWRONG:   `FINISH([\"The order was placed successfully.\"])\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Retrieve the value (e.g., 2.0).\n2. Format the output as a list containing only the value.\n3. Call `FINISH([2.0])`.\n\n## Success Indicators\n\n- The `FINISH` call contains only raw data structures (lists, numbers, strings) without conversational prose.\n\n## Failure Indicators\n\n- The `FINISH` call contains sentences or paragraphs.\n- The output is not parsable as a standard JSON list.",
+        "tags": [
+          "formatting",
+          "output-control"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "fhir_reference_format_strategy",
+        "description": "Ensure all resource references in POST/PUT requests follow the 'ResourceType/ID' format.",
+        "content": "## Skill Title\nFHIR Reference Format Strategy\n\n## Pattern Description\nWhen creating or updating FHIR resources that require a reference to another resource (such as a `subject` or `patient`), the reference field must be a string formatted as `ResourceType/ID`. Providing only the ID (e.g., \"S12345\") is a common error that leads to invalid resource references or failure to link the resource correctly in the server.\n\n## When to Use This Skill\n- When constructing a POST or PUT request body for any FHIR resource.\n- When the task involves linking a resource to a patient using an MRN or ID.\n- Whenever a `reference` field is required within a nested object (e.g., `subject.reference`).\n\n## Common Failure Patterns\n- Using only the MRN/ID: `\"reference\": \"S6534835\"` (Incorrect).\n- Omitting the resource type prefix: `\"reference\": \"12345\"` (Incorrect).\n- Forgetting to verify the ID format before constructing the JSON body.\n\n## Recommended Patterns\n**Pattern 1: Constructing the Reference**\nAlways prepend the resource type followed by a forward slash to the identifier.\n\nCORRECT: `\"reference\": \"Patient/S6534835\"`\nWRONG:   `\"reference\": \"S6534835\"`\n\n**Pattern 2: Verification**\nBefore finalizing the POST body, inspect the `subject` or `patient` object. Ensure the string value strictly follows the `[ResourceType]/[ID]` pattern.\n\n## Example Application\n**Task:** \"Record blood pressure for patient S6534835.\"\n\n**Step-by-step:**\n1. Perform a GET request to resolve the patient ID if necessary.\n2. Identify the resource type (e.g., `Patient`).\n3. Construct the `subject` object: `{\"reference\": \"Patient/S6534835\"}`.\n4. Proceed with the POST request.\n\n## Success Indicators\n- The POST request is accepted by the server without validation errors.\n- The resource is correctly linked to the patient in the system.\n\n## Failure Indicators\n- Server returns a 400 Bad Request or validation error regarding the reference field.\n- The resource is created but cannot be retrieved or linked to the patient record.",
+        "tags": [
+          "fhir",
+          "api",
+          "reference",
+          "validation"
+        ]
+      },
+      {
+        "action": "ADD",
+        "name": "structured_lab_result_output_strategy",
+        "description": "Enforce strict machine-readable list format for lab results and dates to prevent conversational text or mixed types.",
+        "content": "## Skill Title\nStructured Lab Result Output Strategy\n\n## Pattern Description\nWhen a task requires retrieving a lab value and its associated date, you must return the data in a strictly formatted list containing only the raw numeric value and the ISO-8601 date string. Do not include units (e.g., '%', 'mmol/L'), conversational text, or additional status messages in the final output. If no data is found, return an empty list `[]` or `null` to indicate the absence of results.\n\n## When to Use This Skill\n- When the task asks for a lab value and its recording date.\n- When the task requires checking if a lab result is older than a specific threshold (e.g., 1 year).\n- When the previous output was rejected for containing conversational text, units, or incorrect data types.\n\n## Common Failure Patterns\n- Including units in the value (e.g., `\"5.9%\"` instead of `5.9`).\n- Returning conversational strings (e.g., `\"Most recent level: 3.1\"`).\n- Using placeholders like `[-1, -1]` or `[-1]` when no data is found.\n- Mixing types in the list (e.g., `[5.0, \"2023-11-09\"]` is correct, but adding extra strings is not).\n\n## Recommended Patterns\n\n**Pattern 1: Extraction**\nExtract the `valueQuantity.value` as a number and `effectiveDateTime` as an ISO-8601 string.\n\n**Pattern 2: Completion**\nIf a value is found, return `FINISH([value, \"date_string\"])`.\nIf no value is found, return `FINISH([])`.\n\n**Pattern 3: Formatting**\nStrip all units from the numeric value. Ensure the date is a valid ISO-8601 string.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. GET the Observation resource.\n2. Extract `valueQuantity.value` (e.g., 5.7) and `effectiveDateTime` (e.g., \"2023-07-07T10:00:00Z\").\n3. Format as `[5.7, \"2023-07-07T10:00:00Z\"]`.\n4. Call `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`.\n\nCORRECT output: `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`\nWRONG output: `FINISH([\"5.7%\", \"2023-07-07\"])`\n\n## Success Indicators\n- Final output is a clean list of `[number, string]`.\n- No conversational text or units are present in the `FINISH` call.\n\n## Failure Indicators\n- `answer_format_wrong_type` error.\n- Inclusion of units or descriptive text in the final list.",
+        "tags": [
+          "formatting",
+          "lab-results",
+          "output-control"
+        ]
+      }
+    ],
+    "grpo": [
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "structured_lab_result_output_strategy",
+          "description": "Enforce strict machine-readable list format for lab results and dates to prevent conversational text or mixed types.",
+          "content": "## Skill Title\nStructured Lab Result Output Strategy\n\n## Pattern Description\nWhen a task requires retrieving a lab value and its associated date, you must return the data in a strictly formatted list containing only the raw numeric value and the ISO-8601 date string. Do not include units (e.g., '%', 'mmol/L'), conversational text, or additional status messages in the final output. If no data is found, return an empty list `[]` or `null` to indicate the absence of results.\n\n## When to Use This Skill\n- When the task asks for a lab value and its recording date.\n- When the task requires checking if a lab result is older than a specific threshold (e.g., 1 year).\n- When the previous output was rejected for containing conversational text, units, or incorrect data types.\n\n## Common Failure Patterns\n- Including units in the value (e.g., `\"5.9%\"` instead of `5.9`).\n- Returning conversational strings (e.g., `\"Most recent level: 3.1\"`).\n- Using placeholders like `[-1, -1]` or `[-1]` when no data is found.\n- Mixing types in the list (e.g., `[5.0, \"2023-11-09\"]` is correct, but adding extra strings is not).\n\n## Recommended Patterns\n\n**Pattern 1: Extraction**\nExtract the `valueQuantity.value` as a number and `effectiveDateTime` as an ISO-8601 string.\n\n**Pattern 2: Completion**\nIf a value is found, return `FINISH([value, \"date_string\"])`.\nIf no value is found, return `FINISH([])`.\n\n**Pattern 3: Formatting**\nStrip all units from the numeric value. Ensure the date is a valid ISO-8601 string.\n\n## Example Application\n\n**Task:** \"What is the last HbA1C value and when was it recorded?\"\n\n**Step-by-step:**\n1. GET the Observation resource.\n2. Extract `valueQuantity.value` (e.g., 5.7) and `effectiveDateTime` (e.g., \"2023-07-07T10:00:00Z\").\n3. Format as `[5.7, \"2023-07-07T10:00:00Z\"]`.\n4. Call `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`.\n\nCORRECT output: `FINISH([5.7, \"2023-07-07T10:00:00Z\"])`\nWRONG output: `FINISH([\"5.7%\", \"2023-07-07\"])`\n\n## Success Indicators\n- Final output is a clean list of `[number, string]`.\n- No conversational text or units are present in the `FINISH` call.\n\n## Failure Indicators\n- `answer_format_wrong_type` error.\n- Inclusion of units or descriptive text in the final list.",
+          "tags": [
+            "formatting",
+            "lab-results",
+            "output-control"
+          ]
+        },
+        "net": -3,
+        "score": -3,
+        "raw_score": -3,
+        "fixes": 1,
+        "regressions": 4,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "MODIFY",
+          "name": "structured_final_output_strategy",
+          "description": "Enforce strict machine-readable list or tuple format for all final answers to prevent conversational text.",
+          "content": "# Structured Final Output Strategy\n\n## Pattern Description\n\nWhen providing a final answer to a task, you must output only a machine-readable format (a list or tuple). Do not include conversational filler, explanations, or natural language summaries. The goal is to ensure that downstream systems or evaluators can parse your output programmatically without needing to strip away text.\n\n## When to Use This Skill\n\n- Always, when calling the `FINISH` function.\n- When the task asks for a specific value, a list of values, or a confirmation of an action.\n- When the task involves checking clinical thresholds or lab values.\n\n## Common Failure Patterns\n\n- Including conversational text like \"The value is...\" or \"No replacement was ordered.\"\n- Returning a string instead of a list or tuple (e.g., `FINISH(\"3.5\")` instead of `FINISH([3.5])`).\n- Providing a mix of data and explanation in the same list element.\n\n## Recommended Patterns\n\n**Pattern 1: Single Value Output**\nIf the task asks for a single number or result, return it as a single-element list.\nCORRECT: `FINISH([3.5])`\nWRONG:   `FINISH([\"The value is 3.5\"])`\n\n**Pattern 2: Multiple Data Points**\nIf the task asks for multiple pieces of information (e.g., a value and a date), return them as a tuple or list.\nCORRECT: `FINISH([5.8, \"2022-09-09T15:33:00+00:00\"])\n\n**Pattern 3: Action Confirmation**\nIf the task asks to perform an action and report the result, return a status code or a minimal confirmation string in a list.\nCORRECT: `FINISH([\"SUCCESS\"])\nWRONG:   `FINISH([\"The order was placed successfully.\"])\n\n## Example Application\n\n**Task:** \"Check patient S1023381's last serum magnesium level.\"\n\n**Step-by-step:**\n1. Retrieve the value (e.g., 2.0).\n2. Format the output as a list containing only the value.\n3. Call `FINISH([2.0])`.\n\n## Success Indicators\n\n- The `FINISH` call contains only raw data structures (lists, numbers, strings) without conversational prose.\n\n## Failure Indicators\n\n- The `FINISH` call contains sentences or paragraphs.\n- The output is not parsable as a standard JSON list.",
+          "tags": [
+            "formatting",
+            "output-control"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      },
+      {
+        "proposal": {
+          "action": "ADD",
+          "name": "fhir_reference_format_strategy",
+          "description": "Ensure all resource references in POST/PUT requests follow the 'ResourceType/ID' format.",
+          "content": "## Skill Title\nFHIR Reference Format Strategy\n\n## Pattern Description\nWhen creating or updating FHIR resources that require a reference to another resource (such as a `subject` or `patient`), the reference field must be a string formatted as `ResourceType/ID`. Providing only the ID (e.g., \"S12345\") is a common error that leads to invalid resource references or failure to link the resource correctly in the server.\n\n## When to Use This Skill\n- When constructing a POST or PUT request body for any FHIR resource.\n- When the task involves linking a resource to a patient using an MRN or ID.\n- Whenever a `reference` field is required within a nested object (e.g., `subject.reference`).\n\n## Common Failure Patterns\n- Using only the MRN/ID: `\"reference\": \"S6534835\"` (Incorrect).\n- Omitting the resource type prefix: `\"reference\": \"12345\"` (Incorrect).\n- Forgetting to verify the ID format before constructing the JSON body.\n\n## Recommended Patterns\n**Pattern 1: Constructing the Reference**\nAlways prepend the resource type followed by a forward slash to the identifier.\n\nCORRECT: `\"reference\": \"Patient/S6534835\"`\nWRONG:   `\"reference\": \"S6534835\"`\n\n**Pattern 2: Verification**\nBefore finalizing the POST body, inspect the `subject` or `patient` object. Ensure the string value strictly follows the `[ResourceType]/[ID]` pattern.\n\n## Example Application\n**Task:** \"Record blood pressure for patient S6534835.\"\n\n**Step-by-step:**\n1. Perform a GET request to resolve the patient ID if necessary.\n2. Identify the resource type (e.g., `Patient`).\n3. Construct the `subject` object: `{\"reference\": \"Patient/S6534835\"}`.\n4. Proceed with the POST request.\n\n## Success Indicators\n- The POST request is accepted by the server without validation errors.\n- The resource is correctly linked to the patient in the system.\n\n## Failure Indicators\n- Server returns a 400 Bad Request or validation error regarding the reference field.\n- The resource is created but cannot be retrieved or linked to the patient record.",
+          "tags": [
+            "fhir",
+            "api",
+            "reference",
+            "validation"
+          ]
+        },
+        "net": 1,
+        "score": 1,
+        "raw_score": 1,
+        "fixes": 1,
+        "regressions": 0,
+        "invalid_action_regressions": 0,
+        "baseline_fixes": 1,
+        "baseline_regressions": 1,
+        "invalid_action_regression_penalty": 2
+      }
+    ]
+  }
+]
