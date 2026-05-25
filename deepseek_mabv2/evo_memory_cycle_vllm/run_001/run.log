@@ -1,0 +1,141 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+[Baseline] Val: 18.8%
+[BestCheckpoint] New best: epoch=baseline, val=18.8% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — sequential Evo memory update per episode
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 0] Dev: 21/96 (21.9%) | Val: 17.5% | Evo updates: 96
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — sequential Evo memory update per episode
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 1] Dev: 24/96 (25.0%) | Val: 16.2% | Evo updates: 96
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — sequential Evo memory update per episode
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 2] Dev: 16/96 (16.7%) | Val: 18.8% | Evo updates: 96
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — sequential Evo memory update per episode
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+
+[Epoch 3] Dev: 25/96 (26.0%) | Val: 21.2% | Evo updates: 96
+[BestCheckpoint] New best: epoch=3, val=21.2% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — sequential Evo memory update per episode
+needs booster
+
+  [Val] evaluating 80 samples...
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 17/96 (17.7%) | Val: 23.8% | Evo updates: 96
+[BestCheckpoint] New best: epoch=4, val=23.8% — Evo memory snapshot saved
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 18.8%  ███
+         0: 17.5%  ███
+         1: 16.2%  ███
+         2: 18.8%  ███
+         3: 21.2%  ████
+         4: 23.8%  ████
+[MemoryCycle] Final memory: 0 bullet(s)
+[EvoMemoryCycle] Final memory: 25 semantic rule(s), 480 episodic record(s)
+[Resume] Baseline already done (val=18.8%), skipping
+[Resume] Epoch 0 already done (val=17.5%), skipping
+[Resume] Epoch 1 already done (val=16.2%), skipping
+[Resume] Epoch 2 already done (val=18.8%), skipping
+[Resume] Epoch 3 already done (val=21.2%), skipping
+[Resume] Epoch 4 already done (val=23.8%), skipping
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 18.8%  ███
+         0: 17.5%  ███
+         1: 16.2%  ███
+         2: 18.8%  ███
+         3: 21.2%  ████
+         4: 23.8%  ████
+[MemoryCycle] Final memory: 0 bullet(s)
+[EvoMemoryCycle] Final memory: 25 semantic rule(s), 480 episodic record(s)
+[Resume] Baseline already done (val=18.8%), skipping
+[Resume] Epoch 0 already done (val=17.5%), skipping
+[Resume] Epoch 1 already done (val=16.2%), skipping
+[Resume] Epoch 2 already done (val=18.8%), skipping
+[Resume] Epoch 3 already done (val=21.2%), skipping
+[Resume] Epoch 4 already done (val=23.8%), skipping
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 18.8%  ███
+         0: 17.5%  ███
+         1: 16.2%  ███
+         2: 18.8%  ███
+         3: 21.2%  ████
+         4: 23.8%  ████
+[MemoryCycle] Final memory: 0 bullet(s)
+[EvoMemoryCycle] Final memory: 25 semantic rule(s), 480 episodic record(s)

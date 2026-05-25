@@ -1,0 +1,159 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+[Baseline] Val: 25.0%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 0] Dev: 22/96 (22.9%) | Val: 31.2% | Rules: 20 (pairs critiqued: 74)
+[BestCheckpoint] New best: epoch=0, val=31.2% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 1] Dev: 26/96 (27.1%) | Val: 25.0% | Rules: 20 (pairs critiqued: 144)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+list index out of range
+
+[Epoch 2] Dev: 26/96 (27.1%) | Val: 27.5% | Rules: 20 (pairs critiqued: 214)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+list index out of range
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 3] Dev: 25/96 (26.0%) | Val: 26.2% | Rules: 20 (pairs critiqued: 285)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+list index out of range
+list index out of range
+
+[Epoch 4] Dev: 23/96 (24.0%) | Val: 28.7% | Rules: 20 (pairs critiqued: 358)
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 25.0%  █████
+         0: 31.2%  ██████
+         1: 25.0%  █████
+         2: 27.5%  █████
+         3: 26.2%  █████
+         4: 28.7%  █████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

@@ -1,0 +1,598 @@
+[
+  {
+    "epoch": 0,
+    "sample_idx": 0,
+    "sample_id": "task10_13",
+    "memory_version_before": 0,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date, you must first check if the result date is more than 1 year old from the current date (not from the date of the result), and if so, you must output an instruction to order a new test rather than returning the old value. The agent incorrectly returned the old value and date instead of recognizing that the 2019 date is over a year old and ordering a new test."
+    ],
+    "memory_size": 1
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 1,
+    "sample_id": "task1_12",
+    "memory_version_before": 1,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first search for the patient in the system using the name and date of birth; if the search returns a valid patient record, you must extract and return the MRN, and only return \"Patient not found\" if the search confirms no matching record exists. The agent incorrectly returned \"Patient not found\" without actually performing a lookup to verify the patient's existence."
+    ],
+    "memory_size": 2
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 2,
+    "sample_id": "task1_26",
+    "memory_version_before": 2,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first search for the patient in the system using the name and date of birth; if the search returns a valid patient record, you must extract and return the MRN, and only return \"Patient not found\" if the search confirms no matching record exists. The agent incorrectly returned \"Patient not found\" without actually performing a lookup to verify the patient's existence."
+    ],
+    "memory_size": 3
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 3,
+    "sample_id": "task1_13",
+    "memory_version_before": 3,
+    "new_bullets": [],
+    "memory_size": 3
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 5,
+    "sample_id": "task10_24",
+    "memory_version_before": 3,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date, you must first compare the result date to the current date and only return the value if the result is less than 1 year old; if the result date is more than 1 year old, you must order a new HbA1C lab test without returning the old value."
+    ],
+    "memory_size": 4
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 7,
+    "sample_id": "task9_11",
+    "memory_version_before": 4,
+    "new_bullets": [
+      "when asked to check a patient's most recent potassium level and order replacement if low, you must first retrieve the most recent potassium lab result for that patient; if the result exists and the value is low, you must calculate the replacement dose according to the dosing instructions and place both the replacement order and a paired morning serum potassium order for the next day at 8am, rather than concluding the level was not found or cannot be determined."
+    ],
+    "memory_size": 5
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 8,
+    "sample_id": "task9_14",
+    "memory_version_before": 5,
+    "new_bullets": [
+      "when asked to check a patient's most recent potassium level and order replacement if low, you must first retrieve the most recent potassium lab result for that patient; if the result exists and the value is low, you must calculate the replacement dose according to the dosing instructions and place both the replacement order and a paired morning serum potassium order for the next day at 8am, rather than concluding the level was not found or cannot be determined."
+    ],
+    "memory_size": 6
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 10,
+    "sample_id": "task10_17",
+    "memory_version_before": 6,
+    "new_bullets": [],
+    "memory_size": 6
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 12,
+    "sample_id": "task4_23",
+    "memory_version_before": 6,
+    "new_bullets": [
+      "when asked for the most recent magnesium level of a patient within the last 24 hours, you must retrieve the actual lab result from the patient’s record for that time period and return the numeric value (e.g., \"1.6\"), not a list or any other format; the agent failed because it returned the value inside a list structure [\"1.6\"] instead of a plain string, causing the evaluation to fail."
+    ],
+    "memory_size": 7
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 15,
+    "sample_id": "task1_11",
+    "memory_version_before": 7,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first search for the patient in the system using the name \"Glenda Hall\" and DOB \"1952-11-14\", and if a matching record exists, return the MRN; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 8
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 17,
+    "sample_id": "task9_20",
+    "memory_version_before": 8,
+    "new_bullets": [
+      "when asked to check patient S3236936's most recent potassium level and order replacement if low, you must first retrieve the most recent potassium lab result; if the result exists and the value is low, you must calculate the replacement dose according to the dosing instructions and place both the replacement order and a paired morning serum potassium order for the next day at 8am, rather than concluding the level was not found or cannot be determined without first performing the lookup."
+    ],
+    "memory_size": 9
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 19,
+    "sample_id": "task5_7",
+    "memory_version_before": 9,
+    "new_bullets": [
+      "when asked to check a patient’s last serum magnesium level within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window; if the result exists and the value is low, you must proceed to order replacement IV magnesium according to the dosing instructions, and if no result exists in that window, you must output that no magnesium level was recorded and therefore nothing is ordered—do not assume the level is normal without first retrieving the actual lab value."
+    ],
+    "memory_size": 10
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 20,
+    "sample_id": "task10_8",
+    "memory_version_before": 10,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date, you must first compare the result date to the current date (not to the date of the result or any other date), and if the result is more than 1 year old, you must output an instruction to order a new HbA1C lab test instead of returning the old value and date; the agent failed because it incorrectly calculated the age of the result by comparing it to the result date itself rather than the current date, and it must also use the correct current date provided in the task context rather than assuming it is the same as the result date."
+    ],
+    "memory_size": 11
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 21,
+    "sample_id": "task1_6",
+    "memory_version_before": 11,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first perform a search in the system using the exact name and date of birth provided, and if a matching record is found, return the MRN as a plain string (e.g., \"M12345\"), not inside a list or any other structure; only return \"Patient not found\" if the search explicitly confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 12
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 22,
+    "sample_id": "task2_14",
+    "memory_version_before": 12,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2450227?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"76\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"76\"] instead of a plain string \"76\"."
+    ],
+    "memory_size": 13
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 23,
+    "sample_id": "task1_10",
+    "memory_version_before": 13,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first perform a search in the system using the exact name \"Joshua Martinez\" and DOB \"1967-03-11\", and if a matching record exists, return the MRN as a plain string; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 14
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 25,
+    "sample_id": "task2_9",
+    "memory_version_before": 14,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S0722219?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"48\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"48\"] instead of a plain string \"48\"."
+    ],
+    "memory_size": 15
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 26,
+    "sample_id": "task10_10",
+    "memory_version_before": 15,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date, you must first retrieve the actual lab result for the specific patient, then compare the result date to the current date (not the result date itself), and if the result is more than 1 year old, you must output an instruction to order a new HbA1C lab test rather than returning the old value and date; the agent failed because it returned [\"-1\", \"-1\"] instead of actually looking up the patient's lab data and making the correct decision based on the date comparison."
+    ],
+    "memory_size": 16
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 27,
+    "sample_id": "task2_16",
+    "memory_version_before": 16,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2119664?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"66\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"66\"] instead of a plain string \"66\"."
+    ],
+    "memory_size": 17
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 30,
+    "sample_id": "task9_5",
+    "memory_version_before": 17,
+    "new_bullets": [
+      "when asked to check patient S1796597's most recent potassium level and order replacement if low, you must first retrieve the most recent potassium lab result; if the value is 4.7 mmol/L, that is above the threshold of 3.5, so you must still output that no replacement is needed, but you must also explicitly state that no order for a paired morning serum potassium is placed since the level is not low."
+    ],
+    "memory_size": 18
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 32,
+    "sample_id": "task3_7",
+    "memory_version_before": 18,
+    "new_bullets": [
+      "when asked to record a blood pressure reading like \"118/77 mmHg\" for a patient with a given MRN, you must output the exact text \"Blood pressure 118/77 mmHg recorded for patient S1579803.\" as a plain string inside the FINISH function, not wrapped in a list or any other structure."
+    ],
+    "memory_size": 19
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 33,
+    "sample_id": "task9_6",
+    "memory_version_before": 19,
+    "new_bullets": [
+      "when asked to check patient S6550473's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the result is 4.3 mmol/L, that is not low (threshold is 3.5), so you must output that no replacement is needed, but you must also explicitly state that no paired morning serum potassium order is placed for the next day since the level is not low."
+    ],
+    "memory_size": 20
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 35,
+    "sample_id": "task2_1",
+    "memory_version_before": 20,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2874099?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"60\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"60\"] instead of a plain string \"60\"."
+    ],
+    "memory_size": 21
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 36,
+    "sample_id": "task2_26",
+    "memory_version_before": 21,
+    "new_bullets": [
+      "when asked for the age of a patient by MRN, you must first retrieve the patient's date of birth from their record, then calculate the age by subtracting the birth year from the current year and adjusting if their birthday has not yet occurred this year, and return only the numeric age as a plain string (e.g., \"69\")—not inside a list, array, or any other structure; the agent failed because it returned the age inside a list format [\"69\"] instead of a plain string \"69\"."
+    ],
+    "memory_size": 22
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 39,
+    "sample_id": "task10_16",
+    "memory_version_before": 22,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual HbA1C lab result for that specific patient, then compare the result date to the current date, and if the result date is more than 1 year old, output an instruction to order a new HbA1C lab test (e.g., \"Order new HbA1C lab test for patient S2016972.\") instead of returning the old value or returning [\"-1\", \"-1\"]."
+    ],
+    "memory_size": 23
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 43,
+    "sample_id": "task10_27",
+    "memory_version_before": 23,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date, you must first retrieve the actual lab result for the specific patient, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00), and if the result date is more than 1 year old, you must output an instruction to order a new HbA1C lab test rather than returning the old value and date."
+    ],
+    "memory_size": 24
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 44,
+    "sample_id": "task10_12",
+    "memory_version_before": 24,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual HbA1C lab result for that specific patient, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00), and if the result date is more than 1 year old, output an instruction to order a new HbA1C lab test (e.g., \"Order new HbA1C lab test for patient S6550627.\") instead of returning [\"-1\", \"-1\"] or any other placeholder."
+    ],
+    "memory_size": 25
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 45,
+    "sample_id": "task10_20",
+    "memory_version_before": 25,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date for a patient, you must first retrieve the actual lab result for that specific patient, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00), and if the result date is more than 1 year old, output an instruction to order a new HbA1C lab test (e.g., \"Order new HbA1C lab test for patient S0722219.\") instead of returning the old value and date or attempting to place a FHIR ServiceRequest yourself."
+    ],
+    "memory_size": 26
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 46,
+    "sample_id": "task2_17",
+    "memory_version_before": 26,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S0611496?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"76\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"76\"] instead of a plain string \"76\"."
+    ],
+    "memory_size": 27
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 51,
+    "sample_id": "task4_10",
+    "memory_version_before": 27,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S3213957 within last 24 hours?\", you must first retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not inside a list, array, or any other structure; the agent failed because it returned [\"-1\"] instead of actually looking up the patient's magnesium lab data."
+    ],
+    "memory_size": 28
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 53,
+    "sample_id": "task2_15",
+    "memory_version_before": 28,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1152319?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"86\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"86\"] instead of a plain string \"86\"."
+    ],
+    "memory_size": 29
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 54,
+    "sample_id": "task9_1",
+    "memory_version_before": 29,
+    "new_bullets": [
+      "when asked to check patient S3241217's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the result exists and the value is below 3.5 mmol/L, you must calculate the replacement dose according to the dosing instructions, then place both the replacement order and a paired morning serum potassium order for the next day at 8am, rather than concluding that no lab results were found without first performing the lookup."
+    ],
+    "memory_size": 30
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 56,
+    "sample_id": "task9_27",
+    "memory_version_before": 30,
+    "new_bullets": [
+      "when asked to check patient S1311412's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient, and if the value is exactly 3.5 mmol/L, it is at the threshold and therefore not low, so you must output that no replacement is needed and explicitly state that no paired morning serum potassium order is placed since the level is not low."
+    ],
+    "memory_size": 31
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 57,
+    "sample_id": "task1_20",
+    "memory_version_before": 31,
+    "new_bullets": [
+      "when asked for the MRN of a patient by name and DOB, you must first search for the patient in the system using the exact name \"Christopher Cruz\" and DOB \"1940-08-28\", and if a matching record is found, return the MRN as a plain string; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 32
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 59,
+    "sample_id": "task2_6",
+    "memory_version_before": 32,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1733937?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year and adjusting if their birthday has not yet occurred this year, and return only the numeric age as a plain string (e.g., \"39\"), not inside a list or any other structure."
+    ],
+    "memory_size": 33
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 60,
+    "sample_id": "task4_11",
+    "memory_version_before": 33,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S1754095 within last 24 hours?\", you must first retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not inside a list, array, or any other structure, and not \"-1\" or any placeholder; the agent failed because it returned [\"-1\"] instead of actually looking up the patient's magnesium lab data."
+    ],
+    "memory_size": 34
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 61,
+    "sample_id": "task9_22",
+    "memory_version_before": 34,
+    "new_bullets": [
+      "when asked to check patient S6474456's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the value is 3.9 mmol/L, that is above the threshold of 3.5, so you must output that no replacement is needed, but you must also explicitly state that no paired morning serum potassium order is placed for the next day since the level is not low, and the final output inside FINISH must be a plain string (e.g., \"Potassium level is 3.9 mmol/L, which is not low. No replacement ordered. No paired morning serum potassium order placed.\") without any list or extra formatting."
+    ],
+    "memory_size": 35
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 62,
+    "sample_id": "task1_27",
+    "memory_version_before": 35,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?\", you must first perform a search in the system using the exact name \"Tina Reid\" and DOB \"1953-10-18\", and if a matching record is found, return the MRN as a plain string; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 36
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 63,
+    "sample_id": "task9_9",
+    "memory_version_before": 36,
+    "new_bullets": [
+      "when asked to check patient S6309742's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result; if the value is 3.8 mmol/L, that is above the threshold of 3.5, so you must output that no replacement is needed and explicitly state that no paired morning serum potassium order is placed for the next day since the level is not low."
+    ],
+    "memory_size": 37
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 64,
+    "sample_id": "task4_7",
+    "memory_version_before": 37,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S2937751 within last 24 hours?\", you must first retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not inside a list, array, or any other structure, and not \"-1\" or any placeholder; the agent failed because it returned [\"-1\"] instead of actually looking up the patient's magnesium lab data."
+    ],
+    "memory_size": 38
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 65,
+    "sample_id": "task9_28",
+    "memory_version_before": 38,
+    "new_bullets": [
+      "when asked to check patient S3228213's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the result is 4.7 mmol/L, that is above the threshold of 3.5, so you must output that no replacement is needed, but you must also explicitly state that no paired morning serum potassium order is placed for the next day since the level is not low, and the final output inside FINISH must be a plain string without any list or extra formatting."
+    ],
+    "memory_size": 39
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 66,
+    "sample_id": "task2_25",
+    "memory_version_before": 39,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2823623?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"51\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"51\"] instead of a plain string \"51\"."
+    ],
+    "memory_size": 40
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 68,
+    "sample_id": "task4_15",
+    "memory_version_before": 40,
+    "new_bullets": [
+      "when asked for the most recent magnesium level of a patient within the last 24 hours, you must retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not \"2.2\" or any other incorrect value, and not inside a list, array, or any other structure; the agent failed because it returned \"2.2\" instead of actually looking up the patient's magnesium lab data."
+    ],
+    "memory_size": 41
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 69,
+    "sample_id": "task9_3",
+    "memory_version_before": 41,
+    "new_bullets": [
+      "when asked to check patient S6550627's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the value is low (below 3.5 mmol/L), you must calculate the replacement dose according to the dosing instructions (10 mEq per 0.1 mEq/L below threshold) and then place both the replacement order and a paired morning serum potassium order for the next day at 8am, ensuring the final output inside FINISH is a plain string describing the actions taken, not a partial or incomplete API call."
+    ],
+    "memory_size": 42
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 70,
+    "sample_id": "task9_8",
+    "memory_version_before": 42,
+    "new_bullets": [
+      "when asked to check patient S1635224's most recent potassium level and order replacement if low, you must first retrieve the actual most recent potassium lab result for that patient; if the value is 3.8 mmol/L, that is above the threshold of 3.5, so you must output that no replacement is needed and explicitly state that no paired morning serum potassium order is placed for the next day since the level is not low, but the final output inside FINISH must be a plain string without any list or extra formatting."
+    ],
+    "memory_size": 43
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 73,
+    "sample_id": "task1_16",
+    "memory_version_before": 43,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?\", you must first perform a search in the system using the exact name \"Debra Dunn\" and DOB \"1969-05-12\", and if a matching record is found, return the MRN as a plain string; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 44
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 76,
+    "sample_id": "task10_18",
+    "memory_version_before": 44,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual HbA1C lab result for that specific patient, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00), and if the result date is more than 1 year old, output an instruction to order a new HbA1C lab test (e.g., \"Order new HbA1C lab test for patient S1311412.\") instead of returning the old value and date; the agent failed because it incorrectly returned the old value and date when the result was actually from 2023-11-12, which is less than 1 year old from the current date, so it should have returned the value and date correctly."
+    ],
+    "memory_size": 45
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 77,
+    "sample_id": "task5_3",
+    "memory_version_before": 45,
+    "new_bullets": [
+      "when asked to check patient S0636132's last serum magnesium level within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window, then compare the value to the low threshold of 1.5 mg/dL; if the value is 2.0 mg/dL (which is above 1.5), you must correctly identify that this is not low and output that no replacement is needed, but the agent failed because it incorrectly stated that 2.0 mg/dL is within the normal range when the actual threshold for \"low\" is below 1.5 mg/dL, so you must ensure you use the correct threshold of 1.5 mg/dL to determine if the level is low."
+    ],
+    "memory_size": 46
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 78,
+    "sample_id": "task2_28",
+    "memory_version_before": 46,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2863714?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"50\"), not inside a list or any other structure; the agent failed because it returned the age inside a list format [\"50\"] instead of a plain string \"50\"."
+    ],
+    "memory_size": 47
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 79,
+    "sample_id": "task10_15",
+    "memory_version_before": 47,
+    "new_bullets": [
+      "when asked for the last HbA1C value and its date for a specific patient, you must first retrieve the actual lab result, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00); if the result is more than 1 year old, output an instruction to order a new HbA1C lab test instead of returning the old value and date, and if the result is less than 1 year old, return the numeric value and date as plain strings (e.g., \"5.7\" and \"2023-07-07T11:27:00+00:00\") without lists or extra formatting."
+    ],
+    "memory_size": 48
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 82,
+    "sample_id": "task10_21",
+    "memory_version_before": 48,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual HbA1C lab result for that specific patient, then compare the result date to the current date (e.g., 2023-11-13T10:15:00+00:00), and if the result date is more than 1 year old, output an instruction to order a new HbA1C lab test (e.g., \"Order new HbA1C lab test for patient S0789363.\") instead of returning [\"-1\", \"-1\"] or claiming no results were found without actually performing the lookup."
+    ],
+    "memory_size": 49
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 84,
+    "sample_id": "task2_22",
+    "memory_version_before": 49,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S6537563?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year (accounting for whether their birthday has passed this year), and return only the numeric age as a plain string (e.g., \"82\"), not inside a list or any other structure; the agent failed because it returned \"82\" which appears correct, but the evaluation returned False, so you must ensure you are using the correct current date and accurately calculating the age based on whether the birthday has already occurred this year."
+    ],
+    "memory_size": 50
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 87,
+    "sample_id": "task5_19",
+    "memory_version_before": 50,
+    "new_bullets": [
+      "when asked to check a patient's last serum magnesium level within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window, then compare the numeric value to the correct low threshold of 1.5 mg/dL (not 1.9 mg/dL); if the value is below 1.5 mg/dL, order replacement IV magnesium according to dosing instructions, and if the value is 1.5 mg/dL or above, it is not low and no replacement is needed."
+    ],
+    "memory_size": 51
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 89,
+    "sample_id": "task4_6",
+    "memory_version_before": 51,
+    "new_bullets": [
+      "when asked for the most recent magnesium level of a patient within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not \"2.0\" or any other incorrect value, and not inside a list, array, or any other structure; the agent failed because it returned \"2.0\" instead of actually looking up the patient's magnesium lab data."
+    ],
+    "memory_size": 52
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 90,
+    "sample_id": "task5_17",
+    "memory_version_before": 52,
+    "new_bullets": [
+      "when asked to check patient S6192632's last serum magnesium level within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window, then compare the numeric value to the correct low threshold of 1.5 mg/dL (not 1.9 mg/dL); if the value is below 1.5 mg/dL, order replacement IV magnesium according to dosing instructions, and if the value is 1.5 mg/dL or above, it is not low and no replacement is needed."
+    ],
+    "memory_size": 53
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 91,
+    "sample_id": "task5_16",
+    "memory_version_before": 53,
+    "new_bullets": [
+      "when asked to check a patient's last serum magnesium level within the last 24 hours, you must first retrieve the actual lab result for that specific patient and time window, then compare the numeric value to the correct low threshold of 1.5 mg/dL (not 1.9 mg/dL or any other value); if the value is below 1.5 mg/dL, order replacement IV magnesium according to dosing instructions, and if the value is 1.5 mg/dL or above, it is not low and no replacement is needed."
+    ],
+    "memory_size": 54
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 92,
+    "sample_id": "task2_30",
+    "memory_version_before": 54,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2703270?\", you must first retrieve the patient's date of birth from their record using the MRN, then calculate the age by subtracting the birth year from the current year and adjusting if their birthday has not yet occurred this year, and return only the numeric age as a plain string (e.g., \"80\")—not inside a list, array, or any other structure; the agent failed because it returned \"80\" which appears correct but the evaluation returned False, so you must ensure you are using the correct current date provided in the task context and accurately calculating the age based on whether the birthday has already passed this year."
+    ],
+    "memory_size": 55
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 93,
+    "sample_id": "task1_7",
+    "memory_version_before": 55,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Kevin Vasquez and DOB of 1953-11-19?\", you must first perform a search in the system using the exact name \"Kevin Vasquez\" and DOB \"1953-11-19\", and if a matching record is found, return the MRN as a plain string; only return \"Patient not found\" if the search confirms no record exists, rather than assuming the patient does not exist without performing the lookup."
+    ],
+    "memory_size": 56
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 94,
+    "sample_id": "task4_27",
+    "memory_version_before": 56,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S6227720 within last 24 hours?\", you must retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.8\")—not inside a list, array, or any other structure; the agent failed because it returned \"1.8\" which appears correct but the evaluation returned False, so you must ensure you are using the correct current date and time window to filter results, and that you are retrieving the most recent result within the last 24 hours from the current date/time, not from any other reference point."
+    ],
+    "memory_size": 57
+  },
+  {
+    "epoch": 0,
+    "sample_idx": 95,
+    "sample_id": "task4_20",
+    "memory_version_before": 57,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S0636132 within last 24 hours?\", you must retrieve the actual lab result for that specific patient and time window, then return the numeric value as a plain string (e.g., \"1.6\")—not \"2.0\" or any other incorrect value, and not inside a list, array, or any other structure; the agent failed because it returned \"2.0\" without actually looking up the patient's magnesium lab data to confirm the correct value."
+    ],
+    "memory_size": 58
+  }
+]

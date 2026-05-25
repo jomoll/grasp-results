@@ -1,0 +1,818 @@
+[
+  {
+    "epoch": 3,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 196,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN and the blood pressure value (e.g., \"118/77 mmHg\") to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 197
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 1,
+    "sample_id": "task9_8",
+    "memory_version_before": 197,
+    "new_bullets": [],
+    "memory_size": 197
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 2,
+    "sample_id": "task1_16",
+    "memory_version_before": 197,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?\", you must first actually search the system for a patient with that exact name and date of birth, and if a matching record exists, return their MRN — do not assume the patient does not exist and return \"Patient not found\" without performing the search."
+    ],
+    "memory_size": 198
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 3,
+    "sample_id": "task10_12",
+    "memory_version_before": 198,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first actually search the system for the patient’s HbA1C observations (e.g., via GET Observation), and if the search returns no observations, you must still order a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and the current timestamp) and then return FINISH with the order confirmation — do not skip the search and immediately order without verifying whether a lab exists."
+    ],
+    "memory_size": 199
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 4,
+    "sample_id": "task8_15",
+    "memory_version_before": 199,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral with a specific SBAR note, you must actually call the `order_referral` function with the exact patient ID from the task (S6227720) and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 200
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 5,
+    "sample_id": "task4_26",
+    "memory_version_before": 200,
+    "new_bullets": [
+      "when asked \"What's the most recent magnesium level of the patient S1311412 within last 24 hours?\", you must retrieve the actual numeric lab result from the system specifically for patient S1311412 by querying their lab records, and return the exact value as a list (e.g., FINISH([\"1.8\"])), not a fabricated or default value like \"2.5\"."
+    ],
+    "memory_size": 201
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 6,
+    "sample_id": "task3_14",
+    "memory_version_before": 201,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN and the blood pressure value (e.g., \"118/77 mmHg\") to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 202
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 7,
+    "sample_id": "task4_27",
+    "memory_version_before": 202,
+    "new_bullets": [],
+    "memory_size": 202
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 8,
+    "sample_id": "task10_15",
+    "memory_version_before": 202,
+    "new_bullets": [
+      "when asked “What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.”, you must first actually search the system for that patient’s HbA1C observations (e.g., via GET Observation); if the search returns no observations, you must then order a new HbA1C lab test via POST to ServiceRequest with status “active”, intent “order”, and priority “routine” (including patient reference, LOINC 4548-4, and the current timestamp) and return FINISH with the order confirmation — do not skip the search and immediately order the test without first verifying whether a lab exists."
+    ],
+    "memory_size": 203
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 9,
+    "sample_id": "task1_26",
+    "memory_version_before": 203,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?\", you must first actually search the system for a patient with that exact name and date of birth, and only return \"Patient not found\" if no such record exists after a thorough search — do not assume the patient does not exist without performing the search."
+    ],
+    "memory_size": 204
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 10,
+    "sample_id": "task2_6",
+    "memory_version_before": 204,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1733937?\", you must first retrieve the patient's date of birth from the system using the exact MRN S1733937 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"39\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age, and do not return a default or incorrect value."
+    ],
+    "memory_size": 205
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 11,
+    "sample_id": "task1_13",
+    "memory_version_before": 205,
+    "new_bullets": [],
+    "memory_size": 205
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 12,
+    "sample_id": "task3_12",
+    "memory_version_before": 205,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN and the blood pressure value to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 206
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 13,
+    "sample_id": "task5_3",
+    "memory_version_before": 206,
+    "new_bullets": [],
+    "memory_size": 206
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 14,
+    "sample_id": "task1_23",
+    "memory_version_before": 206,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Julie Rodriguez and DOB of 1962-01-20?\", you must first actually search the system for a patient with that exact name and date of birth, and if a matching record exists, return their MRN — do not assume the patient does not exist and return \"Patient not found\" without performing the search."
+    ],
+    "memory_size": 207
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 15,
+    "sample_id": "task8_26",
+    "memory_version_before": 207,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S6549951. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must actually call the `order_referral` function with the exact patient ID S6549951 and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 208
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 16,
+    "sample_id": "task4_4",
+    "memory_version_before": 208,
+    "new_bullets": [],
+    "memory_size": 208
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 18,
+    "sample_id": "task4_6",
+    "memory_version_before": 208,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S1733937 within last 24 hours?\", you must retrieve the actual numeric lab result from the system specifically for patient S1733937 by querying their lab records, and return the exact value as a list (e.g., FINISH([\"1.8\"])), not a default or fabricated value like \"-1\"."
+    ],
+    "memory_size": 209
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 19,
+    "sample_id": "task10_18",
+    "memory_version_before": 209,
+    "new_bullets": [],
+    "memory_size": 209
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 20,
+    "sample_id": "task9_1",
+    "memory_version_before": 209,
+    "new_bullets": [
+      "when asked to check a patient's most recent potassium level and order a morning serum potassium level for the next day at 8am, you must actually place the morning potassium order via a POST to ServiceRequest with the correct FHIR fields (status \"active\", intent \"order\", occurrenceDateTime set to the next day at 8am) and then return FINISH with only the confirmation of that order — do not just output the GET request for the potassium level without proceeding to place the required order."
+    ],
+    "memory_size": 210
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 21,
+    "sample_id": "task1_10",
+    "memory_version_before": 210,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Joshua Martinez and DOB of 1967-03-11?\", you must first actually search the system for a patient with that exact name and date of birth, and only return \"Patient not found\" if no such record exists after a thorough search — do not assume the patient does not exist without performing the search."
+    ],
+    "memory_size": 211
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 22,
+    "sample_id": "task5_16",
+    "memory_version_before": 211,
+    "new_bullets": [
+      "when asked \"Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\", you must first retrieve the actual numeric lab result from the system for that specific patient (S1023381) by querying their lab records, then compare it to the correct low threshold for magnesium (below 1.5 mg/dL), and if the value is 2.0 mg/dL (normal, ≥2.0), return FINISH([\"2.0\"]) without ordering anything — do not fabricate a different value or return a default like \"2.0\" without actually retrieving it from the system."
+    ],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 23,
+    "sample_id": "task2_26",
+    "memory_version_before": 212,
+    "new_bullets": [],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 24,
+    "sample_id": "task4_28",
+    "memory_version_before": 212,
+    "new_bullets": [],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 25,
+    "sample_id": "task4_11",
+    "memory_version_before": 212,
+    "new_bullets": [],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 27,
+    "sample_id": "task3_3",
+    "memory_version_before": 212,
+    "new_bullets": [],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 28,
+    "sample_id": "task1_20",
+    "memory_version_before": 212,
+    "new_bullets": [],
+    "memory_size": 212
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 29,
+    "sample_id": "task8_21",
+    "memory_version_before": 212,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral with a specific SBAR note, you must actually call the `order_referral` function with the exact patient ID from the task and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 213
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 30,
+    "sample_id": "task3_17",
+    "memory_version_before": 213,
+    "new_bullets": [],
+    "memory_size": 213
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 31,
+    "sample_id": "task10_20",
+    "memory_version_before": 213,
+    "new_bullets": [],
+    "memory_size": 213
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 32,
+    "sample_id": "task10_16",
+    "memory_version_before": 213,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first actually retrieve the HbA1C value and result date from the system by querying that patient’s lab records; if the search returns no observations, you must still order a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and the current timestamp) and then return FINISH with the order confirmation — do not simply state that no observations were found and skip ordering, as the task requires ordering the test when no lab exists."
+    ],
+    "memory_size": 214
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 33,
+    "sample_id": "task3_27",
+    "memory_version_before": 214,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN (e.g., S6550627) and the blood pressure value (e.g., \"118/77 mmHg\") to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 215
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 34,
+    "sample_id": "task10_10",
+    "memory_version_before": 215,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first actually retrieve the HbA1C value and result date from the system via a proper search for that patient; if the search returns no observations, you must still order a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and the current timestamp) and then return FINISH with the order confirmation — do not simply state that no observations were found and skip ordering, as the task requires ordering the test when no lab exists."
+    ],
+    "memory_size": 216
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 35,
+    "sample_id": "task5_19",
+    "memory_version_before": 216,
+    "new_bullets": [
+      "when asked \"Check patient S3057899's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\", you must first retrieve the actual numeric lab result from the system for that specific patient (S3057899) by querying their lab records, then compare it to the correct low threshold for magnesium (below 1.5 mg/dL for moderate deficiency), and if the value is 2.2 mg/dL (normal, ≥2.0), return FINISH([\"2.2\"]) without ordering anything — do not fabricate a different value or return a default like \"2.2\" without actually retrieving it from the system."
+    ],
+    "memory_size": 217
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 36,
+    "sample_id": "task2_28",
+    "memory_version_before": 217,
+    "new_bullets": [],
+    "memory_size": 217
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 37,
+    "sample_id": "task2_25",
+    "memory_version_before": 217,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2823623?\", you must first retrieve the patient's date of birth from the system using the exact MRN S2823623 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"51\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age, and do not return a default or incorrect value."
+    ],
+    "memory_size": 218
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 39,
+    "sample_id": "task5_17",
+    "memory_version_before": 218,
+    "new_bullets": [
+      "when asked \"Check patient S6192632's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\", you must first retrieve the actual numeric lab result from the system for that specific patient (S6192632) by querying their lab records, and if the retrieved value is 2.3 mg/dL, recognize that this is normal (≥2.0 mg/dL) and return FINISH([\"2.3\"]) without ordering anything — do not fabricate a different value or incorrectly conclude that 2.3 is low based on a wrong threshold."
+    ],
+    "memory_size": 219
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 40,
+    "sample_id": "task9_9",
+    "memory_version_before": 219,
+    "new_bullets": [],
+    "memory_size": 219
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 41,
+    "sample_id": "task10_24",
+    "memory_version_before": 219,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual last HbA1C value and its result date from the system for that specific patient, then compare the result date to the current time; if the result date (2021-10-11) is more than 1 year old from the current time (2023-11-13), you must output the order for a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and authoredOn set to the current timestamp) and then return FINISH with the order confirmation — do not return the old value and date without ordering the test, as the evaluation requires the order to be placed when the lab is out of date, and do not include any extra text or the old value/date in the FINISH output."
+    ],
+    "memory_size": 220
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 42,
+    "sample_id": "task2_17",
+    "memory_version_before": 220,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S0611496?\", you must first retrieve the patient's date of birth from the system using the exact MRN S0611496 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"76\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age, and do not return a default or incorrect value."
+    ],
+    "memory_size": 221
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 43,
+    "sample_id": "task9_14",
+    "memory_version_before": 221,
+    "new_bullets": [
+      "when asked \"Check patient S6547257's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am.\", you must first retrieve the actual numeric potassium level from the system for patient S6547257, and if the level is not low (≥3.5 mmol/L), you must still order only the morning serum potassium level for the next day at 8am via a proper ServiceRequest POST and return FINISH with confirmation of that order — do not include the potassium value or any extra text in the FINISH output, just the confirmation that the morning potassium order was placed."
+    ],
+    "memory_size": 222
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 44,
+    "sample_id": "task1_11",
+    "memory_version_before": 222,
+    "new_bullets": [],
+    "memory_size": 222
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 45,
+    "sample_id": "task1_6",
+    "memory_version_before": 222,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?\", you must first actually search the system for a patient with that exact name and date of birth, and only return \"Patient not found\" if no such record exists after a thorough search — do not assume the patient does not exist without performing the search."
+    ],
+    "memory_size": 223
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 46,
+    "sample_id": "task10_13",
+    "memory_version_before": 223,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first actually retrieve the HbA1C value and result date from the system for that specific patient, then compare the result date to the current time (2023-11-13T10:15:00+00:00); if the result date is more than 1 year old, you must output the order for a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and authoredOn set to the current timestamp) and then return FINISH with only the order confirmation — do not return the old value and date without ordering, as the evaluation requires the order to be placed when the lab is out of date."
+    ],
+    "memory_size": 224
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 48,
+    "sample_id": "task2_1",
+    "memory_version_before": 224,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2874099?\", you must first retrieve the patient's date of birth from the system using the exact MRN S2874099 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"60\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age, and do not return a default or incorrect value."
+    ],
+    "memory_size": 225
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 49,
+    "sample_id": "task3_29",
+    "memory_version_before": 225,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN and the blood pressure value (e.g., \"118/77 mmHg\") to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 226
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 50,
+    "sample_id": "task4_21",
+    "memory_version_before": 226,
+    "new_bullets": [],
+    "memory_size": 226
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 51,
+    "sample_id": "task2_15",
+    "memory_version_before": 226,
+    "new_bullets": [],
+    "memory_size": 226
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 52,
+    "sample_id": "task2_22",
+    "memory_version_before": 226,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S6537563?\", you must first retrieve the patient's date of birth from the system using the exact MRN S6537563 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list — do not return a fabricated or assumed age like \"82\" without actually retrieving the DOB from the system and performing the calculation, as the evaluation function checks that the age was computed from the actual DOB stored for that MRN."
+    ],
+    "memory_size": 227
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 53,
+    "sample_id": "task9_28",
+    "memory_version_before": 227,
+    "new_bullets": [
+      "when asked \"Check patient S3228213's most recent potassium level...\", you must first actually retrieve the numeric potassium level from the system for that specific patient by querying their lab records, and only after retrieving it can you decide whether to order the morning serum potassium — do not assume or fabricate the potassium value (e.g., 4.7) without querying the system, and do not place the morning potassium order without first verifying the actual lab result for that patient."
+    ],
+    "memory_size": 228
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 54,
+    "sample_id": "task3_16",
+    "memory_version_before": 228,
+    "new_bullets": [
+      "when asked \"I just measured the blood pressure for patient with MRN of S6192632, and it is '118/77 mmHg'. Help me record it.\", you must call the `record_vital` function with the patient's MRN and the blood pressure value to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 229
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 55,
+    "sample_id": "task8_3",
+    "memory_version_before": 229,
+    "new_bullets": [],
+    "memory_size": 229
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 56,
+    "sample_id": "task4_7",
+    "memory_version_before": 229,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S2937751 within last 24 hours?\", you must retrieve the actual numeric lab result from the system by querying the patient’s lab records specifically for patient S2937751, and return the exact value as a list (e.g., FINISH([\"1.8\"])), not a default or fabricated value like \"-1\"."
+    ],
+    "memory_size": 230
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 57,
+    "sample_id": "task3_30",
+    "memory_version_before": 230,
+    "new_bullets": [],
+    "memory_size": 230
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 59,
+    "sample_id": "task9_6",
+    "memory_version_before": 230,
+    "new_bullets": [],
+    "memory_size": 230
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 60,
+    "sample_id": "task10_21",
+    "memory_version_before": 230,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first actually search the system for that patient’s HbA1C observations (e.g., via GET Observation); if the search returns no observations, you must still order a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and the current timestamp) and then return FINISH with the order confirmation — do not simply state that no observations were found and skip ordering, as the task requires ordering the test when no lab exists or when the lab is out of date."
+    ],
+    "memory_size": 231
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 61,
+    "sample_id": "task4_15",
+    "memory_version_before": 231,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S3057899 within last 24 hours?\", you must retrieve the actual numeric lab result from the system by querying the patient’s lab records specifically for patient S3057899, and return the exact value as a list (e.g., FINISH([\"1.8\"])), not a fabricated or default value like \"2.2\"."
+    ],
+    "memory_size": 232
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 62,
+    "sample_id": "task4_23",
+    "memory_version_before": 232,
+    "new_bullets": [],
+    "memory_size": 232
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 63,
+    "sample_id": "task1_27",
+    "memory_version_before": 232,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?\", you must first actually search the system for a patient with that exact name and date of birth, and only return \"Patient not found\" if no such record exists after a thorough search — do not assume the patient does not exist without performing the search."
+    ],
+    "memory_size": 233
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 64,
+    "sample_id": "task3_1",
+    "memory_version_before": 233,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient, you must call the `record_vital` function with the patient's MRN and the blood pressure value (e.g., \"118/77 mmHg\") to actually store it in the system, and only after the function succeeds should you return a confirmation message; do not simply return a confirmation without performing the recording action."
+    ],
+    "memory_size": 234
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 65,
+    "sample_id": "task1_7",
+    "memory_version_before": 234,
+    "new_bullets": [],
+    "memory_size": 234
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 66,
+    "sample_id": "task10_27",
+    "memory_version_before": 234,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.\", you must first retrieve the actual last HbA1C value and result date from the system for patient S0658561, then compare the result date to the current date (2023-11-13T10:15:00+00:00); since the result date (2023-11-02) is only 11 days old (less than 1 year), the correct action is to return FINISH([\"5.4\", \"2023-11-02T06:53:00+00:00\"]) without ordering anything — do not add extra text or additional actions."
+    ],
+    "memory_size": 235
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 235,
+    "new_bullets": [],
+    "memory_size": 235
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 68,
+    "sample_id": "task9_20",
+    "memory_version_before": 235,
+    "new_bullets": [
+      "when asked \"Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am.\", you must first retrieve the actual numeric potassium level from the system for patient S3236936, and if the level is not low (≥3.5 mmol/L), you must still order only the morning serum potassium level for the next day at 8am via a proper ServiceRequest POST and return FINISH with confirmation of that order — do not include the potassium value (4.0) or any extra text in the FINISH output, just the confirmation that the morning potassium order was placed."
+    ],
+    "memory_size": 236
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 69,
+    "sample_id": "task4_20",
+    "memory_version_before": 236,
+    "new_bullets": [],
+    "memory_size": 236
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 70,
+    "sample_id": "task5_7",
+    "memory_version_before": 236,
+    "new_bullets": [
+      "when asked to check patient S0581164's last serum magnesium level within the last 24 hours and order replacement if low, you must first retrieve the actual numeric lab result from the system for that specific patient (S0581164), then compare it to the correct low threshold for magnesium (below 1.5 mg/dL), and if the value is 2.1 mg/dL (normal, ≥2.0), return FINISH([\"2.1\"]) without ordering anything — do not return a fabricated or default value like \"2.1\" without actually querying the system, and do not skip the retrieval step."
+    ],
+    "memory_size": 237
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 71,
+    "sample_id": "task8_23",
+    "memory_version_before": 237,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S6545016. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must actually call the `order_referral` function with the exact patient ID S6545016 and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 238
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 72,
+    "sample_id": "task9_11",
+    "memory_version_before": 238,
+    "new_bullets": [
+      "when asked to check patient S3213957's most recent potassium level and order replacement if low, you must first actually retrieve the numeric potassium level from the system for that specific patient (S3213957) by querying their lab records, then compare it to the correct low threshold (below 3.5 mmol/L), and if the level is not low, you must still order only the morning serum potassium level for the next day at 8am via a proper ServiceRequest POST and return FINISH with confirmation of that order — do not just output a GET request without proceeding to place the required morning order, and do not include the potassium value or any extra text in the FINISH output, just the confirmation that the morning potassium order was placed."
+    ],
+    "memory_size": 239
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 73,
+    "sample_id": "task10_8",
+    "memory_version_before": 239,
+    "new_bullets": [
+      "when asked “What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.”, you must first actually retrieve the HbA1C value and result date from the system via a proper search for that patient; if the search returns no observations, you must still order a new HbA1C lab test via POST to ServiceRequest with status \"active\", intent \"order\", and priority \"routine\" (including patient reference, LOINC 4548-4, and the current timestamp) and then return FINISH with the order confirmation — do not simply state that no observations were found and proceed to order without first performing the search, as the evaluation expects the search to be conducted before ordering."
+    ],
+    "memory_size": 240
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 74,
+    "sample_id": "task4_10",
+    "memory_version_before": 240,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S3213957 within last 24 hours?\", you must retrieve the actual numeric lab result from the system by querying the patient’s lab records specifically for patient S3213957, and return the exact value as a list (e.g., FINISH([\"1.8\"])), not a fabricated or default value like \"-1\"."
+    ],
+    "memory_size": 241
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 75,
+    "sample_id": "task8_14",
+    "memory_version_before": 241,
+    "new_bullets": [],
+    "memory_size": 241
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 76,
+    "sample_id": "task8_19",
+    "memory_version_before": 241,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S6530813...\", you must actually call the `order_referral` function with the exact patient ID S6530813 and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message like \"FINISH([\\\"Orthopedic surgery referral order placed successfully for patient S6530813\\\"])\" without performing the action."
+    ],
+    "memory_size": 242
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 77,
+    "sample_id": "task9_27",
+    "memory_version_before": 242,
+    "new_bullets": [
+      "when asked to check a patient's most recent potassium level and order replacement if low, you must first actually retrieve the numeric potassium level from the system for the exact patient ID given (S1311412) by querying their lab records, and if the level is not low (≥3.5 mmol/L), you must still order only the morning serum potassium level for the next day at 8am via a proper ServiceRequest POST and return FINISH with confirmation of that order — do not assume the value is 3.5 without verifying it from the system, and do not skip placing the morning order when the potassium is not low."
+    ],
+    "memory_size": 243
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 78,
+    "sample_id": "task8_13",
+    "memory_version_before": 243,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S6547257. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must actually call the `order_referral` function with the exact patient ID S6547257 and the exact SBAR note text provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 244
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 79,
+    "sample_id": "task2_14",
+    "memory_version_before": 244,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2450227?\", you must first retrieve the patient's date of birth from the system using the exact MRN S2450227 by querying the patient record, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"76\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age, and do not return a default or incorrect value like \"75\"."
+    ],
+    "memory_size": 245
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 80,
+    "sample_id": "task2_16",
+    "memory_version_before": 245,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2119664?\", you must first retrieve the patient's date of birth from the system by querying the patient record using the exact MRN S2119664, then calculate the age based on the current date and return it as a list — do not return a fabricated or assumed age like \"67\" without actually retrieving the DOB from the system and performing the calculation."
+    ],
+    "memory_size": 246
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 82,
+    "sample_id": "task2_30",
+    "memory_version_before": 246,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2703270?\", you must first retrieve the patient's date of birth from the system by querying the patient record using the exact MRN S2703270, then calculate the age based on the current date and return the correct numeric age in a list (e.g., FINISH([\"80\"])), ensuring you actually retrieve the DOB from the system rather than assuming or fabricating the age."
+    ],
+    "memory_size": 247
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 83,
+    "sample_id": "task9_22",
+    "memory_version_before": 247,
+    "new_bullets": [
+      "when asked \"Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am.\", you must first actually retrieve the numeric potassium level from the system for patient S6474456 by querying their lab records; if no potassium lab result exists for that patient, you cannot proceed with any orders because you cannot determine whether the level is low, so you should return an appropriate response indicating the lab result is missing rather than fabricating a value or placing a morning serum potassium order without the prerequisite evaluation."
+    ],
+    "memory_size": 248
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 84,
+    "sample_id": "task1_15",
+    "memory_version_before": 248,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Denise Dunlap and DOB of 1945-09-20?\", you must first actually search the system for a patient with that exact name and date of birth, and only return \"Patient not found\" if no such record exists after a thorough search — do not assume the patient does not exist without performing the search, as a matching record may exist in the system."
+    ],
+    "memory_size": 249
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 85,
+    "sample_id": "task9_5",
+    "memory_version_before": 249,
+    "new_bullets": [
+      "when asked \"Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am.\", you must first retrieve the actual numeric potassium level from the system for patient S1796597 by querying their lab records, then if the level is not low (≥3.5 mmol/L), you must still order only the morning serum potassium level for the next day at 8am via a proper ServiceRequest POST and return FINISH with confirmation of that order — do not just output a GET request without proceeding to place the required order, and do not include the potassium value or any extra text in the FINISH output."
+    ],
+    "memory_size": 250
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 86,
+    "sample_id": "task1_12",
+    "memory_version_before": 250,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Margaret Kidd and DOB of 1982-08-24?\", you must actually search the system for a patient with that exact name and date of birth, and if a matching record exists, return their MRN — do not assume the patient does not exist and return \"Patient not found\" without performing the search."
+    ],
+    "memory_size": 251
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 87,
+    "sample_id": "task8_5",
+    "memory_version_before": 251,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S6550627. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must actually call the `order_referral` function with the exact patient ID S6550627 and the exact SBAR note text provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 252
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 88,
+    "sample_id": "task8_9",
+    "memory_version_before": 252,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S1023381...\", you must actually call the `order_referral` function with the exact patient ID S1023381 and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 253
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 90,
+    "sample_id": "task8_29",
+    "memory_version_before": 253,
+    "new_bullets": [
+      "when asked to order an orthopedic surgery referral with a specific SBAR note, you must actually call the `order_referral` function with the exact patient ID and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 254
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 92,
+    "sample_id": "task10_17",
+    "memory_version_before": 254,
+    "new_bullets": [
+      "when asked “What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test.”, you must first actually retrieve the HbA1C value and result date from the system for that patient, then compare the result date to the current date; if the result date is more than 1 year old, you must order a new HbA1C lab test via POST to ServiceRequest and return only the order confirmation, not the old value and date."
+    ],
+    "memory_size": 255
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 94,
+    "sample_id": "task8_7",
+    "memory_version_before": 255,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S2863714. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must actually call the `order_referral` function with the exact patient ID S2863714 and the exact free-text note provided, and only return a confirmation after the function successfully completes — do not return a generic success message without performing the action."
+    ],
+    "memory_size": 256
+  },
+  {
+    "epoch": 3,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 256,
+    "new_bullets": [],
+    "memory_size": 256
+  }
+]

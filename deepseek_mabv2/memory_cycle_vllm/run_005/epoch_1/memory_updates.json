@@ -1,0 +1,774 @@
+[
+  {
+    "epoch": 1,
+    "sample_idx": 1,
+    "sample_id": "task2_9",
+    "memory_version_before": 81,
+    "new_bullets": [
+      "when asked \"Verify that patient S6352985 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis (e.g., NDC 00641-0006-25), count only those matching orders, and if zero are found, create one with the correct NDC code and all required fields (status, intent, subject, medication, authoredOn, dosageInstruction) in a complete and properly formatted JSON object—but you must not create an order if the search returns no results because you searched with the wrong code or searched for unrelated medications; instead, ensure you use the correct heparin-specific code so that if no matching orders exist, you correctly proceed to create the order."
+    ],
+    "memory_size": 82
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 2,
+    "sample_id": "task1_10",
+    "memory_version_before": 82,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S3032536,\" you must first retrieve the actual date of the most recent CT Abdomen from the patient's records, then compare that date to the current date to determine if it was performed more than 12 months ago; if it was performed more than 12 months ago (or if no procedure exists at all), you must order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', rather than simply returning the date without taking the required action."
+    ],
+    "memory_size": 83
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 4,
+    "sample_id": "task1_23",
+    "memory_version_before": 83,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S6329254,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date; if the search returns 0 procedures, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 84
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 5,
+    "sample_id": "task2_30",
+    "memory_version_before": 84,
+    "new_bullets": [
+      "when asked \"Verify that patient S6227720 has exactly one active DVT prophylaxis order,\" you must first retrieve all active medication requests for heparin 5000 units SC q8h prophylaxis using the specific medication code (e.g., NDC 00641-0006-25 or the appropriate RxNorm code), count only those matching orders, and if zero are found, create one with the correct NDC code and all required fields (status, intent, subject, medication, authoredOn, dosageInstruction) in a complete and properly formatted JSON object—but you must not incorrectly conclude that no matching orders exist based on text variations in the order description or by searching for unrelated medications; instead, ensure you use the correct heparin-specific code and check all active orders for the patient, because the evaluation expects you to correctly identify existing q8h DVT prophylaxis orders even if their display text differs from the exact specification."
+    ],
+    "memory_size": 85
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 6,
+    "sample_id": "task10_17",
+    "memory_version_before": 85,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S6538722,\" you must first search for the patient's COVID-19 vaccine records using the Immunization resource; if no vaccine is found, you must order a primary COVID-19 vaccine series (not a booster), because simply reporting \"No COVID-19 vaccination records found\" and stopping without ordering the primary series fails to ensure the patient is vaccinated as the task requires."
+    ],
+    "memory_size": 86
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 7,
+    "sample_id": "task1_16",
+    "memory_version_before": 86,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2748981,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 87
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 8,
+    "sample_id": "task8_14",
+    "memory_version_before": 87,
+    "new_bullets": [],
+    "memory_size": 87
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 9,
+    "sample_id": "task4_23",
+    "memory_version_before": 87,
+    "new_bullets": [
+      "when asked \"Check if patient S6539215 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373 or a device code) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but you must not stop after finding the catheter and calculating its duration; you must actually search for an existing removal order (e.g., a ServiceRequest with code for catheter removal) before concluding one does not exist, and only if no removal order is found should you proceed to create the removal request."
+    ],
+    "memory_size": 88
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 10,
+    "sample_id": "task4_7",
+    "memory_version_before": 88,
+    "new_bullets": [
+      "when asked \"Check if patient S2450227 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373 or a device code) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but if no catheter is found at all, report that no catheter was found and take no further action, rather than stopping after a single search that returns 0 procedures without also checking for a catheter device or order that may be documented without a procedure code."
+    ],
+    "memory_size": 89
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 11,
+    "sample_id": "task3_16",
+    "memory_version_before": 89,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6352985,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than concluding no heart rate observations exist without first actually retrieving and filtering the observations to check if any data is available within those time windows."
+    ],
+    "memory_size": 90
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 12,
+    "sample_id": "task9_27",
+    "memory_version_before": 90,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S2090974,\" you must first search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today, but you must not skip the search step or incorrectly claim the search returned no results without first performing the retrieval."
+    ],
+    "memory_size": 91
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 13,
+    "sample_id": "task3_10",
+    "memory_version_before": 91,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1374652,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than returning hardcoded or incorrect values like [\"89.0\", \"91.5\"] that do not match the actual retrieved and calculated data."
+    ],
+    "memory_size": 92
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 14,
+    "sample_id": "task2_14",
+    "memory_version_before": 92,
+    "new_bullets": [
+      "when asked \"Verify that patient S6539215 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders using the specific medication code for heparin 5000 units SC q8h prophylaxis, count them, and if exactly one active order already exists (regardless of minor text variations like Q12H vs Q8H), you should take no action and report that the patient already has the required order, rather than incorrectly seeking additional pages or creating a duplicate because the existing order's frequency label doesn't exactly match the expected wording."
+    ],
+    "memory_size": 93
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 18,
+    "sample_id": "task10_27",
+    "memory_version_before": 93,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S1635224,\" you must first search for COVID-19 vaccine records using the Immunization resource, and if no vaccine is found, you must order a primary COVID-19 vaccine series (not a booster), because the task requires ensuring the patient is vaccinated—simply initiating a search and stopping without taking any action based on the results is incorrect."
+    ],
+    "memory_size": 94
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 19,
+    "sample_id": "task9_6",
+    "memory_version_before": 94,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S6540602,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today, but you must not skip the search step or incorrectly claim the search returned no results without first performing the retrieval."
+    ],
+    "memory_size": 95
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 20,
+    "sample_id": "task3_19",
+    "memory_version_before": 95,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6212774,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than concluding no data exists without first actually retrieving and filtering the observations to check if any heart rate data is available within those time windows."
+    ],
+    "memory_size": 96
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 21,
+    "sample_id": "task1_7",
+    "memory_version_before": 96,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2111822,\" you must first actually retrieve the most recent CT Abdomen procedure using CPT codes IMGCT0491 or IMGIL0001 for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 97
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 23,
+    "sample_id": "task8_5",
+    "memory_version_before": 97,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription,\" you must first actually retrieve and search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 98
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 24,
+    "sample_id": "task3_29",
+    "memory_version_before": 98,
+    "new_bullets": [],
+    "memory_size": 98
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 25,
+    "sample_id": "task10_13",
+    "memory_version_before": 98,
+    "new_bullets": [],
+    "memory_size": 98
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 26,
+    "sample_id": "task3_30",
+    "memory_version_before": 98,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2161163,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately (not the same average for both windows), and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than returning identical values for both windows or failing to perform the actual calculation based on the retrieved data."
+    ],
+    "memory_size": 99
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 27,
+    "sample_id": "task9_14",
+    "memory_version_before": 99,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S3195056,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today, but you must not skip the search step or incorrectly claim the vaccine was found and ordered without first performing the retrieval to confirm no record exists."
+    ],
+    "memory_size": 100
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 28,
+    "sample_id": "task8_19",
+    "memory_version_before": 100,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 101
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 30,
+    "sample_id": "task8_15",
+    "memory_version_before": 101,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6329254 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than immediately concluding no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 102
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 31,
+    "sample_id": "task2_15",
+    "memory_version_before": 102,
+    "new_bullets": [
+      "when asked \"Verify that patient [ID] has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis, count them, and if exactly one active order already exists (regardless of minor variations in medication text or frequency label like Q12H vs Q8H), you must take no action and report that the patient already has the required order, rather than creating a duplicate because the existing order's frequency or text does not exactly match the expected wording."
+    ],
+    "memory_size": 103
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 32,
+    "sample_id": "task3_27",
+    "memory_version_before": 103,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2016972,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than returning incorrect or uncalculated values that do not match the actual retrieved and computed data."
+    ],
+    "memory_size": 104
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 33,
+    "sample_id": "task4_28",
+    "memory_version_before": 104,
+    "new_bullets": [
+      "when asked \"Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order—only if both conditions are met (catheter present >48 hours AND no removal order) should you create a service request to remove it, but if a catheter is found that has been in place over 48 hours, you must still explicitly search for a removal order (e.g., a ServiceRequest with code for catheter removal) before concluding one does not exist, rather than only searching for the catheter and immediately proceeding to create a removal request without verifying the absence of an existing removal order."
+    ],
+    "memory_size": 105
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 34,
+    "sample_id": "task3_17",
+    "memory_version_before": 105,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6268253,\" you must first actually retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than concluding no data exists without first actually retrieving and filtering the observations to check if any heart rate data is available within those time windows."
+    ],
+    "memory_size": 106
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 35,
+    "sample_id": "task10_8",
+    "memory_version_before": 106,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S6537563,\" you must first search for the patient's COVID-19 vaccine records using the Immunization resource; if a vaccine is found, check if the last dose date is more than 12 months ago—if so, order a booster, but if no vaccine record is found at all, you must order a primary COVID-19 vaccine series (not a booster), and you must not stop after only searching without taking the appropriate action based on the results."
+    ],
+    "memory_size": 107
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 36,
+    "sample_id": "task9_20",
+    "memory_version_before": 107,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S2450227,\" you must first search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today, but do not skip the search step—you must actually perform the retrieval before concluding none exists and ordering."
+    ],
+    "memory_size": 108
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 37,
+    "sample_id": "task3_3",
+    "memory_version_before": 108,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6500497,\" you must first actually retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the specified current time (2023-11-07T22:47:00+00:00), compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than concluding no observations exist without first performing the retrieval and filtering steps."
+    ],
+    "memory_size": 109
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 39,
+    "sample_id": "task9_9",
+    "memory_version_before": 109,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S1891852,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today, but you must not skip the search step or incorrectly claim the search returned no results without first performing the retrieval."
+    ],
+    "memory_size": 110
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 40,
+    "sample_id": "task10_20",
+    "memory_version_before": 110,
+    "new_bullets": [],
+    "memory_size": 110
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 41,
+    "sample_id": "task1_13",
+    "memory_version_before": 110,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S0658561,\" you must first retrieve the actual date of the most recent CT Abdomen, then compare that date to the current date to determine if it was performed more than 12 months ago; if it was performed more than 12 months ago (or if no procedure exists at all), you must order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', rather than simply returning the date without taking the required action."
+    ],
+    "memory_size": 111
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 42,
+    "sample_id": "task4_10",
+    "memory_version_before": 111,
+    "new_bullets": [],
+    "memory_size": 111
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 43,
+    "sample_id": "task8_23",
+    "memory_version_before": 111,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 112
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 44,
+    "sample_id": "task1_26",
+    "memory_version_before": 112,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2823623,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 113
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 45,
+    "sample_id": "task1_6",
+    "memory_version_before": 113,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2450227,\" you must first actually retrieve the date of the most recent CT Abdomen from the patient's procedure records using the appropriate CPT codes (IMGCT0491 or IMGIL0001), then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not claim no procedure exists without first performing the actual search."
+    ],
+    "memory_size": 114
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 46,
+    "sample_id": "task3_12",
+    "memory_version_before": 114,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6549951,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than immediately concluding no data exists without first actually retrieving and filtering the observations to check if any heart rate data is available within those time windows."
+    ],
+    "memory_size": 115
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 47,
+    "sample_id": "task4_11",
+    "memory_version_before": 115,
+    "new_bullets": [
+      "when asked \"Check if patient S2380121 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first determine the correct current time from the task context (which states \"It's 2023-11-11T09:00:00+00:00 now\") and use that time to calculate the duration the catheter has been in place, rather than using a conflicting or incorrect current time that leads to miscalculating the 48-hour threshold and incorrectly concluding no action is needed."
+    ],
+    "memory_size": 116
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 48,
+    "sample_id": "task9_8",
+    "memory_version_before": 116,
+    "new_bullets": [],
+    "memory_size": 116
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 50,
+    "sample_id": "task10_18",
+    "memory_version_before": 116,
+    "new_bullets": [],
+    "memory_size": 116
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 51,
+    "sample_id": "task8_7",
+    "memory_version_before": 116,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1478444 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 117
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 52,
+    "sample_id": "task9_28",
+    "memory_version_before": 117,
+    "new_bullets": [],
+    "memory_size": 117
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 53,
+    "sample_id": "task8_9",
+    "memory_version_before": 117,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1353305 has a matching naloxone prescription,\" you must first actually retrieve all active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine), then for each opioid found, check for an existing active naloxone order, and only create a naloxone order if an active opioid exists without one—the agent's mistake was only initiating a search query without actually executing the retrieval and subsequent verification steps."
+    ],
+    "memory_size": 118
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 54,
+    "sample_id": "task3_7",
+    "memory_version_before": 118,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227,\" you must first retrieve heart rate observations using the code \"HEARTRATE\" for the patient, then filter those observations to only include those recorded within the past 6 hours and the past 12 hours from the current time, compute the average of the numeric values for each time window separately, and return both averages as a list (e.g., [\"85.0\", \"85.5\"]), rather than returning hardcoded or placeholder values without performing the actual retrieval and calculation based on the patient's data."
+    ],
+    "memory_size": 119
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 55,
+    "sample_id": "task8_3",
+    "memory_version_before": 119,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6540602 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and incorrectly concluding no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 120
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 56,
+    "sample_id": "task10_10",
+    "memory_version_before": 120,
+    "new_bullets": [],
+    "memory_size": 120
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 57,
+    "sample_id": "task10_16",
+    "memory_version_before": 120,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S1374652,\" you must first search for COVID-19 vaccine records using the Immunization resource, and if no vaccine is found, you must order a primary COVID-19 vaccine series (not a booster), because simply reporting \"No COVID-19 vaccination records found\" and stopping without ordering the primary series fails to ensure the patient is vaccinated as the task requires."
+    ],
+    "memory_size": 121
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 58,
+    "sample_id": "task2_6",
+    "memory_version_before": 121,
+    "new_bullets": [
+      "when asked \"Verify that patient S2704870 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis, count them, and if multiple orders exist, you must discontinue the duplicates by updating their status to \"stopped\" via a valid PATCH/PUT request to the MedicationRequest endpoint—not by attempting a POST to the same endpoint with a malformed body—and you must keep only the newest order by authoredOn date."
+    ],
+    "memory_size": 122
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 59,
+    "sample_id": "task2_17",
+    "memory_version_before": 122,
+    "new_bullets": [
+      "when asked \"Verify that patient S6415739 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis (e.g., NDC 00641-0006-25), count only those matching orders, and if zero are found, create one with the correct NDC code and all required fields (status, intent, subject, medication, authoredOn, dosageInstruction) in a complete and properly formatted JSON object—but you must not create an incomplete or malformed JSON object that is missing required fields like status, subject, and medication, and you must ensure the entire POST request is properly structured and complete before sending it."
+    ],
+    "memory_size": 123
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 60,
+    "sample_id": "task9_11",
+    "memory_version_before": 123,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S3114648,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today—but you must not claim a vaccine was found or skip the search step, and you must not finish without first performing the actual retrieval to confirm whether a record exists or not."
+    ],
+    "memory_size": 124
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 61,
+    "sample_id": "task9_5",
+    "memory_version_before": 124,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S0674240,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today—but you must not skip the search step and immediately order the vaccine without first performing the actual retrieval to confirm whether a record exists or not."
+    ],
+    "memory_size": 125
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 63,
+    "sample_id": "task2_1",
+    "memory_version_before": 125,
+    "new_bullets": [
+      "when asked \"Verify that patient [ID] has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis, then if multiple orders exist, you must actually discontinue the duplicates by updating their status to \"stopped\" using a valid PATCH/PUT request to the MedicationRequest endpoint—not by sending an incomplete POST request—and keep only the newest order by authoredOn date."
+    ],
+    "memory_size": 126
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 65,
+    "sample_id": "task4_4",
+    "memory_version_before": 126,
+    "new_bullets": [
+      "when asked \"Check if patient S6200102 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (code NUR1373) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but if no catheter procedure or device is found at all, you must still check for a catheter device or order that may be present without a procedure code, and if still none exists, then report no catheter found and take no action, rather than stopping after a single search that returns 0 procedures without also checking for a catheter device or order."
+    ],
+    "memory_size": 127
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 66,
+    "sample_id": "task2_22",
+    "memory_version_before": 127,
+    "new_bullets": [
+      "when asked \"Verify that patient [ID] has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders using the specific medication code for heparin 5000 units SC q8h prophylaxis (e.g., NDC 00641-0006-25 or RxNorm 104031), then count them; if zero orders exist, create one immediately with the correct NDC code and all required fields rather than continuing to search additional pages or searching for unrelated medications, because the evaluation expects you to act decisively based on the search results."
+    ],
+    "memory_size": 128
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 128,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S6551923,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if a vaccine is found, compare its date to the current date to determine if it was administered more than 365 days ago—if so, order a new vaccine for today, but if it was less than 365 days ago, return only the date of the last vaccine and do not order a new one; if no vaccine is found, explicitly report that no influenza vaccine was administered and then order a new one for today, but do not skip the search step or incorrectly assume a date."
+    ],
+    "memory_size": 129
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 68,
+    "sample_id": "task1_15",
+    "memory_version_before": 129,
+    "new_bullets": [],
+    "memory_size": 129
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 69,
+    "sample_id": "task6_26",
+    "memory_version_before": 129,
+    "new_bullets": [
+      "when asked \"Retrieve the most recent TSH and free T4 values for patient S6426560 and take appropriate action according to the protocol,\" you must first check if the TSH is between 4.5–10 uIU/mL AND the free T4 is normal (0.8–1.8 ng/dL)—if both conditions are met, you should order a repeat TSH/FT4 in 3 months and NOT start medication; however, the agent's mistake was that it incorrectly reported the TSH as 4.5-10 uIU/mL when the actual values were 4.53 uIU/mL (which IS between 4.5-10) and 1.36 ng/dL (normal), so the correct action was indeed to order a repeat in 3 months—but the evaluation returned False, indicating the agent likely failed to actually execute the order for the repeat TSH/FT4 in 3 months, so you must not only report the results but also create the appropriate follow-up order."
+    ],
+    "memory_size": 130
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 71,
+    "sample_id": "task1_11",
+    "memory_version_before": 130,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S1733937,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 131
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 72,
+    "sample_id": "task8_26",
+    "memory_version_before": 131,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 132
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 73,
+    "sample_id": "task3_14",
+    "memory_version_before": 132,
+    "new_bullets": [],
+    "memory_size": 132
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 74,
+    "sample_id": "task10_24",
+    "memory_version_before": 132,
+    "new_bullets": [],
+    "memory_size": 132
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 75,
+    "sample_id": "task2_16",
+    "memory_version_before": 132,
+    "new_bullets": [
+      "when asked \"Verify that patient S6538722 has exactly one active DVT prophylaxis order,\" you must first search for active medication requests using the specific medication code for heparin 5000 units SC q8h prophylaxis (e.g., NDC 00641-0006-25 or RxNorm 104031), count only those matching orders, and if zero are found, create one with the correct NDC code and all required fields (status, intent, subject, medication, authoredOn, dosageInstruction) in a complete and properly formatted JSON object—but you must not create an incomplete or malformed JSON object that is missing required fields like status, subject, and medication, and you must ensure the entire POST request is properly structured and complete before sending it."
+    ],
+    "memory_size": 133
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 76,
+    "sample_id": "task2_26",
+    "memory_version_before": 133,
+    "new_bullets": [
+      "when asked \"Verify that patient S0869531 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis (e.g., NDC 00641-0006-25 or RxNorm 104031), count only those matching orders, and if zero are found, create one with the correct NDC code and all required fields—but you must not create a duplicate by searching for a different medication (like enoxaparin) or by prematurely creating an order without first checking all existing orders for the patient; if exactly one active q8h order already exists, take no action and report that the patient already has the required order."
+    ],
+    "memory_size": 134
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 77,
+    "sample_id": "task9_22",
+    "memory_version_before": 134,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S1777769,\" you must first actually search for an influenza vaccine (CPT 90686) record for the patient; if no vaccine is found, you should explicitly report that no influenza vaccine was administered, then order a new one for today—but you must not claim the vaccine was found and ordered without first performing the retrieval to confirm no record exists, and you must not skip the search step by immediately ordering without checking for an existing record."
+    ],
+    "memory_size": 135
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 78,
+    "sample_id": "task1_20",
+    "memory_version_before": 135,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2016972,\" you must first retrieve the actual date of the most recent CT Abdomen from the patient's procedure records, then compare that date to the current date (2023-11-07) to determine if it was performed more than 12 months ago; if the retrieved date shows the procedure was performed more than 12 months ago (or if no procedure is found), you must order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', rather than incorrectly concluding the procedure is recent without verifying the actual date difference from the current time."
+    ],
+    "memory_size": 136
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 79,
+    "sample_id": "task8_29",
+    "memory_version_before": 136,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 137
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 80,
+    "sample_id": "task4_15",
+    "memory_version_before": 137,
+    "new_bullets": [
+      "when asked \"Check if patient S6541609 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373 or a device code) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but if no catheter procedure or device is found at all, you must still check for a catheter device or order that may be present without a procedure code, and if still none exists, then report no catheter found and take no action, rather than stopping after a single search that returns 0 procedures without also checking for a catheter device or order."
+    ],
+    "memory_size": 138
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 82,
+    "sample_id": "task1_27",
+    "memory_version_before": 138,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S6540602,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 139
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 84,
+    "sample_id": "task10_15",
+    "memory_version_before": 139,
+    "new_bullets": [],
+    "memory_size": 139
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 85,
+    "sample_id": "task2_25",
+    "memory_version_before": 139,
+    "new_bullets": [
+      "when asked \"Verify that patient S2823623 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders using the specific medication code for heparin 5000 units SC q8h prophylaxis, then count them; if exactly one active order exists, you must take no action and report that the patient already has the required order, but if the search returns zero orders, you must create one with the correct NDC code and all required fields—your mistake was incorrectly concluding that one order exists when the search may have returned zero results, so you must ensure you actually retrieve and count the orders before deciding no action is needed."
+    ],
+    "memory_size": 140
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 86,
+    "sample_id": "task4_26",
+    "memory_version_before": 140,
+    "new_bullets": [
+      "when asked \"Check if patient S1736710 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373 or a device code) for the patient, then retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but if no catheter procedure or device is found at all, you must still check for a catheter device or order that may be present without a procedure code, and if still none exists, then report no catheter found and take no action, rather than stopping after a single search that returns 0 procedures without also checking for a catheter device or order."
+    ],
+    "memory_size": 141
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 87,
+    "sample_id": "task8_13",
+    "memory_version_before": 141,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6352985 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) and retrieve them from the FHIR server, then for each active opioid found, search for an existing active naloxone order; if an active opioid exists without naloxone, create a naloxone order, but if no active opioids are found after the proper search, explicitly report that no active opioid orders exist and take no further action."
+    ],
+    "memory_size": 142
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 89,
+    "sample_id": "task4_21",
+    "memory_version_before": 142,
+    "new_bullets": [
+      "when asked \"Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,\" you must first search for a urinary catheter device or procedure (using code NUR1373 or a device code) for the patient, retrieve its insertion date to calculate if it has been in place over 48 hours, and also check for any existing removal order; if a catheter is found that has been in place over 48 hours and no removal order exists, create a service request to remove it—but if no catheter is found at all, report that no catheter was found and take no further action, rather than incorrectly reporting \"No urinary catheter procedure found\" without first performing a proper search for the catheter device or procedure with the correct code."
+    ],
+    "memory_size": 143
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 91,
+    "sample_id": "task10_12",
+    "memory_version_before": 143,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S0547588,\" you must first search for the patient's COVID-19 vaccine records using the Immunization resource; if no vaccine is found, you must order a primary COVID-19 vaccine series (not just report no records found and stop), because the task requires ensuring the patient is vaccinated by taking appropriate action based on the search results."
+    ],
+    "memory_size": 144
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 92,
+    "sample_id": "task2_28",
+    "memory_version_before": 144,
+    "new_bullets": [
+      "when asked \"Verify that patient S6307599 has exactly one active DVT prophylaxis order,\" you must first retrieve all active DVT prophylaxis orders for the patient using the specific medication code for heparin 5000 units SC q8h prophylaxis, then count them; if zero orders are found, create one immediately with the correct NDC code and all required fields, rather than incorrectly reporting the search result as a FINISH action without actually creating the order."
+    ],
+    "memory_size": 145
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 93,
+    "sample_id": "task1_12",
+    "memory_version_before": 145,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S1152319,\" you must first actually retrieve the most recent CT Abdomen procedure (using CPT codes IMGCT0491 or IMGIL0001) for the patient and obtain its date, then compare that date to the current date to determine if it was performed more than 12 months ago; if no procedure is found, you should explicitly report that no CT Abdomen was found and then order a new CT Abdomen with IV contrast indication 'Renal mass follow-up', but you must not skip the retrieval step and must not order the study without first confirming no procedure exists."
+    ],
+    "memory_size": 146
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 94,
+    "sample_id": "task8_21",
+    "memory_version_before": 146,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription,\" you must first actually search for active opioid orders using the specific opioid medication names (hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) rather than listing non-opioid medications and assuming no opioids exist without performing the proper opioid-specific search, because the evaluation expects you to confirm the presence or absence of opioids before deciding whether to create a naloxone order."
+    ],
+    "memory_size": 147
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 95,
+    "sample_id": "task10_21",
+    "memory_version_before": 147,
+    "new_bullets": [],
+    "memory_size": 147
+  }
+]

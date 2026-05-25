@@ -1,0 +1,338 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+[Baseline] Val: 41.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 24/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+
+  [ProposalRanking] baseline probe: 0 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~10,400 chars (~2,600 est. tokens) for 24 traces
+[SkillUpdater] classified 24 failing traces → 7 mode(s) (0 reused, 7 new): date_filter_too_restrictive(1), missing_date_filter_on_observation(4), missing_unit_in_answer(7), ordered_lab_without_final_answer(1), patient_identifier_not_resolved(8), patient_not_found_incorrectly(1), returned_placeholder_instead_of_value(2)
+[SkillUpdater] diagnosed 24/24 failing traces
+[SkillUpdater] ADD skill: patient_identifier_resolution_verification
+[SkillUpdater] ADD skill: include_unit_in_lab_value_output
+[SkillUpdater] ADD skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: observation_search_fallback_strategy
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::patient_identifier_resolution_verification → adjusted=+6 raw=+4 (fixes=10 baseline_fixes=0, regressions=3 baseline_regressions=2)
+
+
+
+
+
+  [ProposalRanking] ADD::include_unit_in_lab_value_output → adjusted=-3 raw=-5 (fixes=5 baseline_fixes=0, regressions=8 baseline_regressions=2)
+
+  [ProposalRanking] ADD::most_recent_observation_query_pattern → adjusted=+10 raw=+8 (fixes=10 baseline_fixes=0, regressions=2 baseline_regressions=2)
+
+
+
+
+
+  [ProposalRanking] ADD::observation_search_fallback_strategy → adjusted=-5 raw=-7 (fixes=3 baseline_fixes=0, regressions=8 baseline_regressions=2)
+  [ProposalRanking] winner: ADD::most_recent_observation_query_pattern adjusted=+10 (fixes=10, regressions=2)
+  [ContrastiveRevision] 2 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: most_recent_observation_query_pattern
+  [ContrastiveRevision] ADD::most_recent_observation_query_pattern → adjusted=+3 (fixes=8, regressions=4)
+  [ContrastiveRevision] revision did not improve (+3 ≤ +10), keeping original
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+  Batch score: 27/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 8 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~13,687 chars (~3,421 est. tokens) for 21 traces
+[SkillUpdater] classified 21 failing traces → 8 mode(s) (7 reused, 1 new): answer_format_wrong_type(7), date_filter_too_restrictive(1), missing_date_filter_on_observation(4), missing_unit_in_answer(1), ordered_lab_without_final_answer(1), patient_identifier_not_resolved(1), patient_not_found_incorrectly(4), returned_placeholder_instead_of_value(2)
+[SkillUpdater] diagnose failed: Expecting ',' delimiter: line 2 column 1 (char 434)
+[SkillUpdater] ADD skill: conditional_lab_value_response_format
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: patient_name_search_pattern
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+  [ProposalRanking] 4 proposals sampled, 4 unique
+
+
+
+
+
+
+
+  [ProposalRanking] ADD::conditional_lab_value_response_format → adjusted=-4 raw=+2 (fixes=10 baseline_fixes=8, regressions=8 baseline_regressions=2)
+
+
+
+
+
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-7 raw=-1 (fixes=8 baseline_fixes=8, regressions=9 baseline_regressions=2)
+  [ProposalRanking] ADD::patient_name_search_pattern → adjusted=+0 raw=+6 (fixes=6 baseline_fixes=8, regressions=0 baseline_regressions=2)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-4 raw=+2 (fixes=8 baseline_fixes=8, regressions=4 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+
+[Epoch 0] Dev: 51/96 (53.1%) | Val: 66.2%
+[BestCheckpoint] New best: epoch=0, val=66.2% — snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 29/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 4 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~10,995 chars (~2,748 est. tokens) for 19 traces
+[SkillUpdater] classified 19 failing traces → 6 mode(s) (6 reused, 0 new): answer_format_wrong_type(7), missing_date_filter_on_observation(1), ordered_lab_without_final_answer(1), patient_identifier_not_resolved(5), patient_not_found_incorrectly(3), returned_placeholder_instead_of_value(2)
+[SkillUpdater] diagnose failed: Expecting ',' delimiter: line 2 column 1 (char 399)
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: patient_age_calculation_from_birthdate
+[SkillUpdater] ADD skill: patient_search_name_format_strategy
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+  [ProposalRanking] 4 proposals sampled, 4 unique
+
+
+
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-6 raw=-3 (fixes=3 baseline_fixes=4, regressions=5 baseline_regressions=1)
+
+  [ProposalRanking] ADD::patient_age_calculation_from_birthdate → adjusted=-6 raw=-3 (fixes=3 baseline_fixes=4, regressions=4 baseline_regressions=1)
+  [ProposalRanking] ADD::patient_search_name_format_strategy → adjusted=-2 raw=+1 (fixes=2 baseline_fixes=4, regressions=1 baseline_regressions=1)
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-4 raw=-1 (fixes=2 baseline_fixes=4, regressions=2 baseline_regressions=1)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+  Batch score: 29/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 2 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~12,771 chars (~3,192 est. tokens) for 19 traces
+[SkillUpdater] classified 19 failing traces → 6 mode(s) (5 reused, 1 new): answer_format_wrong_type(1), normal_value_no_action_needed(9), ordered_lab_without_final_answer(1), patient_identifier_not_resolved(1), patient_not_found_incorrectly(5), returned_placeholder_instead_of_value(2)
+[SkillUpdater] diagnosed 19/19 failing traces
+[SkillUpdater] ADD skill: finish_output_format_matching
+[SkillUpdater] ADD skill: patient_search_empty_bundle_handling
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: patient_identifier_search_format
+  [ProposalRanking] 4 proposals sampled, 4 unique
+
+  [ProposalRanking] ADD::finish_output_format_matching → adjusted=-2 raw=-2 (fixes=6 baseline_fixes=2, regressions=5 baseline_regressions=2)
+  [ProposalRanking] ADD::patient_search_empty_bundle_handling → adjusted=-3 raw=-3 (fixes=1 baseline_fixes=2, regressions=3 baseline_regressions=2)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=+1 raw=+1 (fixes=4 baseline_fixes=2, regressions=2 baseline_regressions=2)
+
+  [ProposalRanking] ADD::patient_identifier_search_format → adjusted=-3 raw=-3 (fixes=6 baseline_fixes=2, regressions=5 baseline_regressions=2)
+  [ProposalRanking] winner: MODIFY::most_recent_observation_query_pattern adjusted=+1 (fixes=4, regressions=2)
+  [ContrastiveRevision] 2 regression(s) — requesting targeted revision...
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+  [ContrastiveRevision] MODIFY::most_recent_observation_query_pattern → adjusted=+2 (fixes=5, regressions=2)
+  [ContrastiveRevision] revision wins: adjusted=+2 > +1
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 1] Dev: 58/96 (60.4%) | Val: 61.3%
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+
+  Batch score: 26/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 6 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~16,042 chars (~4,010 est. tokens) for 22 traces
+[SkillUpdater] classified 22 failing traces → 7 mode(s) (6 reused, 1 new): answer_format_wrong_type(9), missing_date_filter_on_observation(2), ordered_lab_without_final_answer(3), patient_identifier_not_resolved(2), patient_not_found_incorrectly(3), returned_placeholder_instead_of_value(2), wrong_resource_type_queried(1)
+[SkillUpdater] diagnosed 22/22 failing traces
+[SkillUpdater] ADD skill: structured_output_format_for_decision_tasks
+[SkillUpdater] ADD skill: post_action_finish_requirement
+[SkillUpdater] ADD skill: empty_patient_bundle_handling
+[SkillUpdater] ADD skill: patient_identifier_resolution_and_verification
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::structured_output_format_for_decision_tasks → adjusted=-8 raw=-4 (fixes=5 baseline_fixes=6, regressions=6 baseline_regressions=2)
+  [ProposalRanking] ADD::post_action_finish_requirement → adjusted=-11 raw=-7 (fixes=5 baseline_fixes=6, regressions=6 baseline_regressions=2)
+  [ProposalRanking] ADD::empty_patient_bundle_handling → adjusted=-9 raw=-5 (fixes=1 baseline_fixes=6, regressions=5 baseline_regressions=2)
+  [ProposalRanking] ADD::patient_identifier_resolution_and_verification → adjusted=-4 raw=+0 (fixes=7 baseline_fixes=6, regressions=4 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+
+  Batch score: 30/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+
+  [ProposalRanking] baseline probe: 0 fixes, 0 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~13,821 chars (~3,455 est. tokens) for 18 traces
+[SkillUpdater] classified 18 failing traces → 6 mode(s) (5 reused, 1 new): answer_format_wrong_type(3), missing_subject_reference_prefix(1), normal_value_no_action_needed(6), ordered_lab_without_final_answer(2), patient_not_found_incorrectly(4), returned_placeholder_instead_of_value(2)
+[SkillUpdater] diagnosed 18/18 failing traces
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+[SkillUpdater] ADD skill: fhir_bundle_total_field_check
+[SkillUpdater] ADD skill: observation_value_extraction_and_formatting
+  [ProposalRanking] 3 proposals sampled, 3 unique
+
+
+
+
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-8 raw=-8 (fixes=0 baseline_fixes=0, regressions=7 baseline_regressions=0)
+
+  [ProposalRanking] ADD::fhir_bundle_total_field_check → adjusted=-4 raw=-4 (fixes=1 baseline_fixes=0, regressions=3 baseline_regressions=0)
+
+  [ProposalRanking] ADD::observation_value_extraction_and_formatting → adjusted=+0 raw=+0 (fixes=1 baseline_fixes=0, regressions=1 baseline_regressions=0)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 2] Dev: 56/96 (58.3%) | Val: 62.5%
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 30/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 3 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~13,665 chars (~3,416 est. tokens) for 18 traces
+[SkillUpdater] classified 18 failing traces → 4 mode(s) (4 reused, 0 new): answer_format_wrong_type(11), ordered_lab_without_final_answer(2), patient_identifier_not_resolved(1), patient_not_found_incorrectly(4)
+[SkillUpdater] diagnosed 18/18 failing traces
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: patient_name_search_pattern
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] REMOVE skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: patient_identifier_search_format
+  [ProposalRanking] 5 proposals sampled, 5 unique
+
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-2 raw=+0 (fixes=2 baseline_fixes=3, regressions=2 baseline_regressions=1)
+  [ProposalRanking] ADD::patient_name_search_pattern → adjusted=+3 raw=+5 (fixes=7 baseline_fixes=3, regressions=1 baseline_regressions=1)
+
+
+
+
+
+
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-8 raw=-6 (fixes=0 baseline_fixes=3, regressions=6 baseline_regressions=1)
+
+  [ProposalRanking] REMOVE::most_recent_observation_query_pattern → adjusted=-1 raw=+1 (fixes=4 baseline_fixes=3, regressions=3 baseline_regressions=1)
+More than 1 POST
+More than 1 POST
+  [ProposalRanking] ADD::patient_identifier_search_format → adjusted=-8 raw=-6 (fixes=3 baseline_fixes=3, regressions=6 baseline_regressions=1)
+  [ProposalRanking] winner: ADD::patient_name_search_pattern adjusted=+3 (fixes=7, regressions=1)
+  [ContrastiveRevision] 1 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: patient_name_search_pattern
+  [ContrastiveRevision] ADD::patient_name_search_pattern → adjusted=-1 (fixes=5, regressions=2)
+  [ContrastiveRevision] revision did not improve (-1 ≤ +3), keeping original
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+  Batch score: 30/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 5 fixes, 0 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~13,738 chars (~3,434 est. tokens) for 18 traces
+[SkillUpdater] classified 18 failing traces → 5 mode(s) (5 reused, 0 new): answer_format_wrong_type(8), missing_unit_in_answer(2), ordered_lab_without_final_answer(2), patient_identifier_not_resolved(2), returned_placeholder_instead_of_value(4)
+[SkillUpdater] diagnosed 18/18 failing traces
+[SkillUpdater] REMOVE skill: most_recent_observation_query_pattern
+[SkillUpdater] ADD skill: observation_value_extraction_and_output_formatting
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+  [ProposalRanking] 5 proposals sampled, 5 unique
+  [ProposalRanking] REMOVE::most_recent_observation_query_pattern → adjusted=-5 raw=+0 (fixes=0 baseline_fixes=5, regressions=0 baseline_regressions=0)
+  [ProposalRanking] ADD::observation_value_extraction_and_output_formatting → adjusted=-5 raw=+0 (fixes=0 baseline_fixes=5, regressions=0 baseline_regressions=0)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-5 raw=+0 (fixes=0 baseline_fixes=5, regressions=0 baseline_regressions=0)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-5 raw=+0 (fixes=0 baseline_fixes=5, regressions=0 baseline_regressions=0)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-5 raw=+0 (fixes=0 baseline_fixes=5, regressions=0 baseline_regressions=0)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+
+[Epoch 3] Dev: 60/96 (62.5%) | Val: 41.2%
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 29/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 3 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~15,790 chars (~3,947 est. tokens) for 19 traces
+[SkillUpdater] classified 19 failing traces → 4 mode(s) (4 reused, 0 new): answer_format_wrong_type(2), missing_unit_in_answer(11), ordered_lab_without_final_answer(3), patient_identifier_not_resolved(3)
+[SkillUpdater] diagnosed 19/19 failing traces
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+[SkillUpdater] MODIFY skill: patient_name_search_pattern
+[SkillUpdater] ADD skill: lab_value_output_formatting
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-1 raw=+0 (fixes=3 baseline_fixes=3, regressions=2 baseline_regressions=2)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-4 raw=-3 (fixes=3 baseline_fixes=3, regressions=6 baseline_regressions=2)
+  [ProposalRanking] MODIFY::patient_name_search_pattern → adjusted=-4 raw=-3 (fixes=3 baseline_fixes=3, regressions=3 baseline_regressions=2)
+  [ProposalRanking] ADD::lab_value_output_formatting → adjusted=-5 raw=-4 (fixes=3 baseline_fixes=3, regressions=5 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+  Batch score: 32/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 2 fixes, 0 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~11,278 chars (~2,819 est. tokens) for 16 traces
+[SkillUpdater] classified 16 failing traces → 5 mode(s) (5 reused, 0 new): answer_format_wrong_type(3), normal_value_no_action_needed(5), ordered_lab_without_final_answer(1), patient_identifier_not_resolved(3), returned_placeholder_instead_of_value(4)
+[SkillUpdater] diagnosed 16/16 failing traces
+[SkillUpdater] ADD skill: conditional_lab_replacement_decision
+[SkillUpdater] MODIFY skill: most_recent_observation_query_pattern
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+[SkillUpdater] inference failed: HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+[SkillUpdater] ADD skill: observation_value_date_output_format
+  [ProposalRanking] 3 proposals sampled, 3 unique
+  [ProposalRanking] ADD::conditional_lab_replacement_decision → adjusted=+0 raw=+2 (fixes=2 baseline_fixes=2, regressions=0 baseline_regressions=0)
+  [ProposalRanking] MODIFY::most_recent_observation_query_pattern → adjusted=-2 raw=+0 (fixes=2 baseline_fixes=2, regressions=1 baseline_regressions=0)
+  [ProposalRanking] ADD::observation_value_date_output_format → adjusted=-4 raw=-2 (fixes=3 baseline_fixes=2, regressions=3 baseline_regressions=0)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+
+[Epoch 4] Dev: 61/96 (63.5%) | Val: 65.0%
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=0, val=66.2%
+
+Val learning curve:
+  baseline: 41.2%  ████████
+         0: 66.2%  █████████████
+         1: 61.3%  ████████████
+         2: 62.5%  ████████████
+         3: 41.2%  ████████
+         4: 65.0%  █████████████

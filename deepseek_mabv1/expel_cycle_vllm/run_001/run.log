@@ -1,0 +1,123 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+[Baseline] Val: 40.0%
+[BestCheckpoint] New best: epoch=baseline, val=40.0% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+
+
+
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 0] Dev: 39/96 (40.6%) | Val: 47.5% | Rules: 20 (pairs critiqued: 57)
+[BestCheckpoint] New best: epoch=0, val=47.5% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 1] Dev: 47/96 (49.0%) | Val: 47.5% | Rules: 20 (pairs critiqued: 106)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 2] Dev: 49/96 (51.0%) | Val: 47.5% | Rules: 20 (pairs critiqued: 153)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 3] Dev: 48/96 (50.0%) | Val: 51.2% | Rules: 20 (pairs critiqued: 201)
+[BestCheckpoint] New best: epoch=3, val=51.2% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 4] Dev: 49/96 (51.0%) | Val: 51.2% | Rules: 20 (pairs critiqued: 248)
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 40.0%  ████████
+         0: 47.5%  █████████
+         1: 47.5%  █████████
+         2: 47.5%  █████████
+         3: 51.2%  ██████████
+         4: 51.2%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20
+[Resume] Baseline already done (val=40.0%), skipping
+[Resume] Epoch 0 already done (val=47.5%), skipping
+[Resume] Epoch 1 already done (val=47.5%), skipping
+[Resume] Epoch 2 already done (val=47.5%), skipping
+[Resume] Epoch 3 already done (val=51.2%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 40.0%  ████████
+         0: 47.5%  █████████
+         1: 47.5%  █████████
+         2: 47.5%  █████████
+         3: 51.2%  ██████████
+         4: 51.2%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20
+[Resume] Baseline already done (val=40.0%), skipping
+[Resume] Epoch 0 already done (val=47.5%), skipping
+[Resume] Epoch 1 already done (val=47.5%), skipping
+[Resume] Epoch 2 already done (val=47.5%), skipping
+[Resume] Epoch 3 already done (val=51.2%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 40.0%  ████████
+         0: 47.5%  █████████
+         1: 47.5%  █████████
+         2: 47.5%  █████████
+         3: 51.2%  ██████████
+         4: 51.2%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

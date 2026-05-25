@@ -1,0 +1,81 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+[Baseline] Val: 22.5%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+
+[Epoch 0] Dev: 23/96 (24.0%) | Val: 16.2% | Skills extracted: 68, total: 13
+[BestCheckpoint] New best: epoch=0, val=16.2% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 1] Dev: 15/96 (15.6%) | Val: 16.2% | Skills extracted: 40, total: 25
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+[Epoch 2] Dev: 12/96 (12.5%) | Val: 13.8% | Skills extracted: 29, total: 32
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+needs booster
+
+  [Val] evaluating 80 samples...
+
+[Epoch 3] Dev: 12/96 (12.5%) | Val: 13.8% | Skills extracted: 28, total: 34
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+needs booster
+
+  [Val] evaluating 80 samples...
+
+[Epoch 4] Dev: 11/96 (11.5%) | Val: 13.8% | Skills extracted: 23, total: 35
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 22.5%  ████
+         0: 16.2%  ███
+         1: 16.2%  ███
+         2: 13.8%  ██
+         3: 13.8%  ██
+         4: 13.8%  ██
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 35 functional skill(s)

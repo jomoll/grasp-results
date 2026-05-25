@@ -1,0 +1,502 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+[Baseline] Val: 41.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=0 bullets)
+
+
+
+  Batch score: 17/48
+  Updating memory from 31 failing trace(s)...
+[MemoryUpdater] new note: when asked to order a new HbA1C lab test if the last result is more than 1 year old, you must first check whether a new 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Margaret Kidd and DOB of 1982-08-24?", you must search for the patie
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S1311412 within last 24 hours?", you must search for l
+[MemoryUpdater] new note: when asked to order a new HbA1C lab test if the last result is more than 1 year old, you must first check whether a new 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Denise Dunlap and DOB of 1945-09-20?", you must search for the patie
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S2823623 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S1876702 within last 24 hours?", you must search for l
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Glenda Hall and DOB of 1952-11-14?", you must search for the patient
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked to check a patient's serum magnesium level and order replacement IV magnesium if low, you must first determin
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S3114648 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?", you must search for the patie
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2450227?", you must first retrieve the patient's date of birth us
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S0674240 within last 24 hours?", you must search for l
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0722219?", you must first retrieve the patient's date of birth us
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S6488980 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2119664?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2874099?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6530532?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S2016972 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S0658561 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S6550627 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S0722219 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0611496?", you must first use the system to retrieve the patient'
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=31 bullets)
+
+
+
+
+
+
+
+  Batch score: 18/48
+  Updating memory from 30 failing trace(s)...
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1152319?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the most recent po
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check patient S1311412's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28?", you must search for the pa
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1733937?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?", you must search for the patient b
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2823623?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S1311412 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2863714?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S6545016 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S0789363 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6537563?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's serum magnesium level and order replacement IV magnesium if low, you must first determin
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check patient S6192632's last serum magnesium level within the last 24 hours and order replacement IV magn
+[MemoryUpdater] new note: when asked "Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2703270?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S0636132 within last 24 hours?", you must search for l
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+
+
+[Epoch 0] Dev: 35/96 (36.5%) | Val: 32.5%
+[BestCheckpoint] New best: epoch=0, val=32.5% — memory snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=54 bullets)
+
+
+
+
+
+
+
+
+
+  Batch score: 14/48
+  Updating memory from 34 failing trace(s)...
+[MemoryUpdater] new note: when asked "Check patient S3057899's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0722219?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Joshua Martinez and DOB of 1967-03-11?", you must search for the pat
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Julie Rodriguez and DOB of 1962-01-20?", you must search for the pat
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2703270?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S2823623 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?", you must search for the patient 
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S1876702 within last 24 hours?", you must use the appr
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check patient S1311412's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2450227?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S0658561 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S6521727 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1152319?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "I just measured the blood pressure for patient with MRN of S6538722, and it is '118/77 mmHg'. Help me record
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S3114648 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?", you must use the appropriate pa
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?", you must use the appropriate
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?", you must first use the `patie
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S1754095 within last 24 hours?", you must use the appr
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=79 bullets)
+
+
+  Batch score: 19/48
+  Updating memory from 29 failing trace(s)...
+[MemoryUpdater] new note: when asked "Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1733937?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0611496?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked to check a patient’s potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2874099?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6537563?", you must first retrieve the patient's date of birth fr
+[MemoryUpdater] new note: when asked "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2119664?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6530532?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must first retrieve the actual potassi
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S0636132 within last 24 hours?", you must use the appr
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?", you must use the appropriate pati
+[MemoryUpdater] new note: when asked to check a patient's last serum magnesium level within the last 24 hours and order replacement IV magnesium i
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2823623?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2863714?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Margaret Kidd and DOB of 1982-08-24?", you must use the appropriate 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S0789363 and when was it recorded? If the lab value res
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+
+[Epoch 1] Dev: 33/96 (34.4%) | Val: 36.2%
+[BestCheckpoint] New best: epoch=1, val=36.2% — memory snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=100 bullets)
+
+
+
+
+
+
+
+  Batch score: 17/48
+  Updating memory from 31 failing trace(s)...
+[MemoryUpdater] new note: when asked to check patient S6192632's last serum magnesium level within the last 24 hours and order replacement IV magn
+[MemoryUpdater] new note: when asked to check patient S1796597's most recent potassium level and order replacement if low, you must also order a p
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Glenda Hall and DOB of 1952-11-14?", you must use the appropriate pa
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?", you must use the `patient_sea
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2450227?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?", you must use the appropriate pat
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S1754095 within last 24 hours?", you must use the appr
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "I just measured the blood pressure for patient with MRN of S6537563, and it is '118/77 mmHg'. Help me record
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0611496?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to check patient S0636132's last serum magnesium level within the last 24 hours and order replacement IV magn
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1152319?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to check patient S1311412's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2703270?", you must first use the system to retrieve the patient'
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=128 bullets)
+  Batch score: 24/48
+  Updating memory from 24 failing trace(s)...
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2823623?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2874099?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1733937?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S6521727 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "Check patient S3213957's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to check patient S3057899's last serum magnesium level within the last 24 hours and order replacement IV magn
+[MemoryUpdater] new note: when asked "Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2119664?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6547257's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What's the most recent magnesium level of the patient S1311412 within last 24 hours?", you must use the appr
+[MemoryUpdater] new note: when asked "Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?", you must use the appropriate pati
+[MemoryUpdater] new note: when asked to check patient S3236936's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6530532?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked “What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Julie Rodriguez and DOB of 1962-01-20?", you must actually use the `
+[MemoryUpdater] new note: when asked "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6537563?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2863714?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?", you must use the appropriate pa
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+[Epoch 2] Dev: 41/96 (42.7%) | Val: 36.2%
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=141 bullets)
+
+
+
+
+
+
+  Batch score: 14/48
+  Updating memory from 34 failing trace(s)...
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check patient S1635224's most recent potassium level and order replacement if low, you must first retrieve
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?", you must use the appropriate pat
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?", you must first use the appro
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1733937?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?", you must use the `patient_searc
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's last serum magnesium level within the last 24 hours and order replacement IV magnesium i
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Julie Rodriguez and DOB of 1962-01-20?", you must actually use the `
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6530532?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28?", you must use the `patient_
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to check patient S3057899's last serum magnesium level within last 24 hours and order replacement IV magnesiu
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2863714?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2823623?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to check patient S6192632's last serum magnesium level within last 24 hours and order replacement IV magnesiu
+[MemoryUpdater] new note: when asked "Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0611496?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Glenda Hall and DOB of 1952-11-14?", you must use the appropriate pa
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?", you must use the `patient_sea
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If 
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=169 bullets)
+
+
+
+  Batch score: 25/48
+  Updating memory from 23 failing trace(s)...
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2874099?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S1152319?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S6537563?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "I just measured the blood pressure for patient with MRN of S6531922, and it is '118/77 mmHg'. Help me record
+[MemoryUpdater] new note: when asked "Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?", you must use the `patient_search`
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to check patient S3236936's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "Check patient S3213957's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked “What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to check patient S1311412's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2119664?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2703270?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S2823623 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0722219?", you must first use the system to retrieve the patient'
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+
+
+[Epoch 3] Dev: 39/96 (40.6%) | Val: 33.8%
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=179 bullets)
+
+
+
+  Batch score: 26/48
+  Updating memory from 22 failing trace(s)...
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Denise Dunlap and DOB of 1945-09-20?", you must actually use the `pa
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6547257's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked to check patient S1796597's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "I just measured the blood pressure for patient with MRN of S6534835, and it is '118/77 mmHg'. Help me record
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?", you must use the `patient_search
+[MemoryUpdater] new note: when asked to check a patient's last serum magnesium level within the last 24 hours and order replacement IV magnesium i
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?", you must first use the `patie
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2119664?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "What’s the most recent magnesium level of the patient S3057899 within last 24 hours?", you must use the appr
+[MemoryUpdater] new note: when asked to check patient S3236936's most recent potassium level and order replacement if low, you must first actually
+[MemoryUpdater] new note: when asked "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to check patient S6192632's last serum magnesium level within the last 24 hours and order replacement IV magn
+[MemoryUpdater] new note: when asked "Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to 
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=194 bullets)
+
+
+
+
+
+
+
+
+  Batch score: 16/48
+  Updating memory from 32 failing trace(s)...
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C value in the chart for patient S1311412 and when was it recorded? If the lab value res
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28?", you must use the `patient_
+[MemoryUpdater] new note: when asked "Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2863714?", you must use the system to retrieve the patient's date
+[MemoryUpdater] new note: when asked "I just measured the blood pressure for patient with MRN of S6538722, and it is '118/77 mmHg'. Help me record
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to check a patient's potassium level and order replacement if low, you must also order a paired morning serum
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2450227?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?", you must use the appropriate pati
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2703270?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "Check patient S1311412's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S2874099?", you must first use the system to retrieve the patient'
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?", you must first use the `patient
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?", you must actually use the `p
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If 
+[MemoryUpdater] new note: when asked "Check patient S3057899's last serum magnesium level within last 24 hours. If low, then order replacement IV 
+[MemoryUpdater] new note: when asked "Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to 
+[MemoryUpdater] new note: when asked "What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If 
+[MemoryUpdater] new note: when asked to record a blood pressure measurement for a patient, you must use the `record_vitals` function to save the s
+[MemoryUpdater] new note: when asked "What's the age of the patient with MRN of S0722219?", you must first use the system to retrieve the patient'
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+
+
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+[Epoch 4] Dev: 42/96 (43.8%) | Val: 33.8%
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 41.2%  ████████
+         0: 32.5%  ██████
+         1: 36.2%  ███████
+         2: 36.2%  ███████
+         3: 33.8%  ██████
+         4: 33.8%  ██████
+[MemoryCycle] Final memory: 223 bullet(s)

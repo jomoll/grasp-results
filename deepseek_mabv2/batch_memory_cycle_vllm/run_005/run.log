@@ -1,0 +1,546 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+[Baseline] Val: 21.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=0 bullets)
+needs booster
+needs booster
+needs booster
+  Batch score: 9/48
+  Updating memory from 39 failing trace(s)...
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status and order a booster if the last dose was more than 12 months ago, first
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine and order a new one if it was more than 365 days ago, fir
+[MemoryUpdater] new note: when asked if a patient has a urinary catheter that has been in place for more than 48 hours without a documented remova
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first retrieve all a
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to verify that patient S6539215 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked "Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status and order a booster if the last dose was more than 12 months ago, first
+[MemoryUpdater] new note: when asked to verify that patient S6538722 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first retrieve all a
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first retrieve all a
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227", first re
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6540602. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first retrieve all a
+[MemoryUpdater] new note: when asked to verify that patient S6315806 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status and order a booster if the last dose was more than 12 months ago, first
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1635224 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0547588 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that patient S6415739 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=39 bullets)
+  Batch score: 12/48
+  Updating memory from 36 failing trace(s)...
+[MemoryUpdater] new note: when asked "Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to retrieve TSH and free T4 values for a patient and take action according to protocol, first check if the TS
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to determine the date of the last influenza vaccine and order a new one if it was more than 365 days ago, fir
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to check if a patient has a urinary catheter that has been in place for more than 48 hours without a document
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6540602. If the study was performed more 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0636132. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6268253", first re
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that patient S6307599 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3032536", first re
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6315806", first re
+[MemoryUpdater] new note: when asked "Verify that patient S6227720 has exactly one active DVT prophylaxis order", first retrieve all active DVT pr
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for patient S2111822 and order a new one if performe
+[MemoryUpdater] new note: when asked "Check if patient S6540602 has a urinary catheter that has been in place for more than 48 hours without a doc
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 0] Dev: 21/96 (21.9%) | Val: 18.8%
+[BestCheckpoint] New best: epoch=0, val=18.8% — memory snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=66 bullets)
+needs booster
+needs booster
+needs booster
+  Batch score: 7/48
+  Updating memory from 41 failing trace(s)...
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S3032536. If the study was performed more 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if performed more 
+[MemoryUpdater] new note: when asked "Verify that patient S6227720 has exactly one active DVT prophylaxis order", first retrieve all active DVT pr
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6538722 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1374652 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to check if a patient has a urinary catheter that has been in place for more than 48 hours without a document
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1374652", first re
+[MemoryUpdater] new note: when asked to verify that patient S6539215 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Check if patient S6540602 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1635224 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6540602. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6212774", first re
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2111822. If the study was performed more 
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 for a patient and take action per protocol, first actually retrie
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6549951 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3195056. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6315806, first r
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2016972", first re
+[MemoryUpdater] new note: when asked "Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6537563 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6551923 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2823623. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2450227. If the study was performed more 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to check if a patient has a urinary catheter that has been in place for more than 48 hours without a document
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=103 bullets)
+needs booster
+needs booster
+  Batch score: 11/48
+  Updating memory from 37 failing trace(s)...
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0636132. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S3032536 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1374652 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that patient S6415739 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Verify that patient S6315806 has exactly one active DVT prophylaxis order", first retrieve all active DVT pr
+[MemoryUpdater] new note: when asked to verify that patient S1521703 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for patient S6541353 and order a new one if the stud
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1733937. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for a patient has a matching naloxone prescription, first 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2874099 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for patient S6540602 and order a new one if performe
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0658561 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first retrieve all a
+[MemoryUpdater] new note: when asked "Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0547588 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that patient S6307599 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1152319. If the study was performed more 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6488980 and order a booster if the last dose was more than
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 1] Dev: 18/96 (18.8%) | Val: 17.5%
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=134 bullets)
+  Batch score: 9/48
+  Updating memory from 39 failing trace(s)...
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2016972. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if it was performe
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2450227. If the study was performed more 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6538722 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6537563 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2874099 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that patient S6539215 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Review COVID-19 vaccination status for patient S0658561. Find the most recent COVID-19 vaccine and if the la
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked "Check if patient S2380121 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2111822. If the study was performed more 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6540602. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Check if patient S6539215 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Check if patient S6540602 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S3032536 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1374652 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6315806", first re
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3032536", first re
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6488980 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Verify that patient S6415739 has exactly one active DVT prophylaxis order", first retrieve all active DVT pr
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0547588 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S6540602 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=167 bullets)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+  Batch score: 9/48
+  Updating memory from 37 failing trace(s)...
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227", first re
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to check if a patient has a urinary catheter that has been in place for more than 48 hours without a document
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1152319. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6541353. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2450227 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3195056. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6540602. If the study was performed more 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1635224 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if performed more 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0636132. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6551923 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2161163", first re
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for a patient and order a new one if performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2823623. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S0658561. If the study was performed more 
+
+  [Val] evaluating 80 samples...
+
+[Epoch 2] Dev: 18/96 (18.8%) | Val: 21.2%
+[BestCheckpoint] New best: epoch=2, val=21.2% — memory snapshot saved
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=192 bullets)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+  Batch score: 11/48
+  Updating memory from 37 failing trace(s)...
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6212774", first re
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0636132. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0547588 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Check if patient S6540602 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0658561 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2823623. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that patient S2704870 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S0658561. If the study was performed more 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6329254. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S3032536 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S3032536. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that patient S0869531 has exactly one active DVT prophylaxis order. If there are zero orders, create 
+[MemoryUpdater] new note: when asked "Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Check if patient S2380121 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2016972. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6268253", first re
+[MemoryUpdater] new note: when asked "Review COVID-19 vaccination status for patient S6551923. Find the most recent COVID-19 vaccine and if the la
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2016972", first re
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that patient S6307599 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to the protocol, f
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2874099 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that patient S6415739 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3195056. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1733937. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2450227. If the study was performed more 
+[MemoryUpdater] new note: when asked "Review COVID-19 vaccination status for patient S6549951. Find the most recent COVID-19 vaccine and if the la
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=226 bullets)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+list index out of range
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+  Batch score: 7/48
+  Updating memory from 40 failing trace(s)...
+[MemoryUpdater] new note: when asked "Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are zero orders, create 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3032536, first r
+[MemoryUpdater] new note: when asked "Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Verify that patient S1521703 has exactly one active DVT prophylaxis order. If there are zero orders, create 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S6540602 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2161163", first re
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6540602. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6488980 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Check if patient S6539215 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6540602. If the study was performed more 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to find the date of the most recent CT Abdomen procedure for patient S2111822 and order a new one if performe
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1635224 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Review COVID-19 vaccination status for patient S6537563. Find the most recent COVID-19 vaccine and if the la
+[MemoryUpdater] new note: when asked "Check if patient S3114648 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1374652 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to verify that patient S6539215 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to verify that patient S6538722 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6541353. If the study was performed more 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1152319. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1353305 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1374652", first re
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6538722 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1478444 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to verify that patient S6352985 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+
+  [Val] evaluating 80 samples...
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+[Epoch 3] Dev: 18/96 (18.8%) | Val: 22.5%
+[BestCheckpoint] New best: epoch=3, val=22.5% — memory snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0/1 (update_cycle=0, 48 samples, memory=257 bullets)
+  Batch score: 13/48
+  Updating memory from 35 failing trace(s)...
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6212774", first re
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S6540602 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6541353. If the study was performed more 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6549951 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3195056. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more 
+[MemoryUpdater] new note: when asked "Check if patient S2380121 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Check if patient S6540602 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6549951", first re
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1478444 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Verify that patient S6415739 has exactly one active DVT prophylaxis order", first retrieve all active DVT pr
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2450227. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6329254. If the study was performed more 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1353305 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to verify that patient S6538722 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6538722 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S1374652 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S1374652 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S3032536. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription,
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6474456. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0658561 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S0636132. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+
+  Batch 1/1 (update_cycle=1, 48 samples, memory=285 bullets)
+  Batch score: 5/48
+  Updating memory from 43 failing trace(s)...
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S3032536 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2016972. If the study was performed more 
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription", 
+[MemoryUpdater] new note: when asked "Check if patient S6539215 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2111822. If the study was performed more 
+[MemoryUpdater] new note: when asked "Review COVID-19 vaccination status for patient S6488980. Find the most recent COVID-19 vaccine and if the la
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S6540602. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S0547588 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that patient S6307599 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227, first r
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1374652", first re
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, first actually retri
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for a patient and order a booster if the last dose was more than 12 mon
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that patient S0869531 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to verify that every active opioid analgesic order has a matching naloxone prescription, you must first actua
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S6540602. If the study was performed more 
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked to verify that patient S6227720 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2450227 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked to verify that patient S2704870 has exactly one active DVT prophylaxis order, first retrieve all active DVT p
+[MemoryUpdater] new note: when asked to calculate the average heart rate over the past 6 hours and the past 12 hours for a patient, first retrieve
+[MemoryUpdater] new note: when asked to retrieve the most recent TSH and free T4 values for a patient and take action according to protocol, first
+[MemoryUpdater] new note: when asked to verify that a patient has exactly one active DVT prophylaxis order, first retrieve all active DVT prophyla
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S0658561. If the study was performed more 
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2016972", first re
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1733937. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S1152319. If the study was performed more 
+[MemoryUpdater] new note: when asked "Find the date of the most recent CT Abdomen procedure for patient S2823623. If the study was performed more 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S6537563 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Check if patient S3114648 has a urinary catheter that has been in place for more than 48 hours without a doc
+[MemoryUpdater] new note: when asked "Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 
+[MemoryUpdater] new note: when asked to review COVID-19 vaccination status for patient S2874099 and order a booster if the last dose was more than
+[MemoryUpdater] new note: when asked "Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6315806", first re
+[MemoryUpdater] new note: when asked "Verify that patient S6352985 has exactly one active DVT prophylaxis order.", first actually retrieve all act
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 4] Dev: 18/96 (18.8%) | Val: 18.8%
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 21.2%  ████
+         0: 18.8%  ███
+         1: 17.5%  ███
+         2: 21.2%  ████
+         3: 22.5%  ████
+         4: 18.8%  ███
+[MemoryCycle] Final memory: 318 bullet(s)

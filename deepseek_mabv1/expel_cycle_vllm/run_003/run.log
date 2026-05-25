@@ -1,0 +1,84 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+[Baseline] Val: 45.0%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 0] Dev: 42/96 (43.8%) | Val: 48.8% | Rules: 20 (pairs critiqued: 54)
+[BestCheckpoint] New best: epoch=0, val=48.8% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 1] Dev: 49/96 (51.0%) | Val: 51.2% | Rules: 20 (pairs critiqued: 101)
+[BestCheckpoint] New best: epoch=1, val=51.2% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 2] Dev: 50/96 (52.1%) | Val: 51.2% | Rules: 20 (pairs critiqued: 147)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 3] Dev: 51/96 (53.1%) | Val: 50.0% | Rules: 20 (pairs critiqued: 192)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 4] Dev: 49/96 (51.0%) | Val: 50.0% | Rules: 20 (pairs critiqued: 239)
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 45.0%  █████████
+         0: 48.8%  █████████
+         1: 51.2%  ██████████
+         2: 51.2%  ██████████
+         3: 50.0%  ██████████
+         4: 50.0%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

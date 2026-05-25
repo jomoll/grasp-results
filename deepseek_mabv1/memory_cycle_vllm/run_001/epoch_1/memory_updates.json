@@ -1,0 +1,494 @@
+[
+  {
+    "epoch": 1,
+    "sample_idx": 0,
+    "sample_id": "task5_19",
+    "memory_version_before": 46,
+    "new_bullets": [
+      "when asked to check patient S3057899's last serum magnesium level within the last 24 hours and order replacement IV magnesium if low, you must first retrieve the actual numeric magnesium lab result from the system for that specific patient, then correctly apply the threshold that \"low\" means below 1.5 mg/dL (or as defined by dosing instructions, e.g., mild deficiency 1.5-1.9 mg/dL requires replacement), so a value of 2.2 mg/dL is clearly normal and requires no action—your main mistake was returning the value and date in the FINISH output instead of returning \"No action needed\" when the value is not low."
+    ],
+    "memory_size": 47
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 1,
+    "sample_id": "task2_9",
+    "memory_version_before": 47,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S0722219?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"48\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 48
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 5,
+    "sample_id": "task2_30",
+    "memory_version_before": 48,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of {MRN}?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years without assuming or guessing the age."
+    ],
+    "memory_size": 49
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 6,
+    "sample_id": "task10_17",
+    "memory_version_before": 49,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume a date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only 4 days old when it may actually be older than 1 year."
+    ],
+    "memory_size": 50
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 7,
+    "sample_id": "task1_16",
+    "memory_version_before": 50,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 51
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 12,
+    "sample_id": "task9_27",
+    "memory_version_before": 51,
+    "new_bullets": [
+      "when asked \"Check patient S1311412's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium result from the system for that patient, and if the value is exactly 3.5 mmol/L, it is **not low** (low is below 3.5 mmol/L), so you should return FINISH with \"No action needed\" and not order any replacement or follow-up lab; your main mistake was correctly identifying 3.5 as not low but then incorrectly concluding that a follow-up lab should be ordered anyway, when the evaluation expects no action at all."
+    ],
+    "memory_size": 52
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 14,
+    "sample_id": "task2_14",
+    "memory_version_before": 52,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2450227?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"75\" without first verifying the patient's DOB from the system, so you must always perform the retrieval and calculation rather than assuming or guessing the age."
+    ],
+    "memory_size": 53
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 18,
+    "sample_id": "task10_27",
+    "memory_version_before": 53,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must retrieve the actual current date from the evaluation context rather than assuming a date like \"2023-11-13\", then retrieve the actual HbA1C lab result and its recorded date from the system for that patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date of \"2023-11-13\" instead of the real current date, causing you to incorrectly calculate the age as only 11 days when the actual current date may make it older than 1 year."
+    ],
+    "memory_size": 54
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 19,
+    "sample_id": "task9_6",
+    "memory_version_before": 54,
+    "new_bullets": [
+      "when asked \"Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium lab result from the system for that specific patient, then if the value is below 3.5 mmol/L, proceed to place both the replacement potassium order and the follow-up morning serum potassium lab order for the next day at 8am; your main mistake was returning a hardcoded value of \"4.3\" and a date without actually retrieving the real lab result from the system, and you must also ensure that if the potassium is not low (≥ 3.5 mmol/L), you return \"No action needed\" rather than any lab value or date."
+    ],
+    "memory_size": 55
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 21,
+    "sample_id": "task1_7",
+    "memory_version_before": 55,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Kevin Vasquez and DOB of 1953-11-19?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 56
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 22,
+    "sample_id": "task5_16",
+    "memory_version_before": 56,
+    "new_bullets": [],
+    "memory_size": 56
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 25,
+    "sample_id": "task10_13",
+    "memory_version_before": 56,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not an assumed date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly calculate the age of the result."
+    ],
+    "memory_size": 57
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 27,
+    "sample_id": "task9_14",
+    "memory_version_before": 57,
+    "new_bullets": [
+      "when asked \"Check patient S6547257's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient before concluding no results exist, and if the retrieved value is not low (≥ 3.5 mmol/L), you should return \"No action needed\" without ordering any replacement or follow-up lab."
+    ],
+    "memory_size": 58
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 31,
+    "sample_id": "task2_15",
+    "memory_version_before": 58,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1152319?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context (not an assumed date like \"2023-11-13\"), and return the correct numeric age in years; your main mistake was using an assumed current date and assumed DOB without actually retrieving the real data from the system, so you must always perform the actual retrieval and calculation to get the correct age."
+    ],
+    "memory_size": 59
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 35,
+    "sample_id": "task10_8",
+    "memory_version_before": 59,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only about 1 month old when it may actually be older than 1 year."
+    ],
+    "memory_size": 60
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 36,
+    "sample_id": "task9_20",
+    "memory_version_before": 60,
+    "new_bullets": [
+      "when asked \"Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium lab result from the system for that patient, and if the value is 4.0 mmol/L (which is not low, as low is below 3.5), you should return FINISH with \"No action needed\" and NOT order any follow-up lab, because the evaluation expects that no follow-up lab should be ordered when the potassium is not low."
+    ],
+    "memory_size": 61
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 38,
+    "sample_id": "task5_7",
+    "memory_version_before": 61,
+    "new_bullets": [
+      "when asked \"Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first actually retrieve the numeric magnesium lab result from the system for that specific patient within the 24-hour window, and if no result exists in that timeframe, return \"No action needed\" rather than immediately concluding no action is needed without performing any data retrieval."
+    ],
+    "memory_size": 62
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 39,
+    "sample_id": "task9_9",
+    "memory_version_before": 62,
+    "new_bullets": [
+      "when asked \"Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that patient, and if the value is not low (≥ 3.5 mmol/L), you should return FINISH with \"No action needed\" and NOT order any follow-up lab—your main mistake was concluding no results exist without performing any data retrieval, so always search the system for the actual lab result before making a decision."
+    ],
+    "memory_size": 63
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 40,
+    "sample_id": "task10_20",
+    "memory_version_before": 63,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, causing the age calculation to be incorrect."
+    ],
+    "memory_size": 64
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 41,
+    "sample_id": "task1_13",
+    "memory_version_before": 64,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 65
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 44,
+    "sample_id": "task1_26",
+    "memory_version_before": 65,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 66
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 45,
+    "sample_id": "task1_6",
+    "memory_version_before": 66,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 67
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 48,
+    "sample_id": "task9_8",
+    "memory_version_before": 67,
+    "new_bullets": [],
+    "memory_size": 67
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 49,
+    "sample_id": "task5_3",
+    "memory_version_before": 67,
+    "new_bullets": [
+      "when asked \"Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first actually retrieve the numeric magnesium lab result from the system for that specific patient within the 24-hour window, then correctly apply the threshold that a value of 2.0 mg/dL is **not low** (low is below 1.5 mg/dL or mild deficiency 1.5-1.9 mg/dL as defined by dosing instructions), so you should return `FINISH([\"No action needed\"])` only after verifying the actual retrieved value confirms it is not low."
+    ],
+    "memory_size": 68
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 50,
+    "sample_id": "task10_18",
+    "memory_version_before": 68,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume a date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only 1 day old when the actual current date may be much later, making the result older than 1 year."
+    ],
+    "memory_size": 69
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 52,
+    "sample_id": "task9_28",
+    "memory_version_before": 69,
+    "new_bullets": [
+      "when asked \"Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium lab result from the system for that patient, and if the value is 4.7 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab—your main mistake was correctly identifying the value as normal but then incorrectly concluding that a follow-up lab should be ordered anyway, when the task only requires the follow-up lab if the potassium was low and replacement was needed."
+    ],
+    "memory_size": 70
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 56,
+    "sample_id": "task10_10",
+    "memory_version_before": 70,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context, then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only then decide whether to return the value and date or order a new test; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 71
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 57,
+    "sample_id": "task10_16",
+    "memory_version_before": 71,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context, then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 72
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 58,
+    "sample_id": "task2_6",
+    "memory_version_before": 72,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1733937?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"39\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 73
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 59,
+    "sample_id": "task2_17",
+    "memory_version_before": 73,
+    "new_bullets": [],
+    "memory_size": 73
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 60,
+    "sample_id": "task9_11",
+    "memory_version_before": 73,
+    "new_bullets": [],
+    "memory_size": 73
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 61,
+    "sample_id": "task9_5",
+    "memory_version_before": 73,
+    "new_bullets": [
+      "when asked \"Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient, then if the value is below 3.5 mmol/L, proceed to place both the replacement potassium order and the follow-up lab order; your main mistake was returning \"No action needed\" without performing any data retrieval to check the potassium level, so always search the system for the actual lab result first."
+    ],
+    "memory_size": 74
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 63,
+    "sample_id": "task2_1",
+    "memory_version_before": 74,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2874099?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"60\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 75
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 66,
+    "sample_id": "task2_22",
+    "memory_version_before": 75,
+    "new_bullets": [],
+    "memory_size": 75
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 67,
+    "sample_id": "task9_3",
+    "memory_version_before": 75,
+    "new_bullets": [],
+    "memory_size": 75
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 68,
+    "sample_id": "task1_15",
+    "memory_version_before": 75,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Denise Dunlap and DOB of 1945-09-20?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 76
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 70,
+    "sample_id": "task9_1",
+    "memory_version_before": 76,
+    "new_bullets": [
+      "when asked \"Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that patient, and if the value is 4.5 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab—your main mistake was correctly identifying the value as normal but not first verifying the real lab result from the system, and the evaluation expects that no follow-up lab should be ordered unless the potassium was actually low and replacement was needed."
+    ],
+    "memory_size": 77
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 71,
+    "sample_id": "task1_11",
+    "memory_version_before": 77,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Glenda Hall and DOB of 1952-11-14?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 78
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 74,
+    "sample_id": "task10_24",
+    "memory_version_before": 78,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume \"2023-11-13\") and the actual HbA1C lab result and its recorded date from the system for that specific patient, then calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, causing the age calculation to be incorrect."
+    ],
+    "memory_size": 79
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 76,
+    "sample_id": "task2_26",
+    "memory_version_before": 79,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S6530532?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"69\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 80
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 77,
+    "sample_id": "task9_22",
+    "memory_version_before": 80,
+    "new_bullets": [],
+    "memory_size": 80
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 78,
+    "sample_id": "task1_20",
+    "memory_version_before": 80,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it rather than immediately concluding the patient does not exist without performing any search."
+    ],
+    "memory_size": 81
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 81,
+    "sample_id": "task4_20",
+    "memory_version_before": 81,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S0636132 within last 24 hours?\", you must search the system for that specific patient’s magnesium lab result recorded within the last 24 hours, retrieve the exact numeric value, and return it in the FINISH output—your main mistake was returning a hardcoded \"2.0\" without actually retrieving the real lab result from the system, so always perform a proper data retrieval to get the actual value before returning any result."
+    ],
+    "memory_size": 82
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 82,
+    "sample_id": "task1_27",
+    "memory_version_before": 82,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 83
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 83,
+    "sample_id": "task5_17",
+    "memory_version_before": 83,
+    "new_bullets": [
+      "when asked \"Check patient S6192632's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first retrieve the actual numeric magnesium lab result from the system for that specific patient within the 24-hour window, then correctly interpret that a value of 2.3 mg/dL is not low (low is below 1.5 mg/dL or mild deficiency 1.5-1.9 mg/dL as defined by dosing instructions), so you should return `FINISH([\"No action needed\"])` only after verifying the actual retrieved value confirms it is not low, and ensure the output format matches exactly what the evaluation expects."
+    ],
+    "memory_size": 84
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 84,
+    "sample_id": "task10_15",
+    "memory_version_before": 84,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context rather than assuming a date like \"2023-11-13\", then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, causing you to incorrectly conclude the result was only about 4 months old when it may actually be older than 1 year."
+    ],
+    "memory_size": 85
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 85,
+    "sample_id": "task2_25",
+    "memory_version_before": 85,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2823623?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was using an assumed current date of \"2023-11-13\" instead of the actual current date from the evaluation context, causing the age calculation to be incorrect."
+    ],
+    "memory_size": 86
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 91,
+    "sample_id": "task10_12",
+    "memory_version_before": 86,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, then compare that date to the actual current date from the evaluation context to calculate the age in days, and only if the difference exceeds 365 days should you order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\"; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 87
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 92,
+    "sample_id": "task2_28",
+    "memory_version_before": 87,
+    "new_bullets": [],
+    "memory_size": 87
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 93,
+    "sample_id": "task1_12",
+    "memory_version_before": 87,
+    "new_bullets": [],
+    "memory_size": 87
+  },
+  {
+    "epoch": 1,
+    "sample_idx": 95,
+    "sample_id": "task10_21",
+    "memory_version_before": 87,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context, then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only if the difference exceeds 365 days should you order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\"; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 88
+  }
+]

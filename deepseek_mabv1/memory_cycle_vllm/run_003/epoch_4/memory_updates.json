@@ -1,0 +1,536 @@
+[
+  {
+    "epoch": 4,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 151,
+    "new_bullets": [
+      "when asked \"I just measured the blood pressure for patient with MRN of S6537563, and it is '118/77 mmHg'. Help me record it,\" you must first call the `record_vital_signs` function with the correct MRN and the blood pressure value in the format \"118/77 mmHg\", and only after successfully recording via the function do you output the FINISH command with the recorded value and MRN — do not stop after only looking up the patient's FHIR ID without actually calling the function to record the vital signs."
+    ],
+    "memory_size": 152
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 4,
+    "sample_id": "task10_13",
+    "memory_version_before": 152,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the patient's most recent HbA1C result and its date, then compare that date to the current date; if the result is more than 1 year old, you must output the new HbA1C lab test order in the correct FHIR format with `\"status\": \"draft\"` and `\"intent\": \"order\"` (without `\"priority\": \"stat\"`), followed by the FINISH command with the value and date as a list — do not include any text explanation before the FINISH command, as the evaluation expects only the FHIR order JSON followed by the FINISH command, and ensure the order is output exactly as a FHIR JSON object without any extra text or commentary."
+    ],
+    "memory_size": 153
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 5,
+    "sample_id": "task9_14",
+    "memory_version_before": 153,
+    "new_bullets": [],
+    "memory_size": 153
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 8,
+    "sample_id": "task9_5",
+    "memory_version_before": 153,
+    "new_bullets": [
+      "when asked \"Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 4.5 mmol/L, it is not low, so you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 4.5 mmol/L on 2023-11-12. No action needed - level is at goal.\"])` without any extra text or premature conclusion, ensuring the date is in YYYY-MM-DD format and the FINISH command contains only that single string with no additional text before or after."
+    ],
+    "memory_size": 154
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 9,
+    "sample_id": "task3_14",
+    "memory_version_before": 154,
+    "new_bullets": [],
+    "memory_size": 154
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 10,
+    "sample_id": "task1_16",
+    "memory_version_before": 154,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup."
+    ],
+    "memory_size": 155
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 11,
+    "sample_id": "task4_11",
+    "memory_version_before": 155,
+    "new_bullets": [],
+    "memory_size": 155
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 13,
+    "sample_id": "task5_16",
+    "memory_version_before": 155,
+    "new_bullets": [
+      "when asked \"Check patient S1023381's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first retrieve the most recent magnesium level within the last 24 hours, then check if the value is below 1.5 mg/dL; if it is 2.0 mg/dL (not low), you must output only `FINISH([\"2.0\"])` without any additional text, explanation, or commentary — do not output the magnesium level in any other format or include extra text."
+    ],
+    "memory_size": 156
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 15,
+    "sample_id": "task3_12",
+    "memory_version_before": 156,
+    "new_bullets": [],
+    "memory_size": 156
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 20,
+    "sample_id": "task1_6",
+    "memory_version_before": 156,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup."
+    ],
+    "memory_size": 157
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 21,
+    "sample_id": "task1_23",
+    "memory_version_before": 157,
+    "new_bullets": [],
+    "memory_size": 157
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 26,
+    "sample_id": "task4_15",
+    "memory_version_before": 157,
+    "new_bullets": [],
+    "memory_size": 157
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 27,
+    "sample_id": "task9_20",
+    "memory_version_before": 157,
+    "new_bullets": [
+      "when asked \"Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 4.0 mmol/L (not below 3.5), you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 4.0 mmol/L on 2023-11-11. No action needed - level is at goal.\"])` without any extra text or premature conclusion — do not stop after only making an HTTP GET request to retrieve the potassium level without actually comparing it to the threshold and outputting the required FINISH command."
+    ],
+    "memory_size": 158
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 28,
+    "sample_id": "task9_28",
+    "memory_version_before": 158,
+    "new_bullets": [],
+    "memory_size": 158
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 29,
+    "sample_id": "task10_27",
+    "memory_version_before": 158,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the patient's most recent HbA1C result and its date by searching the lab records, then compare that date to the current date; if the result is less than 1 year old, output only `FINISH([\"value\", \"date\"])` without any additional text, and do not output `FINISH([-1])` which indicates failure to find data—the evaluation expects the actual value and date when a result exists."
+    ],
+    "memory_size": 159
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 30,
+    "sample_id": "task4_26",
+    "memory_version_before": 159,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S1311412 within last 24 hours?\", you must first retrieve the patient’s magnesium lab results by making the appropriate FHIR API call, then filter for results recorded within the last 24 hours from the current date/time, and return the most recent value in the format `FINISH([\"X.X\"])` — do not assume the patient has a recent result without actually checking the time window, and if no result is found within 24 hours, return an empty list `FINISH([])` instead of guessing or returning an outdated value."
+    ],
+    "memory_size": 160
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 32,
+    "sample_id": "task4_4",
+    "memory_version_before": 160,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S6474456 within last 24 hours?\", you must first retrieve the patient’s magnesium lab results by making the appropriate FHIR API call, then filter for results recorded within the last 24 hours from the current date/time, and return the most recent value in the format `FINISH([\"X.X\"])` — do not call `FINISH([])` without first actually checking the lab results, as the empty list indicates no recent result was found, but the evaluation expects the actual numeric value if one exists within the 24-hour window."
+    ],
+    "memory_size": 161
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 33,
+    "sample_id": "task9_3",
+    "memory_version_before": 161,
+    "new_bullets": [
+      "when asked \"Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must output BOTH a MedicationRequest for potassium replacement AND a separate ServiceRequest for the paired morning serum potassium lab for the next day at 8am, followed by the FINISH command — do not output only the potassium order without the paired lab order, as the evaluation expects both orders to be present."
+    ],
+    "memory_size": 162
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 34,
+    "sample_id": "task10_17",
+    "memory_version_before": 162,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first determine the current date, then retrieve the patient's most recent HbA1C result and its date; if the result date is less than 1 year old, you must output only the FINISH command with the value and date as a list in the format `FINISH([\"value\", \"date\"])` without any explanatory text before the FINISH command, and ensure the date is in the exact format returned by the lab system (e.g., \"2023-11-09T10:06:00+00:00\") rather than a shortened version."
+    ],
+    "memory_size": 163
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 35,
+    "sample_id": "task8_14",
+    "memory_version_before": 163,
+    "new_bullets": [
+      "when asked \"Order orthopedic surgery referral for patient S3241217. Specify within the free text of the referral, 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.'\", you must not stop after only looking up the patient's FHIR ID — instead, you must immediately create and output a complete FHIR ServiceRequest for an orthopedic surgery referral with the specified free text included in the `note.text` or `reasonCode` field, then output the FINISH command confirming the referral was ordered."
+    ],
+    "memory_size": 164
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 36,
+    "sample_id": "task10_16",
+    "memory_version_before": 164,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first search for the patient's HbA1C lab results; if the search returns no results (total: 0), you must output `FINISH([-1])` as the task only instructs ordering when a result exists but is older than 1 year, not when no result exists at all — do not assume no results exist without actually performing the search, but if the search confirms no results, `FINISH([-1])` is correct."
+    ],
+    "memory_size": 165
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 37,
+    "sample_id": "task1_10",
+    "memory_version_before": 165,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Joshua Martinez and DOB of 1967-03-11? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup."
+    ],
+    "memory_size": 166
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 39,
+    "sample_id": "task5_17",
+    "memory_version_before": 166,
+    "new_bullets": [],
+    "memory_size": 166
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 40,
+    "sample_id": "task4_20",
+    "memory_version_before": 166,
+    "new_bullets": [],
+    "memory_size": 166
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 41,
+    "sample_id": "task9_1",
+    "memory_version_before": 166,
+    "new_bullets": [
+      "when asked \"Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 3.6 mmol/L (not low), you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 3.6 mmol/L on 2023-08-01. No action needed - level is at goal.\"])` using the actual date from the lab result, without any extra text or premature conclusion — your previous mistake was only making an HTTP GET request to retrieve the potassium level without actually comparing it to the threshold and outputting the required FINISH command."
+    ],
+    "memory_size": 167
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 44,
+    "sample_id": "task10_15",
+    "memory_version_before": 167,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the patient's most recent HbA1C result and its date by searching the lab records, then compare that date to the current date; if the result is less than 1 year old, output only `FINISH([\"value\", \"date\"])` with the actual value and date from the lab result — do NOT output `FINISH([-1])` as that indicates failure to find data, and the evaluation expects the actual value and date when a result exists."
+    ],
+    "memory_size": 168
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 46,
+    "sample_id": "task9_8",
+    "memory_version_before": 168,
+    "new_bullets": [
+      "when asked \"Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 4.5 mmol/L, it is not low, so you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 4.5 mmol/L on YYYY-MM-DD. No action needed - level is at goal.\"])` using the actual date from the lab result — your previous mistake was only making an HTTP GET request to retrieve the potassium level without actually comparing it to the threshold and outputting the required FINISH command in the correct format."
+    ],
+    "memory_size": 169
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 47,
+    "sample_id": "task3_16",
+    "memory_version_before": 169,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient with a given MRN, you must first call the `record_vital_signs` function with the correct MRN and the blood pressure value in the format \"118/77 mmHg\", and only after the function returns a successful response do you output the FINISH command with the recorded value and MRN — do not stop after only looking up the patient's FHIR ID without actually calling the function to record the vital signs."
+    ],
+    "memory_size": 170
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 49,
+    "sample_id": "task10_18",
+    "memory_version_before": 170,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the patient's most recent HbA1C result and its date, then compare that date to the current date; if the result date is less than 1 year old, output only the FINISH command with the value and date as a list in the format `FINISH([\"value\", \"date\"])` without any additional text or explanation before the FINISH command — do not output `FINISH([-1])` which indicates failure to find data, as the evaluation expects the actual value and date when a result exists."
+    ],
+    "memory_size": 171
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 50,
+    "sample_id": "task1_20",
+    "memory_version_before": 171,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup."
+    ],
+    "memory_size": 172
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 51,
+    "sample_id": "task9_22",
+    "memory_version_before": 172,
+    "new_bullets": [],
+    "memory_size": 172
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 53,
+    "sample_id": "task4_23",
+    "memory_version_before": 172,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S1876702 within last 24 hours?\", you must first retrieve the patient’s magnesium lab results by making the appropriate FHIR API call, then filter for results recorded within the last 24 hours from the current date/time, and return the most recent value in the format `FINISH([\"X.X\"])` — do not assume a value like \"1.6\" without actually checking the time window, and if no result is found within 24 hours, return an empty list `FINISH([])` instead of guessing or returning an outdated value."
+    ],
+    "memory_size": 173
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 54,
+    "sample_id": "task1_7",
+    "memory_version_before": 173,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Kevin Vasquez and DOB of 1953-11-19? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup, as the evaluation expects the actual MRN when the patient exists in the system."
+    ],
+    "memory_size": 174
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 55,
+    "sample_id": "task10_21",
+    "memory_version_before": 174,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the patient's most recent HbA1C result and its date, then compare that date to the current date; if a result exists, you must output either the FINISH command with the value and date (if less than 1 year old) or the FHIR order followed by the FINISH command (if more than 1 year old) — do not return `FINISH([-1])` unless no lab results are found for the patient."
+    ],
+    "memory_size": 175
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 56,
+    "sample_id": "task9_6",
+    "memory_version_before": 175,
+    "new_bullets": [
+      "when asked \"Check patient S6550473's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 4.3 mmol/L (not low), you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 4.3 mmol/L on YYYY-MM-DD. No action needed - level is at goal.\"])` using the actual date from the lab result, without any extra text or premature conclusion — the previous error was only making an HTTP GET request to retrieve the potassium level without actually comparing it to the threshold and outputting the required FINISH command."
+    ],
+    "memory_size": 176
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 57,
+    "sample_id": "task4_28",
+    "memory_version_before": 176,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S0674240 within last 24 hours?\", you must first retrieve the patient’s magnesium lab results by making the appropriate FHIR API call, then filter for results recorded within the last 24 hours from the current date/time, and return the most recent value in the format `FINISH([\"X.X\"])` — do not return `FINISH([])` without actually checking the lab results, as the evaluation expects the actual numeric value if one exists within the 24-hour window."
+    ],
+    "memory_size": 177
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 59,
+    "sample_id": "task10_12",
+    "memory_version_before": 177,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first actually search for the patient’s HbA1C lab results using the appropriate function; if the search returns results, retrieve the most recent value and date, compare the date to the current date, and if the result is more than 1 year old, output the new HbA1C lab test order in FHIR format with `\"status\": \"draft\"` and `\"intent\": \"order\"` before returning the FINISH command with the value and date, and if the result is less than 1 year old, output `FINISH([\"value\", \"date\"])` — do not return `FINISH([-1])` which indicates failure to find data, as the task requires you to actually process the found result."
+    ],
+    "memory_size": 178
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 63,
+    "sample_id": "task3_7",
+    "memory_version_before": 178,
+    "new_bullets": [
+      "when asked \"I just measured the blood pressure for patient with MRN of S1579803, and it is '118/77 mmHg'. Help me record it,\" you must first call the `record_vital_signs` function with the correct MRN and the blood pressure value in the format \"118/77 mmHg\", and only after successfully recording via the function do you output the FINISH command with the recorded value and MRN — do not skip the function call and assume the recording is successful by constructing a FHIR Observation directly."
+    ],
+    "memory_size": 179
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 64,
+    "sample_id": "task9_11",
+    "memory_version_before": 179,
+    "new_bullets": [
+      "when asked \"Check patient S3213957's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 4.2 mmol/L, it is not low, so you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 4.2 mmol/L on 2023-11-12. No action needed - level is at goal.\"])` without any extra text or premature conclusion, ensuring the date is in YYYY-MM-DD format and the FINISH command contains only that single string with no additional text before or after."
+    ],
+    "memory_size": 180
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 67,
+    "sample_id": "task3_3",
+    "memory_version_before": 180,
+    "new_bullets": [],
+    "memory_size": 180
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 68,
+    "sample_id": "task10_20",
+    "memory_version_before": 180,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first search for the patient's HbA1C lab results; if the search returns no results (total: 0), you must output `FINISH([-1])` and do NOT attempt to order a new test, because the task only instructs ordering when a result exists but is older than 1 year, not when no result exists at all."
+    ],
+    "memory_size": 181
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 72,
+    "sample_id": "task1_27",
+    "memory_version_before": 181,
+    "new_bullets": [],
+    "memory_size": 181
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 75,
+    "sample_id": "task9_27",
+    "memory_version_before": 181,
+    "new_bullets": [],
+    "memory_size": 181
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 76,
+    "sample_id": "task10_10",
+    "memory_version_before": 181,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first actually search for the patient’s HbA1C lab results using the appropriate function; if results exist, retrieve the most recent value and date, compare the date to the current date, and if the result is more than 1 year old, output the FHIR order with `\"status\": \"draft\"` and `\"intent\": \"order\"` before returning the FINISH command with the value and date as a list — do not return `FINISH([-1])` unless the search explicitly returns no results, as `FINISH([-1])` indicates no data was found, not that the result was old or that an order was needed."
+    ],
+    "memory_size": 182
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 77,
+    "sample_id": "task2_6",
+    "memory_version_before": 182,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1733937?\", you must first retrieve the patient's date of birth by calling the appropriate patient lookup function using their MRN, then calculate the age based on the current date, and return the age as a number in the format `FINISH([<age>])` without any extra text — do not guess or assume an age without actually looking up the patient's DOB, and do not return a hardcoded value like 38 without performing the lookup and calculation."
+    ],
+    "memory_size": 183
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 79,
+    "sample_id": "task5_3",
+    "memory_version_before": 183,
+    "new_bullets": [
+      "when asked \"Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything,\" you must first retrieve the most recent magnesium level recorded within the last 24 hours, then compare the value to the low threshold of 1.5 mg/dL — if the value is 2.0 mg/dL (not low), you must output only `FINISH([\"2.0\"])` without any additional text, explanation, or commentary, as the evaluation expects only the raw numeric value in the FINISH command list."
+    ],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 80,
+    "sample_id": "task5_7",
+    "memory_version_before": 184,
+    "new_bullets": [],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 82,
+    "sample_id": "task1_13",
+    "memory_version_before": 184,
+    "new_bullets": [],
+    "memory_size": 184
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 83,
+    "sample_id": "task3_27",
+    "memory_version_before": 184,
+    "new_bullets": [
+      "when asked to record a blood pressure measurement for a patient with a given MRN, you must first call the `record_vital_signs` function with the correct MRN and the blood pressure value in the format \"118/77 mmHg\", and only after the function returns a successful response do you output the FINISH command with the recorded value and MRN — do not skip the function call by constructing a FHIR Observation directly or by immediately outputting a FINISH command without actually invoking the function."
+    ],
+    "memory_size": 185
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 86,
+    "sample_id": "task1_11",
+    "memory_version_before": 185,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Glenda Hall and DOB of 1952-11-14? If the patient does not exist, the answer should be 'Patient not found'\", you must first search for the patient by name and date of birth using the appropriate function; if the patient exists, return their MRN, and only return \"Patient not found\" if no matching patient record is found — do not assume the patient does not exist without actually performing a lookup."
+    ],
+    "memory_size": 186
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 87,
+    "sample_id": "task1_12",
+    "memory_version_before": 186,
+    "new_bullets": [],
+    "memory_size": 186
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 89,
+    "sample_id": "task10_8",
+    "memory_version_before": 186,
+    "new_bullets": [],
+    "memory_size": 186
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 90,
+    "sample_id": "task5_19",
+    "memory_version_before": 186,
+    "new_bullets": [],
+    "memory_size": 186
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 91,
+    "sample_id": "task4_10",
+    "memory_version_before": 186,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S3213957 within last 24 hours?\", you must first retrieve the patient’s magnesium lab results by making the appropriate FHIR API call, then filter for results recorded within the last 24 hours from the current date/time, and return the most recent value in the format `FINISH([\"X.X\"])` — do not immediately return `FINISH([])` without actually checking the lab results, as the evaluation expects the actual numeric value if one exists within the 24-hour window."
+    ],
+    "memory_size": 187
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 92,
+    "sample_id": "task9_9",
+    "memory_version_before": 187,
+    "new_bullets": [
+      "when asked \"Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the most recent potassium level, then compare it to the low threshold of 3.5 mmol/L; if the value is 3.8 mmol/L, it is not low, so you must output a FINISH command in the exact format `FINISH([\"Most recent potassium: 3.8 mmol/L on YYYY-MM-DD. No action needed - level is at goal.\"])` using the actual date from the lab result, without any extra text or premature conclusion — the previous error was that the agent only made an HTTP GET request to retrieve the potassium level without actually comparing it to the threshold and outputting the required FINISH command."
+    ],
+    "memory_size": 188
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 93,
+    "sample_id": "task10_24",
+    "memory_version_before": 188,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must output the FHIR order for the new HbA1C lab test BEFORE outputting the FINISH command, and the FHIR order must use `\"status\": \"draft\"` and `\"intent\": \"order\"` (not `\"status\": \"active\"` or `\"priority\": \"stat\"`), and the FINISH command must be the very last output with no additional text after it."
+    ],
+    "memory_size": 189
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 94,
+    "sample_id": "task3_1",
+    "memory_version_before": 189,
+    "new_bullets": [
+      "when asked \"I just measured the blood pressure for patient with MRN of S2380121, and it is '118/77 mmHg'. Help me record it,\" you must first call the `record_vital_signs` function with the correct MRN (S2380121) and the blood pressure value in the format \"118/77 mmHg\", and only after successfully recording via the function do you output the FINISH command with the recorded value and MRN — do not stop after only looking up the patient's FHIR ID without actually calling the function to record the vital signs."
+    ],
+    "memory_size": 190
+  }
+]

@@ -1,0 +1,158 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+[Baseline] Val: 22.5%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 0] Dev: 21/96 (21.9%) | Val: 27.5% | Rules: 20 (pairs critiqued: 75)
+[BestCheckpoint] New best: epoch=0, val=27.5% — ExpeL rules snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 1] Dev: 24/96 (25.0%) | Val: 26.2% | Rules: 20 (pairs critiqued: 147)
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 2] Dev: 24/96 (25.0%) | Val: 27.5% | Rules: 20 (pairs critiqued: 219)
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 3] Dev: 24/96 (25.0%) | Val: 27.5% | Rules: 20 (pairs critiqued: 291)
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — ExpeL critique after epoch
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 4] Dev: 20/96 (20.8%) | Val: 27.5% | Rules: 20 (pairs critiqued: 367)
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 22.5%  ████
+         0: 27.5%  █████
+         1: 26.2%  █████
+         2: 27.5%  █████
+         3: 27.5%  █████
+         4: 27.5%  █████
+[MemoryCycle] Final memory: 0 bullet(s)
+[ExPeLCycle] Final rule count: 20

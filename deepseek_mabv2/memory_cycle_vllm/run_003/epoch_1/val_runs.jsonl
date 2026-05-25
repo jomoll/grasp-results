@@ -1,0 +1,80 @@
+{"sample_id": "task1_30", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S0611496.\"]", "error_info": null}
+{"sample_id": "task1_22", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task1_17", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S1876702. Since no prior study exists, the condition of 'more than 12 months ago' is met. Ordering a new CT Abdomen with IV contrast.\"]", "error_info": null}
+{"sample_id": "task1_28", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S3114648 using codes IMGIL0001 or IMGCT0491. Since no prior study exists, it is not more than 12 months old. Therefore, a new CT Abdomen with IV contrast (CPT 74177) with indication 'Renal mass follow-up' should be ordered.\"]", "error_info": null}
+{"sample_id": "task1_2", "is_correct": false, "status": "completed", "result": "[\"2023-10-30T07:00:00+00:00\"]", "error_info": null}
+{"sample_id": "task1_14", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S6222362\"]", "error_info": null}
+{"sample_id": "task1_19", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task1_3", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S1521703. Since no prior study exists, a new CT Abdomen with IV contrast is needed. Ordering new CT Abdomen with IV contrast (CPT 74177) with indication 'Renal mass follow-up'.\"]", "error_info": null}
+{"sample_id": "task1_18", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S6537563.\"]", "error_info": null}
+{"sample_id": "task1_29", "is_correct": false, "status": "completed", "result": "[\"No CT Abdomen procedures found for patient S6227720\"]", "error_info": null}
+{"sample_id": "task10_28", "is_correct": true, "status": "completed", "result": "[\"COVID-19 vaccination status reviewed for patient S6329254. No COVID-19 vaccine records found in Immunization or MedicationRequest resources. Since no prior vaccination is documented, a COVID booster has been ordered as a single-dose COVID vaccine (CPT 91320) for today, 2023-11-07.\"]", "error_info": null}
+{"sample_id": "task10_2", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S2119664. Since no records exist, the most recent dose cannot be determined, and no booster is ordered.\"]", "error_info": null}
+{"sample_id": "task10_30", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S6222362. Since no records exist, the last dose cannot be determined to be more than 12 months ago. Therefore, no booster is ordered.\"]", "error_info": null}
+{"sample_id": "task10_3", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S1876702. Since no records exist, the last dose is effectively more than 12 months ago. Ordering a COVID booster.\"]", "error_info": null}
+{"sample_id": "task10_4", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S1986380. Since no records exist, the most recent dose cannot be determined to be more than 12 months ago, so no booster is ordered.\"]", "error_info": null}
+{"sample_id": "task10_22", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S6540602. No booster ordered.\"]", "error_info": null}
+{"sample_id": "task10_7", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S3057899. Since no records exist, the most recent dose cannot be determined, and a booster cannot be ordered based on the 12-month rule.\"]", "error_info": null}
+{"sample_id": "task10_5", "is_correct": false, "status": "task limit reached", "result": null, "error_info": null}
+{"sample_id": "task10_29", "is_correct": false, "status": "completed", "result": "[\"No COVID-19 vaccination records found for patient S0636132. Since no records exist, the last dose is effectively more than 12 months ago. Ordering a COVID booster.\"]", "error_info": null}
+{"sample_id": "task10_11", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_11", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_18", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_5", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_13", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_4", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_29", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_24", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_10", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_8", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task2_2", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task3_4", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task3_24", "is_correct": false, "status": "completed", "result": "[\"No heart rate observations found for patient S1579803 in the requested time windows.\"]", "error_info": null}
+{"sample_id": "task3_5", "is_correct": false, "status": "completed", "result": "[\"No heart rate observations found for patient S2937751 in the requested time ranges.\"]", "error_info": null}
+{"sample_id": "task3_28", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task3_26", "is_correct": false, "status": "completed", "result": "[\"No heart rate observations found for patient S3213957 in the past 12 hours.\"]", "error_info": null}
+{"sample_id": "task3_20", "is_correct": false, "status": "completed", "result": "[\"No heart rate observations found for patient S1891852 in the requested time windows.\"]", "error_info": null}
+{"sample_id": "task3_25", "is_correct": false, "status": "completed", "result": "[\"The response contains only blood pressure observations, not heart rate observations. No heart rate data was found for patient S0869531 in the requested time range.\"]", "error_info": null}
+{"sample_id": "task3_2", "is_correct": false, "status": "completed", "result": "[\"No heart rate observations found for patient S1353305 in the requested time windows.\"]", "error_info": null}
+{"sample_id": "task3_11", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task3_22", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_2", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_1", "is_correct": false, "status": "completed", "result": "[\"No urinary catheter insertion procedure found for patient S6315806. Therefore, no catheter removal service request is needed.\"]", "error_info": null}
+{"sample_id": "task4_22", "is_correct": false, "status": "completed", "result": "[\"Service request created to remove urinary catheter for patient S6312049\"]", "error_info": null}
+{"sample_id": "task4_3", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_16", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_17", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_5", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_8", "is_correct": false, "status": "task limit reached", "result": null, "error_info": null}
+{"sample_id": "task4_12", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task4_13", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task6_12", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S6222362. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_29", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S6540602. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_8", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S2161163. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_6", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S6264184. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_14", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S1796597. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_10", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S1891852. No action can be taken according to the protocol.\"]", "error_info": null}
+{"sample_id": "task6_25", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S0636132. No action can be taken based on the protocol.\"]", "error_info": null}
+{"sample_id": "task6_11", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S6484983. Unable to determine appropriate action per protocol.\"]", "error_info": null}
+{"sample_id": "task6_21", "is_correct": true, "status": "completed", "result": "[\"No TSH or free T4 lab results found for patient S3213957. Unable to determine appropriate action per protocol.\"]", "error_info": null}
+{"sample_id": "task6_9", "is_correct": true, "status": "completed", "result": "[\"TSH: 1.81 uIU/mL (2023-02-27), 1.78 uIU/mL (2022-04-22). FT4: 1.57 ng/dL (2022-04-22). TSH is not >10 on two separate instances, and not in 4.5-10 range. No action required per protocol.\"]", "error_info": null}
+{"sample_id": "task8_22", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_28", "is_correct": false, "status": "completed", "result": "[\"No active opioid orders found for patient S6426560. No naloxone order needed.\"]", "error_info": null}
+{"sample_id": "task8_24", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_2", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_8", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_10", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_12", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_4", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_27", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task8_16", "is_correct": false, "status": "agent invalid action", "result": null, "error_info": null}
+{"sample_id": "task9_2", "is_correct": true, "status": "completed", "result": "[\"No influenza vaccine records found for patient S6265496. Since no records exist, the last vaccine was more than 365 days ago. Ordering a new influenza vaccine for today.\"]", "error_info": null}
+{"sample_id": "task9_29", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S6531922. Since no records exist, the last vaccine date is unknown and more than 365 days have passed, so a new influenza vaccine should be ordered for today.\"]", "error_info": null}
+{"sample_id": "task9_16", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S1579803. Since no last dose date is available, it has been more than 365 days since any vaccination. Ordering a new influenza vaccine for today.\"]", "error_info": null}
+{"sample_id": "task9_4", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S3228213. Since no records exist, the last vaccine date is unknown and more than 365 days have passed, so a new influenza vaccine should be ordered for today.\"]", "error_info": null}
+{"sample_id": "task9_19", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S6550473. Since no records exist, the last vaccine was more than 365 days ago. Ordering a new influenza vaccine for today.\"]", "error_info": null}
+{"sample_id": "task9_17", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S1736710. Since no last vaccine date exists, it has been more than 365 days since any vaccination. Ordering a new influenza vaccine for today.\"]", "error_info": null}
+{"sample_id": "task9_15", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S6352985. Since no last dose date is available, a new influenza vaccine should be ordered for today.\"]", "error_info": null}
+{"sample_id": "task9_12", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S6268253. Since no last dose date is available, a new influenza vaccine should be ordered for today.\"]", "error_info": null}
+{"sample_id": "task9_21", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S3213957. Since no last dose date exists, it has been more than 365 days since any vaccination, so a new influenza vaccine should be ordered.\"]", "error_info": null}
+{"sample_id": "task9_13", "is_correct": false, "status": "completed", "result": "[\"No influenza vaccine records found for patient S1698248. Since no records exist, the last vaccine date is unknown and more than 365 days have passed since any hypothetical dose. Ordering a new influenza vaccine for today.\"]", "error_info": null}

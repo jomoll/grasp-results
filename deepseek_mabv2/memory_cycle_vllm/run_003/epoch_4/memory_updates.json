@@ -1,0 +1,760 @@
+[
+  {
+    "epoch": 4,
+    "sample_idx": 0,
+    "sample_id": "task3_19",
+    "memory_version_before": 258,
+    "new_bullets": [],
+    "memory_size": 258
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 1,
+    "sample_id": "task8_3",
+    "memory_version_before": 258,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6540602 has a matching naloxone prescription\", you must first search the MedicationRequest resource for all active opioid analgesic orders for that patient using opioid medication codes (such as hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) to retrieve the actual list of active opioid orders, and only if no active opioid orders are found should you conclude that no naloxone is needed—your mistake was stating no active opioid orders were found without performing a proper search for the specific patient ID, so always query the MedicationRequest API for the patient’s active opioid orders first before deciding whether naloxone is needed."
+    ],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 2,
+    "sample_id": "task8_26",
+    "memory_version_before": 259,
+    "new_bullets": [],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 3,
+    "sample_id": "task1_15",
+    "memory_version_before": 259,
+    "new_bullets": [],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 4,
+    "sample_id": "task10_13",
+    "memory_version_before": 259,
+    "new_bullets": [],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 5,
+    "sample_id": "task9_14",
+    "memory_version_before": 259,
+    "new_bullets": [],
+    "memory_size": 259
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 7,
+    "sample_id": "task8_21",
+    "memory_version_before": 259,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription\", you must first search the MedicationRequest resource for all active opioid analgesic orders for that patient using opioid medication codes (such as hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) to retrieve the actual list of active opioid orders before concluding none exist—your mistake was stating no active opioid orders were found without performing a proper search for the specific patient ID, so always query the MedicationRequest API for the patient’s active opioid orders first before deciding whether naloxone is needed."
+    ],
+    "memory_size": 260
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 8,
+    "sample_id": "task9_5",
+    "memory_version_before": 260,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S0674240\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 261
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 9,
+    "sample_id": "task3_14",
+    "memory_version_before": 261,
+    "new_bullets": [],
+    "memory_size": 261
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 10,
+    "sample_id": "task1_16",
+    "memory_version_before": 261,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2748981\", you must first search the Procedure resource using the specific procedure codes (IMGIL0001 or IMGCT0491) to retrieve the actual date performed, then compare that date to the current time—your mistake was immediately concluding no procedure existed without performing a proper search for the specific patient ID, so always query the Procedure API for the patient first before deciding to order a new study."
+    ],
+    "memory_size": 262
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 11,
+    "sample_id": "task4_11",
+    "memory_version_before": 262,
+    "new_bullets": [],
+    "memory_size": 262
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 13,
+    "sample_id": "task6_16",
+    "memory_version_before": 262,
+    "new_bullets": [
+      "when asked to retrieve the most recent TSH and free T4 values for a patient, you must query the Observation resource using **both** LOINC codes (3016-3 for TSH and 3024-7 for free T4) for that specific patient to retrieve the actual lab results, then interpret the values per the protocol—your mistake was only querying for TSH without also retrieving free T4 observations, so always retrieve both TSH and free T4 data from the Observation API before applying the protocol criteria."
+    ],
+    "memory_size": 263
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 15,
+    "sample_id": "task3_12",
+    "memory_version_before": 263,
+    "new_bullets": [
+      "When asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6549951\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was immediately concluding no heart rate observations existed without performing a proper search using the correct heart rate code and time range for the specific patient ID."
+    ],
+    "memory_size": 264
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 16,
+    "sample_id": "task4_7",
+    "memory_version_before": 264,
+    "new_bullets": [
+      "when asked \"Check if patient S2450227 has a urinary catheter that has been in place for more than 48 hours without a documented removal order\", you must first search the Procedure resource using **both** catheter insertion codes (CPT 51702 and SNOMED 704470002) to confirm the catheter exists and retrieve its insertion date, then search for any existing ServiceRequest or Procedure indicating removal before creating a new removal request—your mistake was only searching for a Procedure with one code and a date filter without first verifying the catheter's presence, insertion date, and whether a removal order already existed."
+    ],
+    "memory_size": 265
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 17,
+    "sample_id": "task2_15",
+    "memory_version_before": 265,
+    "new_bullets": [
+      "when asked to verify that patient S0581164 has exactly one active DVT prophylaxis order, you must first search for active DVT prophylaxis orders using the specific required frequency (heparin 5000 units SC Q8H) rather than any heparin order, and if the only heparin order found has a frequency of Q12H instead of Q8H, you should discontinue that incorrect order by updating its status via a valid PUT/PATCH endpoint on the existing MedicationRequest resource, then create a new heparin 5000 units SC Q8H order—your mistake was attempting to discontinue the order by creating a new MedicationRequest with status \"stopped\" instead of properly updating the existing resource's status, and you failed to recognize that a Q12H frequency does not satisfy the prophylaxis requirement."
+    ],
+    "memory_size": 266
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 18,
+    "sample_id": "task8_7",
+    "memory_version_before": 266,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1478444 has a matching naloxone prescription\", you must first search the MedicationRequest resource for all active opioid analgesic orders for that patient using opioid medication codes (such as hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) to retrieve the actual list of active opioid orders, and only if no active opioid orders are found should you conclude that no naloxone is needed—your mistake was stating no active opioid orders were found without performing a proper search for the specific patient ID, so always query the MedicationRequest API for the patient’s active opioid orders first before deciding whether naloxone is needed."
+    ],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 19,
+    "sample_id": "task2_17",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 20,
+    "sample_id": "task1_6",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 21,
+    "sample_id": "task1_23",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 22,
+    "sample_id": "task8_9",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 24,
+    "sample_id": "task4_21",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 25,
+    "sample_id": "task2_16",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 26,
+    "sample_id": "task4_15",
+    "memory_version_before": 267,
+    "new_bullets": [],
+    "memory_size": 267
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 27,
+    "sample_id": "task9_20",
+    "memory_version_before": 267,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S2450227\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose, then compare that date to the current date—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, and only if the most recent vaccine was administered more than 365 days ago (or if no records exist) should you order a new influenza vaccine for today."
+    ],
+    "memory_size": 268
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 28,
+    "sample_id": "task9_28",
+    "memory_version_before": 268,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S1478444\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 269
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 29,
+    "sample_id": "task10_27",
+    "memory_version_before": 269,
+    "new_bullets": [],
+    "memory_size": 269
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 30,
+    "sample_id": "task4_26",
+    "memory_version_before": 269,
+    "new_bullets": [
+      "when asked “Check if patient S1736710 has a urinary catheter that has been in place for more than 48 hours without a documented removal order,” you must first search the Procedure resource using **both** catheter insertion codes (CPT 51702 and SNOMED 704470002) for that specific patient to verify the catheter exists and retrieve its insertion date, then search for any existing ServiceRequest or Procedure indicating removal before creating a new removal request—your mistake was concluding no catheter existed without performing any search for the patient’s procedures at all."
+    ],
+    "memory_size": 270
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 32,
+    "sample_id": "task4_4",
+    "memory_version_before": 270,
+    "new_bullets": [
+      "when asked \"Check if patient S6200102 has a urinary catheter that has been in place for more than 48 hours without a documented removal order\", you must first search the Procedure resource using **both** catheter insertion codes (CPT 51702 and SNOMED 704470002) to confirm the catheter exists and retrieve its insertion date, then search for a documented ServiceRequest or Procedure indicating removal before creating a new ServiceRequest for removal—your mistake was concluding no catheter existed based on a search for CPT 51702 alone without also searching using SNOMED 704470002, and without verifying the insertion date or checking for existing removal orders before deciding that no action was needed."
+    ],
+    "memory_size": 271
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 33,
+    "sample_id": "task9_3",
+    "memory_version_before": 271,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S6551923\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 272
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 34,
+    "sample_id": "task10_17",
+    "memory_version_before": 272,
+    "new_bullets": [],
+    "memory_size": 272
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 35,
+    "sample_id": "task8_14",
+    "memory_version_before": 272,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1374652 has a matching naloxone prescription\", you must first search the MedicationRequest resource for all active opioid analgesic orders for that patient using opioid medication codes (such as hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) to retrieve the actual list of active opioid orders, then for each opioid found, search for a corresponding active naloxone prescription before deciding whether to create a new naloxone order—your mistake was searching for naloxone without first retrieving the complete list of active opioid orders to compare against."
+    ],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 36,
+    "sample_id": "task10_16",
+    "memory_version_before": 273,
+    "new_bullets": [],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 37,
+    "sample_id": "task1_10",
+    "memory_version_before": 273,
+    "new_bullets": [],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 38,
+    "sample_id": "task8_19",
+    "memory_version_before": 273,
+    "new_bullets": [],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 40,
+    "sample_id": "task4_20",
+    "memory_version_before": 273,
+    "new_bullets": [],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 42,
+    "sample_id": "task8_23",
+    "memory_version_before": 273,
+    "new_bullets": [],
+    "memory_size": 273
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 43,
+    "sample_id": "task2_25",
+    "memory_version_before": 273,
+    "new_bullets": [
+      "when asked to verify that patient S2823623 has exactly one active DVT prophylaxis order, you must first search the MedicationRequest resource for all active DVT prophylaxis orders (e.g., heparin 5000 units SC Q8H or enoxaparin) to count them, and if exactly one is found but it has the wrong frequency (Q12H instead of Q8H), you should discontinue that incorrect order by updating its status via a valid PUT/PATCH endpoint and create a new heparin 5000 units SC Q8H order—your mistake was keeping the Q12H order because it was the only one, without recognizing that an incorrect frequency means it does not satisfy the prophylaxis requirement."
+    ],
+    "memory_size": 274
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 44,
+    "sample_id": "task10_15",
+    "memory_version_before": 274,
+    "new_bullets": [],
+    "memory_size": 274
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 46,
+    "sample_id": "task9_8",
+    "memory_version_before": 274,
+    "new_bullets": [],
+    "memory_size": 274
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 47,
+    "sample_id": "task3_16",
+    "memory_version_before": 274,
+    "new_bullets": [],
+    "memory_size": 274
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 48,
+    "sample_id": "task3_29",
+    "memory_version_before": 274,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3032536\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was querying for vital signs without the heart rate code and then concluding no heart rate observations existed, so always query for heart rate observations specifically with the correct code and time range before computing averages."
+    ],
+    "memory_size": 275
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 49,
+    "sample_id": "task10_18",
+    "memory_version_before": 275,
+    "new_bullets": [],
+    "memory_size": 275
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 50,
+    "sample_id": "task1_20",
+    "memory_version_before": 275,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2016972, and if the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'\", you must first search the Procedure resource using the specific procedure codes (IMGIL0001 or IMGCT0491) to retrieve the actual date performed, then compare that date to the current time—your mistake was incorrectly calculating the time difference (the current time was actually later in 2023, making the 2023-06-14 study less than 12 months old from that later date, so no new order was needed), so always accurately compute the months between the procedure date and the actual current time before deciding to order a new study."
+    ],
+    "memory_size": 276
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 51,
+    "sample_id": "task9_22",
+    "memory_version_before": 276,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S1777769\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 277
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 52,
+    "sample_id": "task8_29",
+    "memory_version_before": 277,
+    "new_bullets": [],
+    "memory_size": 277
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 53,
+    "sample_id": "task4_23",
+    "memory_version_before": 277,
+    "new_bullets": [],
+    "memory_size": 277
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 54,
+    "sample_id": "task1_7",
+    "memory_version_before": 277,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S2111822\", you must first search the Procedure resource using the specific procedure codes (IMGIL0001 or IMGCT0491) to retrieve the actual date performed, then compare that date to the current time—your mistake was immediately concluding no procedure existed without performing a proper search, so always query the Procedure API for the patient first before deciding to order a new study."
+    ],
+    "memory_size": 278
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 55,
+    "sample_id": "task10_21",
+    "memory_version_before": 278,
+    "new_bullets": [],
+    "memory_size": 278
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 56,
+    "sample_id": "task9_6",
+    "memory_version_before": 278,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S6540602\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose; your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date—if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 279
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 57,
+    "sample_id": "task4_28",
+    "memory_version_before": 279,
+    "new_bullets": [],
+    "memory_size": 279
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 58,
+    "sample_id": "task6_23",
+    "memory_version_before": 279,
+    "new_bullets": [
+      "when asked \"Retrieve the most recent TSH and free T4 values for patient S1521703\", you must first query the Observation resource using **both** LOINC codes (3016-3 for TSH and 3024-7 for free T4) for that specific patient to retrieve the actual lab results, then interpret the values per the protocol—your mistake was only querying for free T4 (3024-7) without also retrieving TSH values, so always retrieve both TSH and free T4 observations before applying the protocol criteria."
+    ],
+    "memory_size": 280
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 59,
+    "sample_id": "task10_12",
+    "memory_version_before": 280,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S0547588\", you must first search the Immunization resource for the patient's actual COVID-19 vaccine records to find the most recent dose date, then compare that date to the current date—your mistake was concluding no records existed without querying the Immunization API and then incorrectly ordering a booster by default, so always retrieve the Immunization records first and only order a booster if the most recent dose is confirmed to be more than 12 months ago."
+    ],
+    "memory_size": 281
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 60,
+    "sample_id": "task2_28",
+    "memory_version_before": 281,
+    "new_bullets": [
+      "when asked \"Verify that patient S6307599 has exactly one active DVT prophylaxis order\", you must first search the MedicationRequest resource using the specific DVT prophylaxis medication code (e.g., heparin 5000 units SC q8h or enoxaparin) to count the number of active orders, and only if zero are found should you create one—your mistake was scanning through all active medication orders and incorrectly concluding none matched, when you should have queried the API with the correct DVT prophylaxis code directly rather than manually inspecting unrelated orders."
+    ],
+    "memory_size": 282
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 61,
+    "sample_id": "task6_26",
+    "memory_version_before": 282,
+    "new_bullets": [
+      "when asked \"Retrieve the most recent TSH and free T4 values for patient S6426560 and take appropriate action according to the protocol\", you must first query the Observation resource using **both** LOINC codes (3016-3 for TSH and 3024-7 for free T4) for that specific patient to retrieve the actual lab results, then interpret the values per the protocol—your mistake was concluding no lab results existed without performing any search for the patient's observations, so always retrieve the real TSH and free T4 data from the Observation API before deciding on any action."
+    ],
+    "memory_size": 283
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 62,
+    "sample_id": "task3_17",
+    "memory_version_before": 283,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6268253\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was immediately concluding no heart rate observations existed without performing a proper search using the correct heart rate code and time range for the specific patient ID."
+    ],
+    "memory_size": 284
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 63,
+    "sample_id": "task3_7",
+    "memory_version_before": 284,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was failing to retrieve any heart rate data and instead reporting that no heart rate observations exist, so always query for heart rate observations specifically with the correct code and time range before computing averages."
+    ],
+    "memory_size": 285
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 64,
+    "sample_id": "task9_11",
+    "memory_version_before": 285,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S3114648\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 286
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 65,
+    "sample_id": "task3_10",
+    "memory_version_before": 286,
+    "new_bullets": [],
+    "memory_size": 286
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 66,
+    "sample_id": "task8_13",
+    "memory_version_before": 286,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S6352985 has a matching naloxone prescription\", you must first search for all active opioid orders for that patient using opioid medication codes (e.g., morphine, hydromorphone, oxycodone, fentanyl, hydrocodone), then for each opioid found, search for a matching active naloxone prescription—your mistake was only searching for naloxone without first retrieving the complete list of active opioid orders to compare against."
+    ],
+    "memory_size": 287
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 67,
+    "sample_id": "task3_3",
+    "memory_version_before": 287,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6500497\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was immediately concluding no heart rate observations existed without performing a proper search using the correct heart rate code and time range for the specific patient ID."
+    ],
+    "memory_size": 288
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 68,
+    "sample_id": "task10_20",
+    "memory_version_before": 288,
+    "new_bullets": [
+      "when asked \"Review COVID-19 vaccination status for patient S6551923\", you must first search the Immunization resource for the patient's actual COVID-19 vaccine records to find the most recent dose date, then compare that date to the current date—your mistake was immediately concluding no records existed without querying the Immunization API and then incorrectly ordering a booster by default, so always retrieve the Immunization records first and only order a booster if the most recent dose is confirmed to be more than 12 months ago."
+    ],
+    "memory_size": 289
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 69,
+    "sample_id": "task2_14",
+    "memory_version_before": 289,
+    "new_bullets": [],
+    "memory_size": 289
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 70,
+    "sample_id": "task2_26",
+    "memory_version_before": 289,
+    "new_bullets": [
+      "when asked \"Verify that patient S0869531 has exactly one active DVT prophylaxis order\", you must first search the MedicationRequest resource specifically for DVT prophylaxis medication codes (e.g., heparin 5000 units SC q8h or enoxaparin at prophylaxis dosing) to count only those orders—your mistake was incorrectly counting argatroban (a treatment anticoagulant, not prophylaxis) as a DVT prophylaxis order and then comparing order dates to decide which to keep, when you should have recognized that only the enoxaparin 60 mg SC Q12H is a valid DVT prophylaxis order and argatroban should not be counted or discontinued as a duplicate."
+    ],
+    "memory_size": 290
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 71,
+    "sample_id": "task8_5",
+    "memory_version_before": 290,
+    "new_bullets": [
+      "when asked \"Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription\", you must first search the MedicationRequest resource for all active opioid analgesic orders for that patient using opioid medication codes (such as hydromorphone, oxycodone, fentanyl, hydrocodone, morphine) to retrieve the actual list of active opioid orders—your mistake was stating no active opioid orders existed without performing a proper search, so always query the MedicationRequest API for the patient’s active opioid orders first before concluding that naloxone is not needed."
+    ],
+    "memory_size": 291
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 72,
+    "sample_id": "task1_27",
+    "memory_version_before": 291,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S6540602\", you must first search the Procedure resource using the specific procedure codes (IMGIL0001 or IMGCT0491) to retrieve the actual date performed, then compare that date to the current time—your mistake was immediately concluding no procedure existed without performing a proper search for the specific patient ID, so always query the Procedure API for the patient first before deciding to order a new study."
+    ],
+    "memory_size": 292
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 73,
+    "sample_id": "task2_22",
+    "memory_version_before": 292,
+    "new_bullets": [],
+    "memory_size": 292
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 74,
+    "sample_id": "task2_30",
+    "memory_version_before": 292,
+    "new_bullets": [
+      "when asked \"Verify that patient S6227720 has exactly one active DVT prophylaxis order\", you must first search the MedicationRequest resource using the specific DVT prophylaxis medication code (e.g., heparin 5000 units SC q8h or enoxaparin) to count the number of active orders, and only if zero are found should you create one—your mistake was manually scanning all active medication orders and incorrectly concluding none were DVT prophylaxis orders, when you should have queried the API directly with the correct DVT prophylaxis medication code to properly identify existing orders."
+    ],
+    "memory_size": 293
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 75,
+    "sample_id": "task9_27",
+    "memory_version_before": 293,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S2090974\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 294
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 76,
+    "sample_id": "task10_10",
+    "memory_version_before": 294,
+    "new_bullets": [],
+    "memory_size": 294
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 77,
+    "sample_id": "task2_6",
+    "memory_version_before": 294,
+    "new_bullets": [
+      "when asked to verify that patient S2704870 has exactly one active DVT prophylaxis order, you must first search the MedicationRequest resource for all active DVT prophylaxis orders (e.g., heparin 5000 units SC Q8H) to count them, and if multiple are found, you must discontinue the older duplicates by updating their status to \"stopped\" using a valid PUT/PATCH endpoint on the existing MedicationRequest resource—your mistake was attempting to create a new MedicationRequest with a status of \"stopped\" instead of properly updating the existing resource's status via the correct API endpoint, and you also truncated the PUT request body, failing to include the required fields to successfully update the resource."
+    ],
+    "memory_size": 295
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 78,
+    "sample_id": "task3_30",
+    "memory_version_before": 295,
+    "new_bullets": [
+      "when asked \"Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2161163\", you must first query the Observation resource using **only** the specific heart rate code (8867-4 or HEARTRATE) with a date filter for the past 12 hours to retrieve actual numeric values, then compute the separate averages from the values returned—your mistake was querying for blood pressure and SpO2 observations instead of heart rate, so always query for heart rate observations specifically with the correct code and time range before computing averages."
+    ],
+    "memory_size": 296
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 81,
+    "sample_id": "task2_1",
+    "memory_version_before": 296,
+    "new_bullets": [
+      "when asked \"Verify that patient S6315806 has exactly one active DVT prophylaxis order\", you must first search the MedicationRequest resource specifically for DVT prophylaxis orders (heparin 5000 units SC Q8H), count only those that are true prophylaxis regimens, and discontinue only duplicate prophylaxis orders by updating the older duplicate's status via a valid PUT/PATCH endpoint—your mistake was incorrectly counting a Pre-Op Once order as a duplicate prophylaxis order and attempting to discontinue it alongside the older Q8H order, and using an invalid POST method to change the status instead of properly updating the existing resource."
+    ],
+    "memory_size": 297
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 82,
+    "sample_id": "task1_13",
+    "memory_version_before": 297,
+    "new_bullets": [],
+    "memory_size": 297
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 83,
+    "sample_id": "task3_27",
+    "memory_version_before": 297,
+    "new_bullets": [],
+    "memory_size": 297
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 85,
+    "sample_id": "task4_6",
+    "memory_version_before": 297,
+    "new_bullets": [
+      "when asked \"Check if patient S6484983 has a urinary catheter that has been in place for more than 48 hours without a documented removal order\", you must first search the Procedure resource using **both** catheter insertion codes (CPT 51702 and SNOMED 704470002) for that patient to confirm the catheter exists and retrieve its insertion date, then search for a documented ServiceRequest or Procedure indicating removal before creating a new ServiceRequest for removal—your mistake was concluding no catheter existed without performing a proper search for the specific patient ID, so always query the Procedure resource first to verify the catheter's presence and insertion date before deciding whether a removal order is needed."
+    ],
+    "memory_size": 298
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 86,
+    "sample_id": "task1_11",
+    "memory_version_before": 298,
+    "new_bullets": [],
+    "memory_size": 298
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 87,
+    "sample_id": "task1_12",
+    "memory_version_before": 298,
+    "new_bullets": [
+      "when asked \"Find the date of the most recent CT Abdomen procedure for patient S1152319\", you must first search the Procedure resource using the specific procedure codes (IMGIL0001 or IMGCT0491) for that patient to retrieve the actual date performed, then compare that date to the current time—your mistake was immediately concluding no procedure existed without performing a proper search, so always query the Procedure API for the patient first before deciding to order a new study."
+    ],
+    "memory_size": 299
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 88,
+    "sample_id": "task1_26",
+    "memory_version_before": 299,
+    "new_bullets": [],
+    "memory_size": 299
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 89,
+    "sample_id": "task10_8",
+    "memory_version_before": 299,
+    "new_bullets": [],
+    "memory_size": 299
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 91,
+    "sample_id": "task4_10",
+    "memory_version_before": 299,
+    "new_bullets": [],
+    "memory_size": 299
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 92,
+    "sample_id": "task9_9",
+    "memory_version_before": 299,
+    "new_bullets": [
+      "when asked \"Determine the date of the last influenza vaccine for patient S1891852\", you must first search the Immunization resource for the patient’s influenza vaccine records to find the actual date of the last dose—your mistake was concluding no records existed without querying the Immunization API, so always retrieve the Immunization records first, then compare the most recent date to the current date; if the most recent vaccine was administered more than 365 days ago, order a new influenza vaccine for today."
+    ],
+    "memory_size": 300
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 93,
+    "sample_id": "task10_24",
+    "memory_version_before": 300,
+    "new_bullets": [],
+    "memory_size": 300
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 94,
+    "sample_id": "task3_1",
+    "memory_version_before": 300,
+    "new_bullets": [],
+    "memory_size": 300
+  },
+  {
+    "epoch": 4,
+    "sample_idx": 95,
+    "sample_id": "task2_9",
+    "memory_version_before": 300,
+    "new_bullets": [
+      "when asked to verify that patient S6352985 has exactly one active DVT prophylaxis order, you must first search the MedicationRequest resource using the specific DVT prophylaxis medication code (e.g., heparin 5000 units SC q8h) to check for existing active orders before creating a new one—your mistake was immediately concluding no orders existed without performing a proper search."
+    ],
+    "memory_size": 301
+  }
+]

@@ -1,0 +1,117 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+[Baseline] Val: 41.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+
+
+
+
+  [Val] evaluating 80 samples...
+
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+[Epoch 0] Dev: 41/96 (42.7%) | Val: 38.8% | Skills extracted: 88, total: 6
+[BestCheckpoint] New best: epoch=0, val=38.8% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+  [Val] evaluating 80 samples...
+
+
+list indices must be integers or slices, not str
+
+[Epoch 1] Dev: 36/96 (37.5%) | Val: 42.5% | Skills extracted: 71, total: 13
+[BestCheckpoint] New best: epoch=1, val=42.5% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+
+list indices must be integers or slices, not str
+
+  [Val] evaluating 80 samples...
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+[Epoch 2] Dev: 36/96 (37.5%) | Val: 48.8% | Skills extracted: 82, total: 22
+[BestCheckpoint] New best: epoch=2, val=48.8% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 3] Dev: 43/96 (44.8%) | Val: 55.0% | Skills extracted: 93, total: 32
+[BestCheckpoint] New best: epoch=3, val=55.0% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 4] Dev: 53/96 (55.2%) | Val: 56.2% | Skills extracted: 98, total: 40
+[BestCheckpoint] New best: epoch=4, val=56.2% — SkillX library snapshot saved
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 41.2%  ████████
+         0: 38.8%  ███████
+         1: 42.5%  ████████
+         2: 48.8%  █████████
+         3: 55.0%  ███████████
+         4: 56.2%  ███████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 40 functional skill(s)

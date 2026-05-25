@@ -1,0 +1,74 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+[Baseline] Val: 41.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — sequential Evo memory update per episode
+
+  [Val] evaluating 80 samples...
+
+[Epoch 0] Dev: 49/96 (51.0%) | Val: 58.8% | Evo updates: 96
+[BestCheckpoint] New best: epoch=0, val=58.8% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — sequential Evo memory update per episode
+
+  [Val] evaluating 80 samples...
+
+'priority'
+
+[Epoch 1] Dev: 56/96 (58.3%) | Val: 60.0% | Evo updates: 96
+[BestCheckpoint] New best: epoch=1, val=60.0% — Evo memory snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — sequential Evo memory update per episode
+
+  [Val] evaluating 80 samples...
+
+[Epoch 2] Dev: 55/96 (57.3%) | Val: 55.0% | Evo updates: 96
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — sequential Evo memory update per episode
+
+  [Val] evaluating 80 samples...
+
+[Epoch 3] Dev: 53/96 (55.2%) | Val: 53.8% | Evo updates: 96
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — sequential Evo memory update per episode
+'priority'
+
+  [Val] evaluating 80 samples...
+'priority'
+
+[Epoch 4] Dev: 47/96 (49.0%) | Val: 47.5% | Evo updates: 96
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 41.2%  ████████
+         0: 58.8%  ███████████
+         1: 60.0%  ████████████
+         2: 55.0%  ███████████
+         3: 53.8%  ██████████
+         4: 47.5%  █████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[EvoMemoryCycle] Final memory: 25 semantic rule(s), 477 episodic record(s)

@@ -1,0 +1,104 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+[Baseline] Val: 41.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+
+
+  [Val] evaluating 80 samples...
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+list indices must be integers or slices, not str
+
+[Epoch 0] Dev: 42/96 (43.8%) | Val: 38.8% | Skills extracted: 85, total: 7
+[BestCheckpoint] New best: epoch=0, val=38.8% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+list indices must be integers or slices, not str
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+incorrect url
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 1] Dev: 37/96 (38.5%) | Val: 52.5% | Skills extracted: 69, total: 15
+[BestCheckpoint] New best: epoch=1, val=52.5% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 2] Dev: 49/96 (51.0%) | Val: 53.8% | Skills extracted: 97, total: 26
+[BestCheckpoint] New best: epoch=2, val=53.8% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+[Epoch 3] Dev: 52/96 (54.2%) | Val: 48.8% | Skills extracted: 93, total: 37
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+list indices must be integers or slices, not str
+
+  [Val] evaluating 80 samples...
+list indices must be integers or slices, not str
+
+[Epoch 4] Dev: 49/96 (51.0%) | Val: 52.5% | Skills extracted: 111, total: 48
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 41.2%  ████████
+         0: 38.8%  ███████
+         1: 52.5%  ██████████
+         2: 53.8%  ██████████
+         3: 48.8%  █████████
+         4: 52.5%  ██████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 48 functional skill(s)

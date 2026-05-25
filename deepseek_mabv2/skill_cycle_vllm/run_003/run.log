@@ -1,0 +1,357 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+[Baseline] Val: 26.2%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+  Batch score: 9/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 9 passing = 27 samples (out-of-sample from prior batches)
+needs booster
+  [ProposalRanking] baseline probe: 2 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~22,971 chars (~5,742 est. tokens) for 39 traces
+[SkillUpdater] classified 39 failing traces → 7 mode(s) (0 reused, 7 new): answer_format_wrong_type(1), answer_submitted_before_verification(19), date_filter_omitted(1), incomplete_search_strategy(1), incorrect_order_acceptance(1), no_data_found_incorrect_assumption(10), wrong_resource_type_queried(6)
+[SkillUpdater] diagnosed 39/39 failing traces
+[SkillUpdater] ADD skill: verify_fhir_response_before_concluding_no_results
+[SkillUpdater] ADD skill: fhir_observation_code_filtering
+[SkillUpdater] ADD skill: vaccination_record_query_using_immunization_resource
+[SkillUpdater] ADD skill: medication_order_verification_and_reconciliation
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::verify_fhir_response_before_concluding_no_results → adjusted=-5 raw=-4 (fixes=0 baseline_fixes=2, regressions=2 baseline_regressions=1)
+  [ProposalRanking] ADD::fhir_observation_code_filtering → adjusted=-5 raw=-4 (fixes=0 baseline_fixes=2, regressions=2 baseline_regressions=1)
+needs booster
+  [ProposalRanking] ADD::vaccination_record_query_using_immunization_resource → adjusted=-6 raw=-5 (fixes=0 baseline_fixes=2, regressions=3 baseline_regressions=1)
+  [ProposalRanking] ADD::medication_order_verification_and_reconciliation → adjusted=-5 raw=-4 (fixes=0 baseline_fixes=2, regressions=2 baseline_regressions=1)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+needs booster
+needs booster
+  Batch score: 15/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 9 passing = 27 samples (out-of-sample from prior batches)
+needs booster
+  [ProposalRanking] baseline probe: 1 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~22,788 chars (~5,697 est. tokens) for 33 traces
+[SkillUpdater] classified 33 failing traces → 7 mode(s) (7 reused, 0 new): answer_format_wrong_type(1), answer_submitted_before_verification(1), date_filter_omitted(3), incomplete_search_strategy(7), incorrect_order_acceptance(1), no_data_found_incorrect_assumption(16), wrong_resource_type_queried(4)
+[SkillUpdater] diagnosed 33/33 failing traces
+[SkillUpdater] ADD skill: vaccine_record_search_immunization_fallback
+[SkillUpdater] ADD skill: vaccination_record_search_strategy
+[SkillUpdater] ADD skill: active_medication_request_query_with_status_filter
+[SkillUpdater] ADD skill: dynamic_date_filter_computation
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::vaccine_record_search_immunization_fallback → adjusted=-3 raw=-4 (fixes=0 baseline_fixes=1, regressions=2 baseline_regressions=2)
+needs booster
+  [ProposalRanking] ADD::vaccination_record_search_strategy → adjusted=-6 raw=-7 (fixes=0 baseline_fixes=1, regressions=4 baseline_regressions=2)
+  [ProposalRanking] ADD::active_medication_request_query_with_status_filter → adjusted=-2 raw=-3 (fixes=1 baseline_fixes=1, regressions=2 baseline_regressions=2)
+needs booster
+  [ProposalRanking] ADD::dynamic_date_filter_computation → adjusted=-3 raw=-4 (fixes=1 baseline_fixes=1, regressions=3 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 0] Dev: 24/96 (25.0%) | Val: 25.0%
+[BestCheckpoint] New best: epoch=0, val=25.0% — snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+  Batch score: 9/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+list index out of range
+needs booster
+  [ProposalRanking] baseline probe: 1 fixes, 3 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~27,373 chars (~6,843 est. tokens) for 39 traces
+[SkillUpdater] classified 39 failing traces → 7 mode(s) (6 reused, 1 new): answer_format_wrong_type(2), answer_submitted_before_verification(1), cannot_discontinue_duplicate_orders(1), date_filter_omitted(1), incomplete_search_strategy(7), incorrect_order_acceptance(2), no_data_found_incorrect_assumption(25)
+[SkillUpdater] diagnose failed: Expecting ',' delimiter: line 2 column 1 (char 347)
+[SkillUpdater] ADD skill: fhir_search_no_data_verification
+[SkillUpdater] ADD skill: fhir_search_pagination_and_code_filter_strategy
+[SkillUpdater] ADD skill: fhir_url_scheme_fallback
+[SkillUpdater] ADD skill: fhir_search_url_construction
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::fhir_search_no_data_verification → adjusted=-8 raw=-10 (fixes=0 baseline_fixes=1, regressions=5 baseline_regressions=3)
+  [ProposalRanking] ADD::fhir_search_pagination_and_code_filter_strategy → adjusted=-10 raw=-12 (fixes=0 baseline_fixes=1, regressions=6 baseline_regressions=3)
+needs booster
+  [ProposalRanking] ADD::fhir_url_scheme_fallback → adjusted=-13 raw=-15 (fixes=0 baseline_fixes=1, regressions=8 baseline_regressions=3)
+list index out of range
+  [ProposalRanking] ADD::fhir_search_url_construction → adjusted=-20 raw=-22 (fixes=0 baseline_fixes=1, regressions=11 baseline_regressions=3)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+  Batch score: 10/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 9 passing = 27 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 4 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~23,903 chars (~5,975 est. tokens) for 38 traces
+[SkillUpdater] classified 38 failing traces → 5 mode(s) (5 reused, 0 new): answer_format_wrong_type(3), answer_submitted_before_verification(1), incomplete_search_strategy(3), no_data_found_incorrect_assumption(28), wrong_resource_type_queried(3)
+[SkillUpdater] diagnose failed: Expecting ',' delimiter: line 2 column 1 (char 312)
+[SkillUpdater] ADD skill: fhir_search_pagination_handling
+[SkillUpdater] ADD skill: immunization_search_strategy
+[SkillUpdater] ADD skill: answer_format_structured_output
+[SkillUpdater] ADD skill: procedure_code_search_before_resource_switch
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::fhir_search_pagination_handling → adjusted=-5 raw=-3 (fixes=1 baseline_fixes=4, regressions=2 baseline_regressions=2)
+  [ProposalRanking] ADD::immunization_search_strategy → adjusted=-6 raw=-4 (fixes=0 baseline_fixes=4, regressions=2 baseline_regressions=2)
+needs booster
+  [ProposalRanking] ADD::answer_format_structured_output → adjusted=-5 raw=-3 (fixes=1 baseline_fixes=4, regressions=2 baseline_regressions=2)
+  [ProposalRanking] ADD::procedure_code_search_before_resource_switch → adjusted=-4 raw=-2 (fixes=2 baseline_fixes=4, regressions=2 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+
+[Epoch 1] Dev: 19/96 (19.8%) | Val: 25.0%
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+needs booster
+  Batch score: 8/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+  [ProposalRanking] baseline probe: 2 fixes, 3 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~28,131 chars (~7,032 est. tokens) for 40 traces
+[SkillUpdater] classified 40 failing traces → 6 mode(s) (6 reused, 0 new): answer_format_wrong_type(1), answer_submitted_before_verification(3), date_filter_omitted(2), incomplete_search_strategy(6), no_data_found_incorrect_assumption(27), wrong_resource_type_queried(1)
+[SkillUpdater] diagnosed 40/40 failing traces
+[SkillUpdater] ADD skill: fhir_response_bundle_verification_and_fallback_search
+[SkillUpdater] ADD skill: fhir_search_with_specific_code_first
+[SkillUpdater] ADD skill: date_difference_verification_before_finalize
+[SkillUpdater] ADD skill: dynamic_date_range_computation
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::fhir_response_bundle_verification_and_fallback_search → adjusted=-11 raw=-12 (fixes=0 baseline_fixes=2, regressions=6 baseline_regressions=3)
+needs booster
+  [ProposalRanking] ADD::fhir_search_with_specific_code_first → adjusted=-1 raw=-2 (fixes=2 baseline_fixes=2, regressions=2 baseline_regressions=3)
+needs booster
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] ADD::date_difference_verification_before_finalize → adjusted=-9 raw=-10 (fixes=0 baseline_fixes=2, regressions=6 baseline_regressions=3)
+  [ProposalRanking] ADD::dynamic_date_range_computation → adjusted=-11 raw=-12 (fixes=2 baseline_fixes=2, regressions=7 baseline_regressions=3)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+  Batch score: 11/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 8 passing = 26 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+needs booster
+list index out of range
+  [ProposalRanking] baseline probe: 0 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~23,796 chars (~5,949 est. tokens) for 37 traces
+[SkillUpdater] classified 37 failing traces → 6 mode(s) (5 reused, 1 new): answer_format_wrong_type(1), answer_submitted_before_verification(2), cannot_discontinue_duplicate_orders(1), incomplete_search_strategy(4), no_data_found_incorrect_assumption(27), wrong_code_used_for_heart_rate(2)
+[SkillUpdater] diagnosed 37/37 failing traces
+[SkillUpdater] ADD skill: fhir_resource_search_fallback_strategy
+[SkillUpdater] ADD skill: fhir_search_code_fallback_strategy
+[SkillUpdater] ADD skill: fhir_observation_code_search_strategy
+[SkillUpdater] ADD skill: conditional_action_verification_before_finish
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::fhir_resource_search_fallback_strategy → adjusted=-1 raw=-2 (fixes=4 baseline_fixes=0, regressions=3 baseline_regressions=1)
+  [ProposalRanking] ADD::fhir_search_code_fallback_strategy → adjusted=+0 raw=-1 (fixes=1 baseline_fixes=0, regressions=1 baseline_regressions=1)
+  [ProposalRanking] ADD::fhir_observation_code_search_strategy → adjusted=-6 raw=-7 (fixes=1 baseline_fixes=0, regressions=4 baseline_regressions=1)
+  [ProposalRanking] ADD::conditional_action_verification_before_finish → adjusted=-6 raw=-7 (fixes=1 baseline_fixes=0, regressions=4 baseline_regressions=1)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 2] Dev: 19/96 (19.8%) | Val: 25.0%
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+needs booster
+needs booster
+  Batch score: 8/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] baseline probe: 3 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~25,343 chars (~6,335 est. tokens) for 40 traces
+[SkillUpdater] classified 40 failing traces → 7 mode(s) (7 reused, 0 new): answer_format_wrong_type(1), date_filter_omitted(2), incomplete_search_strategy(1), incorrect_order_acceptance(1), no_data_found_incorrect_assumption(23), wrong_code_used_for_heart_rate(3), wrong_resource_type_queried(9)
+[SkillUpdater] diagnosed 40/40 failing traces
+[SkillUpdater] ADD skill: vaccination_search_using_immunization_resource
+[SkillUpdater] ADD skill: medication_request_status_filter
+[SkillUpdater] ADD skill: fhir_observation_code_search_strategy
+[SkillUpdater] ADD skill: most_recent_procedure_date_search_without_restrictive_filter
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] ADD::vaccination_search_using_immunization_resource → adjusted=-5 raw=-3 (fixes=2 baseline_fixes=3, regressions=3 baseline_regressions=1)
+  [ProposalRanking] ADD::medication_request_status_filter → adjusted=-11 raw=-9 (fixes=3 baseline_fixes=3, regressions=6 baseline_regressions=1)
+  [ProposalRanking] ADD::fhir_observation_code_search_strategy → adjusted=-17 raw=-15 (fixes=1 baseline_fixes=3, regressions=8 baseline_regressions=1)
+  [ProposalRanking] ADD::most_recent_procedure_date_search_without_restrictive_filter → adjusted=-8 raw=-6 (fixes=2 baseline_fixes=3, regressions=4 baseline_regressions=1)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+needs booster
+needs booster
+  Batch score: 10/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 8 passing = 26 samples (out-of-sample from prior batches)
+needs booster
+  [ProposalRanking] baseline probe: 1 fixes, 0 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~26,314 chars (~6,578 est. tokens) for 38 traces
+[SkillUpdater] classified 38 failing traces → 8 mode(s) (8 reused, 0 new): answer_format_wrong_type(2), answer_submitted_before_verification(1), cannot_discontinue_duplicate_orders(1), date_filter_omitted(1), incomplete_search_strategy(5), no_data_found_incorrect_assumption(26), wrong_code_used_for_heart_rate(1), wrong_resource_type_queried(1)
+[SkillUpdater] diagnose failed: Expecting ',' delimiter: line 1 column 7071 (char 7070)
+[SkillUpdater] ADD skill: fhir_search_without_code_filter
+[SkillUpdater] ADD skill: fhir_search_code_parameter_required
+[SkillUpdater] ADD skill: structured_clinical_output_format
+[SkillUpdater] ADD skill: heart_rate_observation_search
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+  [ProposalRanking] ADD::fhir_search_without_code_filter → adjusted=+0 raw=+1 (fixes=1 baseline_fixes=1, regressions=0 baseline_regressions=0)
+  [ProposalRanking] ADD::fhir_search_code_parameter_required → adjusted=+0 raw=+1 (fixes=1 baseline_fixes=1, regressions=0 baseline_regressions=0)
+needs booster
+  [ProposalRanking] ADD::structured_clinical_output_format → adjusted=-2 raw=-1 (fixes=1 baseline_fixes=1, regressions=1 baseline_regressions=0)
+  [ProposalRanking] ADD::heart_rate_observation_search → adjusted=-2 raw=-1 (fixes=1 baseline_fixes=1, regressions=1 baseline_regressions=0)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 3] Dev: 18/96 (18.8%) | Val: 28.7%
+[BestCheckpoint] New best: epoch=3, val=28.7% — snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+  Batch score: 11/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+list index out of range
+needs booster
+needs booster
+  [ProposalRanking] baseline probe: 2 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~24,432 chars (~6,108 est. tokens) for 37 traces
+[SkillUpdater] classified 37 failing traces → 4 mode(s) (4 reused, 0 new): answer_format_wrong_type(2), answer_submitted_before_verification(1), no_data_found_incorrect_assumption(29), wrong_code_used_for_heart_rate(5)
+[SkillUpdater] diagnosed 37/37 failing traces
+[SkillUpdater] ADD skill: fhir_search_absence_verification
+[SkillUpdater] ADD skill: heart_rate_observation_code_search
+[SkillUpdater] ADD skill: answer_formatting_with_complete_sentences
+[SkillUpdater] ADD skill: observation_date_verification
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+  [ProposalRanking] ADD::fhir_search_absence_verification → adjusted=-13 raw=-13 (fixes=0 baseline_fixes=2, regressions=7 baseline_regressions=2)
+  [ProposalRanking] ADD::heart_rate_observation_code_search → adjusted=-4 raw=-4 (fixes=4 baseline_fixes=2, regressions=4 baseline_regressions=2)
+needs booster
+  [ProposalRanking] ADD::answer_formatting_with_complete_sentences → adjusted=-16 raw=-16 (fixes=2 baseline_fixes=2, regressions=9 baseline_regressions=2)
+  [ProposalRanking] ADD::observation_date_verification → adjusted=-4 raw=-4 (fixes=2 baseline_fixes=2, regressions=3 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+needs booster
+  Batch score: 10/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 11 passing = 29 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] baseline probe: 3 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~27,587 chars (~6,896 est. tokens) for 38 traces
+[SkillUpdater] classified 38 failing traces → 8 mode(s) (8 reused, 0 new): answer_format_wrong_type(1), cannot_discontinue_duplicate_orders(2), date_filter_omitted(3), incomplete_search_strategy(8), incorrect_order_acceptance(2), no_data_found_incorrect_assumption(14), wrong_code_used_for_heart_rate(7), wrong_resource_type_queried(1)
+[SkillUpdater] diagnosed 38/38 failing traces
+[SkillUpdater] ADD skill: fhir_search_result_verification
+[SkillUpdater] ADD skill: medication_request_status_and_code_filter
+[SkillUpdater] ADD skill: heart_rate_code_search_strategy
+[SkillUpdater] ADD skill: medication_request_status_filter
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::fhir_search_result_verification → adjusted=-10 raw=-9 (fixes=1 baseline_fixes=3, regressions=5 baseline_regressions=2)
+  [ProposalRanking] ADD::medication_request_status_and_code_filter → adjusted=-6 raw=-5 (fixes=3 baseline_fixes=3, regressions=4 baseline_regressions=2)
+  [ProposalRanking] ADD::heart_rate_code_search_strategy → adjusted=-7 raw=-6 (fixes=2 baseline_fixes=3, regressions=4 baseline_regressions=2)
+  [ProposalRanking] ADD::medication_request_status_filter → adjusted=-7 raw=-6 (fixes=4 baseline_fixes=3, regressions=5 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+
+[Epoch 4] Dev: 21/96 (21.9%) | Val: 23.8%
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=28.7%
+
+Val learning curve:
+  baseline: 26.2%  █████
+         0: 25.0%  █████
+         1: 25.0%  █████
+         2: 25.0%  █████
+         3: 28.7%  █████
+         4: 23.8%  ████

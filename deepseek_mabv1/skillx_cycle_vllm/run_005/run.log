@@ -1,0 +1,85 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+
+
+
+
+
+
+
+[Baseline] Val: 42.5%
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — SkillX extraction after epoch
+
+
+
+
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 0] Dev: 40/96 (41.7%) | Val: 55.0% | Skills extracted: 78, total: 15
+[BestCheckpoint] New best: epoch=0, val=55.0% — SkillX library snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+[Epoch 1] Dev: 52/96 (54.2%) | Val: 52.5% | Skills extracted: 103, total: 25
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 2] Dev: 52/96 (54.2%) | Val: 55.0% | Skills extracted: 105, total: 34
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+
+[Epoch 3] Dev: 55/96 (57.3%) | Val: 53.8% | Skills extracted: 115, total: 43
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — SkillX extraction after epoch
+
+  [Val] evaluating 80 samples...
+
+
+
+[Epoch 4] Dev: 55/96 (57.3%) | Val: 55.0% | Skills extracted: 116, total: 52
+
+[MemoryCycle] Training complete.
+
+Val learning curve:
+  baseline: 42.5%  ████████
+         0: 55.0%  ███████████
+         1: 52.5%  ██████████
+         2: 55.0%  ███████████
+         3: 53.8%  ██████████
+         4: 55.0%  ███████████
+[MemoryCycle] Final memory: 0 bullet(s)
+[SkillXCycle] Final library: 52 functional skill(s)

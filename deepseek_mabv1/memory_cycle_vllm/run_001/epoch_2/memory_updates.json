@@ -1,0 +1,520 @@
+[
+  {
+    "epoch": 2,
+    "sample_idx": 0,
+    "sample_id": "task1_20",
+    "memory_version_before": 88,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Christopher Cruz and DOB of 1940-08-28?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it rather than immediately concluding the patient does not exist without performing any search."
+    ],
+    "memory_size": 89
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 4,
+    "sample_id": "task5_17",
+    "memory_version_before": 89,
+    "new_bullets": [],
+    "memory_size": 89
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 5,
+    "sample_id": "task9_5",
+    "memory_version_before": 89,
+    "new_bullets": [
+      "when asked \"Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient, then if the value is below 3.5 mmol/L, proceed to place both the replacement potassium order and the follow-up lab order; your main mistake was returning \"No action needed\" without performing any data retrieval to check the potassium level, so always search the system for the actual lab result first."
+    ],
+    "memory_size": 90
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 6,
+    "sample_id": "task1_11",
+    "memory_version_before": 90,
+    "new_bullets": [],
+    "memory_size": 90
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 7,
+    "sample_id": "task1_6",
+    "memory_version_before": 90,
+    "new_bullets": [],
+    "memory_size": 90
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 8,
+    "sample_id": "task10_17",
+    "memory_version_before": 90,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume a date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only 4 days old when the actual current date may make the result older than 1 year, and you must also ensure the FINISH output returns the correct value and date in the expected format."
+    ],
+    "memory_size": 91
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 9,
+    "sample_id": "task10_8",
+    "memory_version_before": 91,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only about 1 month old when the actual current date may make it older than 1 year, and you must also ensure the FINISH output returns the correct value and date in the expected format without prematurely deciding no action is needed."
+    ],
+    "memory_size": 92
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 10,
+    "sample_id": "task10_24",
+    "memory_version_before": 92,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume a date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, causing the age calculation to be incorrect and leading to an unnecessary order."
+    ],
+    "memory_size": 93
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 11,
+    "sample_id": "task2_14",
+    "memory_version_before": 93,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2450227?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"75\" without first verifying the patient's DOB from the system, so you must always perform the retrieval and calculation rather than assuming or guessing the age."
+    ],
+    "memory_size": 94
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 13,
+    "sample_id": "task10_15",
+    "memory_version_before": 94,
+    "new_bullets": [],
+    "memory_size": 94
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 15,
+    "sample_id": "task1_16",
+    "memory_version_before": 94,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 95
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 18,
+    "sample_id": "task1_7",
+    "memory_version_before": 95,
+    "new_bullets": [],
+    "memory_size": 95
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 20,
+    "sample_id": "task9_6",
+    "memory_version_before": 95,
+    "new_bullets": [],
+    "memory_size": 95
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 22,
+    "sample_id": "task9_3",
+    "memory_version_before": 95,
+    "new_bullets": [
+      "when asked \"Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient, and if the value is below 3.5 mmol/L, proceed to place both the replacement potassium order (calculating the correct dose per the dosing instructions) AND the follow-up morning serum potassium lab order for the next day at 8am; your main mistake was returning \"No action needed\" without first performing any data retrieval to check the actual potassium level from the system."
+    ],
+    "memory_size": 96
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 24,
+    "sample_id": "task4_27",
+    "memory_version_before": 96,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S6227720 within last 24 hours?\", you must search the system for that specific patient’s magnesium lab result recorded within the last 24 hours, retrieve the exact numeric value, and return it in the FINISH output—your main mistake was returning a hardcoded value of \"1.8\" without actually retrieving the real lab result from the system, so always perform a proper data retrieval to get the actual value before returning any result."
+    ],
+    "memory_size": 97
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 25,
+    "sample_id": "task10_18",
+    "memory_version_before": 97,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must retrieve the actual current date from the evaluation context (not assume \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, which caused you to incorrectly conclude the result was only 1 day old when the actual current date may be much later, making the result older than 1 year."
+    ],
+    "memory_size": 98
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 27,
+    "sample_id": "task9_22",
+    "memory_version_before": 98,
+    "new_bullets": [
+      "when asked \"Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium lab result from the system for that specific patient, and if the value is 3.9 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab, and without including any lab values or dates in the output."
+    ],
+    "memory_size": 99
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 28,
+    "sample_id": "task10_16",
+    "memory_version_before": 99,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context, then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 100
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 30,
+    "sample_id": "task5_7",
+    "memory_version_before": 100,
+    "new_bullets": [],
+    "memory_size": 100
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 35,
+    "sample_id": "task10_21",
+    "memory_version_before": 100,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context, then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only if the difference exceeds 365 days should you order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\"; your main mistake was returning `[\"-1\", \"-1\"]` without performing any data retrieval or evaluation at all."
+    ],
+    "memory_size": 101
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 36,
+    "sample_id": "task2_17",
+    "memory_version_before": 101,
+    "new_bullets": [],
+    "memory_size": 101
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 37,
+    "sample_id": "task10_12",
+    "memory_version_before": 101,
+    "new_bullets": [],
+    "memory_size": 101
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 38,
+    "sample_id": "task5_3",
+    "memory_version_before": 101,
+    "new_bullets": [
+      "when asked to check patient S0636132's last serum magnesium level within the last 24 hours and order replacement IV magnesium if low, you must first actually retrieve the numeric magnesium lab result from the system for that specific patient within the 24-hour window, then correctly apply the threshold that \"low\" means below 1.5 mg/dL (or mild deficiency 1.5-1.9 mg/dL as defined by dosing instructions), so a value of 2.0 mg/dL is **not low** and requires no action—your main mistake was concluding \"No action needed\" without first performing any data retrieval to verify whether a magnesium level exists in the system and what its actual value is."
+    ],
+    "memory_size": 102
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 40,
+    "sample_id": "task2_15",
+    "memory_version_before": 102,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1152319?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context (not an assumed date), and return the correct numeric age in years; your main mistake was returning \"86\" without actually retrieving the patient's DOB from the system and calculating the age from the real current date."
+    ],
+    "memory_size": 103
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 41,
+    "sample_id": "task9_27",
+    "memory_version_before": 103,
+    "new_bullets": [
+      "when asked \"Check patient S1311412's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that patient, and if the value is exactly 3.5 mmol/L, it is **not low** (low is below 3.5 mmol/L), so you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab."
+    ],
+    "memory_size": 104
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 47,
+    "sample_id": "task2_30",
+    "memory_version_before": 104,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2703270?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"80\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 105
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 49,
+    "sample_id": "task2_25",
+    "memory_version_before": 105,
+    "new_bullets": [],
+    "memory_size": 105
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 50,
+    "sample_id": "task2_1",
+    "memory_version_before": 105,
+    "new_bullets": [],
+    "memory_size": 105
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 52,
+    "sample_id": "task2_6",
+    "memory_version_before": 105,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S1733937?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"39\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 106
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 55,
+    "sample_id": "task10_13",
+    "memory_version_before": 106,
+    "new_bullets": [],
+    "memory_size": 106
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 57,
+    "sample_id": "task9_11",
+    "memory_version_before": 106,
+    "new_bullets": [
+      "when asked \"Check patient S3213957's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient, and if the value is 3.9 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab, and without including any lab values or dates in the output."
+    ],
+    "memory_size": 107
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 58,
+    "sample_id": "task1_12",
+    "memory_version_before": 107,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Margaret Kidd and DOB of 1982-08-24?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 108
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 59,
+    "sample_id": "task5_19",
+    "memory_version_before": 108,
+    "new_bullets": [],
+    "memory_size": 108
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 61,
+    "sample_id": "task9_1",
+    "memory_version_before": 108,
+    "new_bullets": [
+      "when asked \"Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that patient, and if the value is 4.5 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab—your main mistake was correctly identifying the value as not low but failing to retrieve the actual lab result from the system first, and the evaluation expects that no follow-up lab should be ordered unless the potassium was actually low and replacement was needed."
+    ],
+    "memory_size": 109
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 62,
+    "sample_id": "task1_15",
+    "memory_version_before": 109,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Denise Dunlap and DOB of 1945-09-20?\", you must actually search the patient database or system using both the full name and date of birth to retrieve the MRN if the patient exists, and only return \"Patient not found\" after a thorough search confirms no matching record."
+    ],
+    "memory_size": 110
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 63,
+    "sample_id": "task2_16",
+    "memory_version_before": 110,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S2119664?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"66\" without first retrieving the patient's DOB from the system and calculating the age against the real current date."
+    ],
+    "memory_size": 111
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 64,
+    "sample_id": "task2_9",
+    "memory_version_before": 111,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S0722219?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"48\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 112
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 65,
+    "sample_id": "task10_10",
+    "memory_version_before": 112,
+    "new_bullets": [],
+    "memory_size": 112
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 66,
+    "sample_id": "task9_14",
+    "memory_version_before": 112,
+    "new_bullets": [],
+    "memory_size": 112
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 67,
+    "sample_id": "task4_4",
+    "memory_version_before": 112,
+    "new_bullets": [
+      "when asked \"What’s the most recent magnesium level of the patient S6474456 within last 24 hours?\", you must search the system for that specific patient’s magnesium lab result recorded within the last 24 hours, retrieve the exact numeric value, and return it in the FINISH output—your main mistake was returning `[\"-1\"]` without performing any actual data retrieval to find the real magnesium level from the system."
+    ],
+    "memory_size": 113
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 71,
+    "sample_id": "task9_9",
+    "memory_version_before": 113,
+    "new_bullets": [
+      "when asked \"Check patient S6309742's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient rather than concluding no results exist without performing any data retrieval, and if the retrieved value is not low (≥ 3.5 mmol/L), return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab."
+    ],
+    "memory_size": 114
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 72,
+    "sample_id": "task1_27",
+    "memory_version_before": 114,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Tina Reid and DOB of 1953-10-18?\", you must actually search the patient database or system using both the full name and date of birth to retrieve the MRN if the patient exists, and only return \"Patient not found\" after a thorough search confirms no matching record."
+    ],
+    "memory_size": 115
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 73,
+    "sample_id": "task9_20",
+    "memory_version_before": 115,
+    "new_bullets": [
+      "when asked \"Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first retrieve the actual numeric potassium lab result from the system for that patient, and if the value is 4.0 mmol/L (which is not low, as low is below 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab, because the task only requires the follow-up lab if the potassium was actually low and replacement was ordered."
+    ],
+    "memory_size": 116
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 74,
+    "sample_id": "task2_26",
+    "memory_version_before": 116,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S6530532?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"69\" without first retrieving the patient's DOB from the system and verifying the calculation against the real current date."
+    ],
+    "memory_size": 117
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 79,
+    "sample_id": "task5_16",
+    "memory_version_before": 117,
+    "new_bullets": [
+      "when asked to check patient S1023381's last serum magnesium level within the last 24 hours and order replacement IV magnesium if low, you must first actually retrieve the numeric magnesium lab result from the system for that specific patient, and only if the retrieved value is below the threshold for low (typically <1.5 mg/dL or as defined by dosing instructions) should you proceed with ordering replacement; your main mistake was returning \"No action needed\" without performing any data retrieval to verify whether a magnesium level exists in the system and what its actual value is."
+    ],
+    "memory_size": 118
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 82,
+    "sample_id": "task10_27",
+    "memory_version_before": 118,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume a date like \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date of \"2023-11-13T10:15:00+00:00\" instead of the real current date from the evaluation context, causing you to incorrectly calculate the age of the result as only 11 days when the actual current date may make it older than 1 year, and you must also ensure the FINISH output returns the correct value and date in the expected format."
+    ],
+    "memory_size": 119
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 84,
+    "sample_id": "task1_23",
+    "memory_version_before": 119,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Julie Rodriguez and DOB of 1962-01-20?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 120
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 85,
+    "sample_id": "task9_28",
+    "memory_version_before": 120,
+    "new_bullets": [
+      "when asked \"Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that specific patient, and if the value is not low (≥ 3.5 mmol/L), you should return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab—your main mistake was concluding \"No action needed\" without first performing any data retrieval to verify the actual potassium level from the system."
+    ],
+    "memory_size": 121
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 86,
+    "sample_id": "task2_22",
+    "memory_version_before": 121,
+    "new_bullets": [
+      "when asked \"What's the age of the patient with MRN of S6537563?\", you must first retrieve the patient's date of birth from the system using that MRN, then calculate the age based on the actual current date from the evaluation context, and return the correct numeric age in years; your main mistake was returning \"82\" without first verifying that the patient's DOB retrieved from the system actually corresponds to that age."
+    ],
+    "memory_size": 122
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 88,
+    "sample_id": "task2_28",
+    "memory_version_before": 122,
+    "new_bullets": [],
+    "memory_size": 122
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 90,
+    "sample_id": "task9_8",
+    "memory_version_before": 122,
+    "new_bullets": [
+      "when asked \"Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am,\" you must first actually retrieve the numeric potassium lab result from the system for that patient rather than concluding no results exist without performing a proper search, and if the retrieved value is not low (≥ 3.5 mmol/L), return `FINISH([\"No action needed\"])` without ordering any replacement or follow-up lab."
+    ],
+    "memory_size": 123
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 91,
+    "sample_id": "task10_20",
+    "memory_version_before": 123,
+    "new_bullets": [
+      "when asked \"What’s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test,\" you must first retrieve the actual current date from the evaluation context (not assume \"2023-11-13\"), then retrieve the actual HbA1C lab result and its recorded date from the system for that specific patient, calculate the age in days, and only order a new test using LOINC code \"4548-4\" with priority \"routine\" and status \"active\" if the difference exceeds 365 days; your main mistake was using an assumed current date instead of the real current date from the evaluation context, causing the age calculation to be incorrect."
+    ],
+    "memory_size": 124
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 93,
+    "sample_id": "task1_10",
+    "memory_version_before": 124,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Joshua Martinez and DOB of 1967-03-11?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 125
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 94,
+    "sample_id": "task1_26",
+    "memory_version_before": 125,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it—your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 126
+  },
+  {
+    "epoch": 2,
+    "sample_idx": 95,
+    "sample_id": "task1_13",
+    "memory_version_before": 126,
+    "new_bullets": [
+      "when asked \"What’s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11?\", you must actually search the patient database or system for a patient matching both the full name and date of birth, retrieve the MRN if found, and return it; your main mistake was immediately concluding \"Patient not found\" without performing any actual search or retrieval attempt."
+    ],
+    "memory_size": 127
+  }
+]

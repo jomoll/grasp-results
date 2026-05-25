@@ -1,0 +1,410 @@
+
+============================================================
+  BASELINE (before epoch 0)
+============================================================
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+needs booster
+needs booster
+needs booster
+[Baseline] Val: 27.5%
+[BestCheckpoint] New best: epoch=baseline, val=27.5% — snapshot saved
+
+============================================================
+  EPOCH 0
+============================================================
+[Epoch 0] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+needs booster
+  Batch score: 12/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 12 passing = 30 samples (out-of-sample from prior batches)
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] baseline probe: 0 fixes, 4 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~22,730 chars (~5,682 est. tokens) for 36 traces
+[SkillUpdater] classified 36 failing traces → 15 mode(s) (0 reused, 15 new): catheter_search_incomplete(2), catheter_search_wrong_resource_type(1), heart_rate_average_not_computed(2), no_dvt_order_found_incorrectly_ordered(8), no_heart_rate_data_found(4), no_procedure_found_incorrectly_ordered(5), no_vaccine_found_incorrect_conclusion(2), no_vaccine_found_incorrectly_ordered(3), opioid_search_incomplete(1), opioid_search_missed_medication(3), tsh_ft4_interpretation_wrong_action(1), vaccine_date_returned_no_action(1), vaccine_found_incorrectly_ordered(1), vaccine_lookup_wrong_resource_type(1), vaccine_search_incomplete(1)
+[SkillUpdater] diagnosed 36/36 failing traces
+[SkillUpdater] ADD skill: dvt_prophylaxis_order_search_strategy
+[SkillUpdater] ADD skill: procedure_search_response_validation
+[SkillUpdater] ADD skill: heart_rate_average_computation
+[SkillUpdater] ADD skill: vaccine_search_resource_type_fallback
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::dvt_prophylaxis_order_search_strategy → adjusted=+3 raw=-1 (fixes=3 baseline_fixes=0, regressions=2 baseline_regressions=4)
+needs booster
+needs booster
+  [ProposalRanking] ADD::procedure_search_response_validation → adjusted=-1 raw=-5 (fixes=1 baseline_fixes=0, regressions=4 baseline_regressions=4)
+  [ProposalRanking] ADD::heart_rate_average_computation → adjusted=-2 raw=-6 (fixes=2 baseline_fixes=0, regressions=4 baseline_regressions=4)
+needs booster
+  [ProposalRanking] ADD::vaccine_search_resource_type_fallback → adjusted=-6 raw=-10 (fixes=0 baseline_fixes=0, regressions=5 baseline_regressions=4)
+  [ProposalRanking] winner: ADD::dvt_prophylaxis_order_search_strategy adjusted=+3 (fixes=3, regressions=2)
+  [ContrastiveRevision] 2 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: dvt_prophylaxis_order_search_strategy
+needs booster
+needs booster
+  [ContrastiveRevision] ADD::dvt_prophylaxis_order_search_strategy → adjusted=-1 (fixes=2, regressions=4)
+  [ContrastiveRevision] revision did not improve (-1 ≤ +3), keeping original
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+list index out of range
+  Batch score: 12/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 12 passing = 30 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 1 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~31,422 chars (~7,855 est. tokens) for 36 traces
+[SkillUpdater] classified 36 failing traces → 9 mode(s) (7 reused, 2 new): catheter_search_incomplete(1), date_filter_omitted(6), heart_rate_average_not_computed(2), no_dvt_order_found_incorrectly_ordered(3), no_heart_rate_data_found(4), opioid_search_incomplete(7), patient_id_not_resolved_before_query(1), tsh_ft4_interpretation_wrong_action(1), vaccine_lookup_wrong_resource_type(11)
+[SkillUpdater] diagnosed 36/36 failing traces
+[SkillUpdater] ADD skill: vaccine_administration_procedure_query
+[SkillUpdater] ADD skill: opioid_medication_search_strategy
+[SkillUpdater] ADD skill: procedure_date_filter_required
+[SkillUpdater] ADD skill: vital_sign_observation_code_lookup
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+needs booster
+  [ProposalRanking] ADD::vaccine_administration_procedure_query → adjusted=-3 raw=-4 (fixes=1 baseline_fixes=1, regressions=3 baseline_regressions=2)
+  [ProposalRanking] ADD::opioid_medication_search_strategy → adjusted=-4 raw=-5 (fixes=2 baseline_fixes=1, regressions=4 baseline_regressions=2)
+needs booster
+needs booster
+  [ProposalRanking] ADD::procedure_date_filter_required → adjusted=+3 raw=+2 (fixes=5 baseline_fixes=1, regressions=2 baseline_regressions=2)
+  [ProposalRanking] ADD::vital_sign_observation_code_lookup → adjusted=-2 raw=-3 (fixes=3 baseline_fixes=1, regressions=3 baseline_regressions=2)
+  [ProposalRanking] winner: ADD::procedure_date_filter_required adjusted=+3 (fixes=5, regressions=2)
+  [ContrastiveRevision] 2 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: procedure_date_filter_required
+needs booster
+list index out of range
+needs booster
+  [ContrastiveRevision] ADD::procedure_date_filter_required → adjusted=+4 (fixes=3, regressions=0)
+  [ContrastiveRevision] revision wins: adjusted=+4 > +3
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+
+[Epoch 0] Dev: 24/96 (25.0%) | Val: 40.0%
+[BestCheckpoint] New best: epoch=0, val=40.0% — snapshot saved
+
+============================================================
+  EPOCH 1
+============================================================
+[Epoch 1] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 21/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 5 fixes, 1 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~23,730 chars (~5,932 est. tokens) for 27 traces
+[SkillUpdater] classified 27 failing traces → 10 mode(s) (9 reused, 1 new): answer_format_wrong_type(1), catheter_search_incomplete(1), heart_rate_average_not_computed(2), no_dvt_order_found_incorrectly_ordered(1), no_heart_rate_data_found(4), no_procedure_found_incorrectly_ordered(3), opioid_search_incomplete(1), opioid_search_missed_medication(2), tsh_ft4_interpretation_wrong_action(3), vaccine_lookup_wrong_resource_type(9)
+[SkillUpdater] diagnosed 27/27 failing traces
+[SkillUpdater] ADD skill: vaccine_lookup_use_immunization_resource
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] ADD skill: lab_value_protocol_interpretation
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+needs booster
+  [ProposalRanking] ADD::vaccine_lookup_use_immunization_resource → adjusted=-3 raw=+1 (fixes=4 baseline_fixes=5, regressions=2 baseline_regressions=1)
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=+0 raw=+4 (fixes=4 baseline_fixes=5, regressions=0 baseline_regressions=1)
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=+0 raw=+4 (fixes=6 baseline_fixes=5, regressions=1 baseline_regressions=1)
+needs booster
+  [ProposalRanking] ADD::lab_value_protocol_interpretation → adjusted=-6 raw=-2 (fixes=2 baseline_fixes=5, regressions=2 baseline_regressions=1)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+  Batch score: 14/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 3 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~31,025 chars (~7,756 est. tokens) for 34 traces
+[SkillUpdater] classified 34 failing traces → 6 mode(s) (5 reused, 1 new): catheter_search_incomplete(4), date_filter_omitted(4), dvt_order_created_without_verifying_existing(7), heart_rate_average_not_computed(6), opioid_search_incomplete(8), vaccine_lookup_wrong_resource_type(5)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+[SkillUpdater] diagnosed 34/34 failing traces
+[SkillUpdater] ADD skill: opioid_search_exhaustive
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+[SkillUpdater] ADD skill: heart_rate_average_computation
+[SkillUpdater] ADD skill: vaccine_lookup_use_immunization_resource
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+needs booster
+  [ProposalRanking] ADD::opioid_search_exhaustive → adjusted=-5 raw=-4 (fixes=3 baseline_fixes=3, regressions=5 baseline_regressions=2)
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-16 raw=-15 (fixes=1 baseline_fixes=3, regressions=9 baseline_regressions=2)
+  [ProposalRanking] ADD::heart_rate_average_computation → adjusted=-10 raw=-9 (fixes=2 baseline_fixes=3, regressions=6 baseline_regressions=2)
+  [ProposalRanking] ADD::vaccine_lookup_use_immunization_resource → adjusted=-5 raw=-4 (fixes=4 baseline_fixes=3, regressions=4 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+needs booster
+
+[Epoch 1] Dev: 35/96 (36.5%) | Val: 40.0%
+
+============================================================
+  EPOCH 2
+============================================================
+[Epoch 2] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+  Batch score: 15/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 2 fixes, 3 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~26,218 chars (~6,554 est. tokens) for 33 traces
+[SkillUpdater] classified 33 failing traces → 8 mode(s) (8 reused, 0 new): catheter_search_incomplete(2), dvt_order_created_without_verifying_existing(2), heart_rate_average_not_computed(3), no_heart_rate_data_found(2), no_procedure_found_incorrectly_ordered(4), opioid_search_incomplete(8), tsh_ft4_interpretation_wrong_action(4), vaccine_lookup_wrong_resource_type(8)
+[SkillUpdater] diagnosed 33/33 failing traces
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+[SkillUpdater] ADD skill: vaccine_lookup_use_immunization_resource
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] ADD skill: tsh_ft4_interpretation_protocol
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-18 raw=-19 (fixes=0 baseline_fixes=2, regressions=11 baseline_regressions=3)
+  [ProposalRanking] ADD::vaccine_lookup_use_immunization_resource → adjusted=-4 raw=-5 (fixes=3 baseline_fixes=2, regressions=4 baseline_regressions=3)
+list index out of range
+needs booster
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=-15 raw=-16 (fixes=1 baseline_fixes=2, regressions=10 baseline_regressions=3)
+needs booster
+  [ProposalRanking] ADD::tsh_ft4_interpretation_protocol → adjusted=-5 raw=-6 (fixes=2 baseline_fixes=2, regressions=5 baseline_regressions=3)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+  Batch score: 19/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 15 passing = 33 samples (out-of-sample from prior batches)
+needs booster
+  [ProposalRanking] baseline probe: 1 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~29,100 chars (~7,275 est. tokens) for 29 traces
+[SkillUpdater] classified 29 failing traces → 9 mode(s) (9 reused, 0 new): answer_format_wrong_type(2), catheter_search_incomplete(4), date_filter_omitted(1), dvt_order_created_without_verifying_existing(6), heart_rate_average_not_computed(3), no_heart_rate_data_found(3), opioid_search_incomplete(3), vaccine_date_returned_no_action(1), vaccine_lookup_wrong_resource_type(6)
+Warning:  HTTPConnectionPool(host='172.20.108.58', port=4000): Read timed out. (read timeout=120)
+[SkillUpdater] diagnosed 29/29 failing traces
+[SkillUpdater] ADD skill: vaccine_lookup_immunization_resource
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] ADD::vaccine_lookup_immunization_resource → adjusted=-3 raw=-4 (fixes=2 baseline_fixes=1, regressions=5 baseline_regressions=2)
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-17 raw=-18 (fixes=2 baseline_fixes=1, regressions=10 baseline_regressions=2)
+needs booster
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=-8 raw=-9 (fixes=0 baseline_fixes=1, regressions=7 baseline_regressions=2)
+list index out of range
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=-9 raw=-10 (fixes=0 baseline_fixes=1, regressions=6 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+
+[Epoch 2] Dev: 34/96 (35.4%) | Val: 37.5%
+
+============================================================
+  EPOCH 3
+============================================================
+[Epoch 3] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+needs booster
+needs booster
+  Batch score: 20/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 3 fixes, 3 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~27,045 chars (~6,761 est. tokens) for 28 traces
+[SkillUpdater] classified 28 failing traces → 9 mode(s) (9 reused, 0 new): catheter_search_incomplete(2), date_filter_omitted(2), dvt_order_created_without_verifying_existing(4), heart_rate_average_not_computed(4), no_vaccine_found_incorrectly_ordered(5), opioid_search_incomplete(5), tsh_ft4_interpretation_wrong_action(2), vaccine_date_returned_no_action(1), vaccine_lookup_wrong_resource_type(3)
+[SkillUpdater] diagnosed 28/28 failing traces
+[SkillUpdater] ADD skill: opioid_medication_search_exhaustive
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] ADD skill: task_context_time_parsing
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::opioid_medication_search_exhaustive → adjusted=-12 raw=-12 (fixes=2 baseline_fixes=3, regressions=7 baseline_regressions=3)
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=+0 raw=+0 (fixes=6 baseline_fixes=3, regressions=3 baseline_regressions=3)
+  [ProposalRanking] ADD::task_context_time_parsing → adjusted=-6 raw=-6 (fixes=4 baseline_fixes=3, regressions=5 baseline_regressions=3)
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-15 raw=-15 (fixes=1 baseline_fixes=3, regressions=9 baseline_regressions=3)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+  Batch score: 14/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+needs booster
+  [ProposalRanking] baseline probe: 3 fixes, 6 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~30,008 chars (~7,502 est. tokens) for 34 traces
+[SkillUpdater] classified 34 failing traces → 8 mode(s) (8 reused, 0 new): catheter_search_incomplete(4), dvt_order_created_without_verifying_existing(4), heart_rate_average_not_computed(4), no_heart_rate_data_found(4), no_procedure_found_incorrectly_ordered(4), no_vaccine_found_incorrectly_ordered(6), opioid_search_incomplete(5), vaccine_lookup_wrong_resource_type(3)
+[SkillUpdater] diagnosed 34/34 failing traces
+[SkillUpdater] ADD skill: vaccine_search_fallback_by_name
+[SkillUpdater] ADD skill: opioid_medication_search_by_name
+[SkillUpdater] ADD skill: observation_time_window_date_filter
+[SkillUpdater] ADD skill: observation_time_window_filter
+  [ProposalRanking] 4 proposals sampled, 4 unique
+  [ProposalRanking] ADD::vaccine_search_fallback_by_name → adjusted=+1 raw=-2 (fixes=5 baseline_fixes=3, regressions=4 baseline_regressions=6)
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] ADD::opioid_medication_search_by_name → adjusted=-10 raw=-13 (fixes=1 baseline_fixes=3, regressions=9 baseline_regressions=6)
+list index out of range
+  [ProposalRanking] ADD::observation_time_window_date_filter → adjusted=-8 raw=-11 (fixes=1 baseline_fixes=3, regressions=7 baseline_regressions=6)
+  [ProposalRanking] ADD::observation_time_window_filter → adjusted=-7 raw=-10 (fixes=2 baseline_fixes=3, regressions=6 baseline_regressions=6)
+  [ProposalRanking] winner: ADD::vaccine_search_fallback_by_name adjusted=+1 (fixes=5, regressions=4)
+  [ContrastiveRevision] 4 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: vaccine_search_fallback_by_name
+  [ContrastiveRevision] ADD::vaccine_search_fallback_by_name → adjusted=-6 (fixes=5, regressions=9)
+  [ContrastiveRevision] revision did not improve (-6 ≤ +1), keeping original
+
+  [Val] evaluating 80 samples...
+
+[Epoch 3] Dev: 34/96 (35.4%) | Val: 55.0%
+[BestCheckpoint] New best: epoch=3, val=55.0% — snapshot saved
+
+============================================================
+  EPOCH 4
+============================================================
+[Epoch 4] 96 dev samples — 2 batches of ≤48
+
+  Batch 0 / 1 (update_cycle=0, 48 samples)
+  Batch score: 21/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 5 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~27,296 chars (~6,824 est. tokens) for 27 traces
+[SkillUpdater] classified 27 failing traces → 8 mode(s) (8 reused, 0 new): answer_format_wrong_type(4), catheter_search_incomplete(4), catheter_search_wrong_resource_type(1), dvt_order_created_without_verifying_existing(5), heart_rate_average_not_computed(2), no_heart_rate_data_found(4), opioid_search_incomplete(5), vaccine_lookup_wrong_resource_type(2)
+[SkillUpdater] diagnosed 27/27 failing traces
+[SkillUpdater] ADD skill: opioid_search_by_category
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+[SkillUpdater] MODIFY skill: procedure_date_filter_required
+[SkillUpdater] ADD skill: time_window_date_filter_computation
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+  [ProposalRanking] ADD::opioid_search_by_category → adjusted=+3 raw=+6 (fixes=7 baseline_fixes=5, regressions=1 baseline_regressions=2)
+needs booster
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-11 raw=-8 (fixes=2 baseline_fixes=5, regressions=6 baseline_regressions=2)
+  [ProposalRanking] MODIFY::procedure_date_filter_required → adjusted=-8 raw=-5 (fixes=5 baseline_fixes=5, regressions=5 baseline_regressions=2)
+  [ProposalRanking] ADD::time_window_date_filter_computation → adjusted=+0 raw=+3 (fixes=5 baseline_fixes=5, regressions=1 baseline_regressions=2)
+  [ProposalRanking] winner: ADD::opioid_search_by_category adjusted=+3 (fixes=7, regressions=1)
+  [ContrastiveRevision] 1 regression(s) — requesting targeted revision...
+[SkillUpdater] ADD skill: opioid_search_by_category
+  [ContrastiveRevision] ADD::opioid_search_by_category → adjusted=+1 (fixes=6, regressions=1)
+  [ContrastiveRevision] revision did not improve (+1 ≤ +3), keeping original
+
+  Batch 1 / 1 (update_cycle=1, 48 samples)
+needs booster
+needs booster
+  Batch score: 24/48
+  Running grouped proposal ranking update (K=4)...
+  [ProposalRanking] probe set: 18 failing + 18 passing = 36 samples (out-of-sample from prior batches)
+  [ProposalRanking] baseline probe: 4 fixes, 2 regressions (current skills, no proposal); 0 pre-existing errors excluded from regression count
+[SkillUpdater] classify_failures: ~25,622 chars (~6,405 est. tokens) for 24 traces
+[SkillUpdater] classified 24 failing traces → 8 mode(s) (7 reused, 1 new): answer_submitted_before_verification(2), catheter_search_incomplete(2), dvt_order_created_without_verifying_existing(3), heart_rate_average_not_computed(6), no_procedure_found_incorrectly_ordered(2), opioid_search_incomplete(3), tsh_ft4_interpretation_wrong_action(1), vaccine_lookup_wrong_resource_type(5)
+[SkillUpdater] diagnosed 24/24 failing traces
+[SkillUpdater] ADD skill: observation_time_window_computation
+[SkillUpdater] ADD skill: vaccine_search_use_immunization_resource
+[SkillUpdater] MODIFY skill: opioid_search_by_category
+[SkillUpdater] MODIFY skill: dvt_prophylaxis_order_search_strategy
+  [ProposalRanking] 4 proposals sampled, 4 unique
+needs booster
+  [ProposalRanking] ADD::observation_time_window_computation → adjusted=-14 raw=-12 (fixes=0 baseline_fixes=4, regressions=6 baseline_regressions=2)
+needs booster
+needs booster
+needs booster
+  [ProposalRanking] ADD::vaccine_search_use_immunization_resource → adjusted=-10 raw=-8 (fixes=2 baseline_fixes=4, regressions=6 baseline_regressions=2)
+  [ProposalRanking] MODIFY::opioid_search_by_category → adjusted=-6 raw=-4 (fixes=2 baseline_fixes=4, regressions=3 baseline_regressions=2)
+needs booster
+  [ProposalRanking] MODIFY::dvt_prophylaxis_order_search_strategy → adjusted=-10 raw=-8 (fixes=1 baseline_fixes=4, regressions=7 baseline_regressions=2)
+  [ProposalRanking] no proposal improved adjusted score — applying nothing
+
+  [Val] evaluating 80 samples...
+needs booster
+
+[Epoch 4] Dev: 45/96 (46.9%) | Val: 51.2%
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=55.0%
+
+Val learning curve:
+  baseline: 27.5%  █████
+         0: 40.0%  ████████
+         1: 40.0%  ████████
+         2: 37.5%  ███████
+         3: 55.0%  ███████████
+         4: 51.2%  ██████████
+[Resume] Baseline already done (val=27.5%), skipping
+[Resume] Epoch 0 already done (val=40.0%), skipping
+[Resume] Epoch 1 already done (val=40.0%), skipping
+[Resume] Epoch 2 already done (val=37.5%), skipping
+[Resume] Epoch 3 already done (val=55.0%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=55.0%
+
+Val learning curve:
+  baseline: 27.5%  █████
+         0: 40.0%  ████████
+         1: 40.0%  ████████
+         2: 37.5%  ███████
+         3: 55.0%  ███████████
+         4: 51.2%  ██████████
+[Resume] Baseline already done (val=27.5%), skipping
+[Resume] Epoch 0 already done (val=40.0%), skipping
+[Resume] Epoch 1 already done (val=40.0%), skipping
+[Resume] Epoch 2 already done (val=37.5%), skipping
+[Resume] Epoch 3 already done (val=55.0%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=55.0%
+
+Val learning curve:
+  baseline: 27.5%  █████
+         0: 40.0%  ████████
+         1: 40.0%  ████████
+         2: 37.5%  ███████
+         3: 55.0%  ███████████
+         4: 51.2%  ██████████
+[Resume] Baseline already done (val=27.5%), skipping
+[Resume] Epoch 0 already done (val=40.0%), skipping
+[Resume] Epoch 1 already done (val=40.0%), skipping
+[Resume] Epoch 2 already done (val=37.5%), skipping
+[Resume] Epoch 3 already done (val=55.0%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=55.0%
+
+Val learning curve:
+  baseline: 27.5%  █████
+         0: 40.0%  ████████
+         1: 40.0%  ████████
+         2: 37.5%  ███████
+         3: 55.0%  ███████████
+         4: 51.2%  ██████████
+[Resume] Baseline already done (val=27.5%), skipping
+[Resume] Epoch 0 already done (val=40.0%), skipping
+[Resume] Epoch 1 already done (val=40.0%), skipping
+[Resume] Epoch 2 already done (val=37.5%), skipping
+[Resume] Epoch 3 already done (val=55.0%), skipping
+[Resume] Epoch 4 already done (val=51.2%), skipping
+
+[SkillCycle] Training complete.
+[BestCheckpoint] Final skills restored from best checkpoint: epoch=3, val=55.0%
+
+Val learning curve:
+  baseline: 27.5%  █████
+         0: 40.0%  ████████
+         1: 40.0%  ████████
+         2: 37.5%  ███████
+         3: 55.0%  ███████████
+         4: 51.2%  ██████████
